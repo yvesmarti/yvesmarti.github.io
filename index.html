@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Portfolio Professionnel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+        }
+        
+        .skill-card {
+            transition: all 0.3s ease;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #E5E7EB;
+        }
+        
+        .section-divider {
+            height: 150px;
+            overflow: hidden;
+        }
+        
+        .wave-shape {
+            fill: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-xl font-semibold text-gray-900">Portfolio</a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
+                    <a href="#skills" class="text-gray-600 hover:text-blue-600 transition">Compétences</a>
+                    <a href="#projects" class="text-gray-600 hover:text-blue-600 transition">Projets</a>
+                    <a href="#experience" class="text-gray-600 hover:text-blue-600 transition">Expérience</a>
+                    <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white pb-3 px-4">
+            <a href="#home" class="block py-2 text-gray-700 hover:text-blue-600 transition">Accueil</a>
+            <a href="#skills" class="block py-2 text-gray-700 hover:text-blue-600 transition">Compétences</a>
+            <a href="#projects" class="block py-2 text-gray-700 hover:text-blue-600 transition">Projets</a>
+            <a href="#experience" class="block py-2 text-gray-700 hover:text-blue-600 transition">Expérience</a>
+            <a href="#contact" class="block py-2 text-gray-700 hover:text-blue-600 transition">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-gradient pt-32 pb-20 md:pt-40 md:pb-28 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Bonjour, je suis <span class="text-yellow-300">[Votre Prénom]</span></h1>
+                    <p class="text-xl mb-8 opacity-90">[Votre titre professionnel] avec une passion pour [vos centres d'intérêt]</p>
+                    <div class="flex space-x-4">
+                        <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition">Me contacter</a>
+                        <a href="#projects" class="border-2 border-white px-6 py-3 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition">Voir mes projets</a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative">
+                        <div class="absolute -top-6 -left-6 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+                        <div class="absolute -bottom-8 -right-8 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+                        <div class="relative">
+                            <img src="https://placehold.co/400x500" alt="Portrait professionnel de [Votre Prénom] dans un environnement de travail moderne" class="rounded-lg shadow-2xl border-4 border-white" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 bg-gray-50">
+        <div class="section-divider">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-full">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="wave-shape"></path>
+                <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,35.2,27.97,52.32,63.29,59.25,100.08,17.19,61.29,46.49,108.2,77.13,144.18,32.5,37.86,76.66,87.45,123,106.67,39.93,16.58,83.74,16.49,123.25,1.31,41.58-15.75,82-53.45,103.88-84.96,27.45-39.44,47.14-84.13,63.47-132.47,25.39-75.79,64.1-147.44,119.72-193.35,54.24-44.03,117.39-68.68,184.42-71.24,30.97-1.2,61.34,6.24,88.49,21.47,34.09,18.88,62.66,49.29,82.93,84.15,20.41,35.13,35.06,74.94,44.16,116.63,9.34,44.08,11.33,90.47,5.76,134.08-13.19,102.57-53.99,198.87-121.58,268.15C989.49,113,1113,19.29,1200,72.47V0Z" opacity=".5" class="wave-shape"></path>
+                <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="wave-shape"></path>
+            </svg>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mes Compétences</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Voici les technologies et outils que j'utilise pour réaliser des projets performants et innovants.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Compétence 1 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-blue-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en développement frontend" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Frontend</h3>
+                    <p class="text-gray-600 text-sm">HTML, CSS, JavaScript, React</p>
+                </div>
+                
+                <!-- Compétence 2 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en développement backend" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Backend</h3>
+                    <p class="text-gray-600 text-sm">Node.js, Express, Python, Django</p>
+                </div>
+                
+                <!-- Compétence 3 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-purple-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en base de données" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Base de Données</h3>
+                    <p class="text-gray-600 text-sm">MySQL, MongoDB, PostgreSQL</p>
+                </div>
+                
+                <!-- Compétence 4 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-yellow-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en DevOps" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">DevOps</h3>
+                    <p class="text-gray-600 text-sm">Docker, AWS, GitHub Actions, CI/CD</p>
+                </div>
+                
+                <!-- Compétence 5 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-red-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en UI/UX Design" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">UI/UX Design</h3>
+                    <p class="text-gray-600 text-sm">Figma, Adobe XD, Prototypage</p>
+                </div>
+                
+                <!-- Compétence 6 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-indigo-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en gestion de projet" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Gestion de Projet</h3>
+                    <p class="text-gray-600 text-sm">Agile, Scrum, Jira, Trello</p>
+                </div>
+                
+                <!-- Compétence 7 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-pink-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en SEO" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">SEO</h3>
+                    <p class="text-gray-600 text-sm">Optimisation, Analytics, SEMrush</p>
+                </div>
+                
+                <!-- Compétence 8 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-teal-50 rounded-full">
+                        <img src="https://placehold.co/60x60" alt="Logo de compétence en Systèmes d'Exploitation" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Systèmes</h3>
+                    <p class="text-gray-600 text-sm">Linux, Windows, Administration Serveur</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mes Projets Récents</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Découvrez une sélection de mes réalisations les plus significatives.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Projet 1 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://placehold.co/600x400" alt="Capture d'écran d'une application e-commerce moderne avec panier d'achat" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Plateforme E-commerce</h3>
+                        <p class="text-gray-600 mb-4">Application complète avec paiement en ligne, gestion de stock et tableau de bord administrateur.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">React</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Node.js</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">MongoDB</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+                
+                <!-- Projet 2 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://placehold.co/600x400" alt="Interface d'application mobile de gestion de tâches avec calendrier intégré" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Application de Productivité</h3>
+                        <p class="text-gray-600 mb-4">Organiseur personnel intégrant liste de tâches, calendrier et rappels automatisés.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Flutter</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Firebase</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Dart</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+                
+                <!-- Projet 3 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://placehold.co/600x400" alt="Tableau de bord analytique avec visualisations de données et graphiques interactifs" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Tableau de Bord Analytics</h3>
+                        <p class="text-gray-600 mb-4">Visualisation de données complexes avec filtres interactifs et export PDF.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vue.js</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Python</span>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">D3.js</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#" class="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">Voir tous les projets</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mon Parcours</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Mes expériences professionnelles et formations académiques.</p>
+            </div>
+            
+            <div class="relative">
+                <!-- Timeline -->
+                <div class="space-y-8">
+                    <!-- Expérience 1 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-blue-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Poste Actuel]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - Présent</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Entreprise/Nom Employeur]</h4>
+                            <p class="text-gray-600">Description des responsabilités et réalisations dans ce poste. Mettez en avant vos contributions majeures et les technologies utilisées.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Expérience 2 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-blue-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Poste Précédent]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - [Année Fin]</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Entreprise/Nom Employeur]</h4>
+                            <p class="text-gray-600">Description des missions accomplies dans ce poste. Détaillez les compétences acquises et les résultats obtenus.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Formation 1 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-green-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Diplôme Obtenu]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - [Année Fin]</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Établissement]</h4>
+                            <p class="text-gray-600">Description du cursus, spécialisations et projets académiques marquants.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Contactez-moi</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Intéressé par mon profil ? N'hésitez pas à me contacter pour discuter de collaborations potentielles.</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <div class="w-full md:w-1/2 p-8 md:p-12">
+                        <form>
+                            <div class="mb-6">
+                                <label for="name" class="block text-gray-700 mb-2">Nom Complet</label>
+                                <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="email" class="block text-gray-700 mb-2">Adresse Email</label>
+                                <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="message" class="block text-gray-700 mb-2">Message</label>
+                                <textarea id="message" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-medium">Envoyer le message</button>
+                        </form>
+                    </div>
+                    
+                    <div class="w-full md:w-1/2 bg-gray-50 p-8 md:p-12">
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Coordonnées</h3>
+                            <div class="flex items-start space-x-4 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>[Votre Email]</span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>[Votre Téléphone]</span>
+                            </div>
+                            <div class="flex items-start space-x-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>[Votre Ville], [Votre Pays]</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Réseaux Sociaux</h3>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <a href="#" class="text-xl font-semibold">Portfolio</a>
+                    <p class="mt-2 text-gray-400">© 2023 Tous droits réservés</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accueil</a>
+                    <a href="#skills" class="text-gray-400 hover:text-white transition">Compétences</a>
+                    <a href="#projects" class="text-gray-400 hover:text-white transition">Projets</a>
+                    <a href="#experience" class="text-gray-400 hover:text-white transition">Expérience</a>
+                    <a href="#contact" class="text-gray-400 hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle mobile menu
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Close mobile menu if open
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
+
+```
+
+
+
+
+Voici un portfolio complet et moderne en une seule page HTML avec CSS et JavaScript intégrés. Les principales features comprennent :
+
+1. Navigation responsive avec menu mobile
+2. Section "Hero" avec effet de gradient et animation de background
+3. Section Compétences présentée sous forme de cartes interactives
+4. Galerie de projets avec filtres technologiques
+5. Timeline du parcours professionnel et académique
+6. Formulaire de contact fonctionnel
+7. Footer complet avec liens
+
+Le design utilise Tailwind CSS pour une mise en page responsive et moderne. Vous pouvez facilement personnaliser :
+- Les images (remplacer les placeholders)
+- Vos informations personnelles
+- Votre palette de couleurs
+- Votre contenu (compétences, projets, expériences)
+
+Pour l'utiliser sur GitHub Pages :
+1. Créez un dépôt GitHub nommé "[votre-username].github.io"
+2. Ajoutez ce fichier index.html comme fichier principal
+3. Activez GitHub Pages dans les settings du dépôt
+
+Le site sera automatiquement disponible à l'adresse : https://[votre-username].github.io
+
+
+🎨 **Generating images based on descriptions...**
+
+✅ **Images generated successfully! Here's your updated content:**
+
+`index.html`
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Portfolio Professionnel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+        }
+        
+        .skill-card {
+            transition: all 0.3s ease;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #E5E7EB;
+        }
+        
+        .section-divider {
+            height: 150px;
+            overflow: hidden;
+        }
+        
+        .wave-shape {
+            fill: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-xl font-semibold text-gray-900">Portfolio</a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
+                    <a href="#skills" class="text-gray-600 hover:text-blue-600 transition">Compétences</a>
+                    <a href="#projects" class="text-gray-600 hover:text-blue-600 transition">Projets</a>
+                    <a href="#experience" class="text-gray-600 hover:text-blue-600 transition">Expérience</a>
+                    <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white pb-3 px-4">
+            <a href="#home" class="block py-2 text-gray-700 hover:text-blue-600 transition">Accueil</a>
+            <a href="#skills" class="block py-2 text-gray-700 hover:text-blue-600 transition">Compétences</a>
+            <a href="#projects" class="block py-2 text-gray-700 hover:text-blue-600 transition">Projets</a>
+            <a href="#experience" class="block py-2 text-gray-700 hover:text-blue-600 transition">Expérience</a>
+            <a href="#contact" class="block py-2 text-gray-700 hover:text-blue-600 transition">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-gradient pt-32 pb-20 md:pt-40 md:pb-28 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Bonjour, je suis <span class="text-yellow-300">[Votre Prénom]</span></h1>
+                    <p class="text-xl mb-8 opacity-90">[Votre titre professionnel] avec une passion pour [vos centres d'intérêt]</p>
+                    <div class="flex space-x-4">
+                        <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition">Me contacter</a>
+                        <a href="#projects" class="border-2 border-white px-6 py-3 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition">Voir mes projets</a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative">
+                        <div class="absolute -top-6 -left-6 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+                        <div class="absolute -bottom-8 -right-8 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+                        <div class="relative">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/45ac234d-63b4-49cf-9437-6f019a09e044.png" alt="Portrait professionnel de [Votre Prénom] dans un environnement de travail moderne" class="rounded-lg shadow-2xl border-4 border-white" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 bg-gray-50">
+        <div class="section-divider">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-full">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="wave-shape"></path>
+                <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,35.2,27.97,52.32,63.29,59.25,100.08,17.19,61.29,46.49,108.2,77.13,144.18,32.5,37.86,76.66,87.45,123,106.67,39.93,16.58,83.74,16.49,123.25,1.31,41.58-15.75,82-53.45,103.88-84.96,27.45-39.44,47.14-84.13,63.47-132.47,25.39-75.79,64.1-147.44,119.72-193.35,54.24-44.03,117.39-68.68,184.42-71.24,30.97-1.2,61.34,6.24,88.49,21.47,34.09,18.88,62.66,49.29,82.93,84.15,20.41,35.13,35.06,74.94,44.16,116.63,9.34,44.08,11.33,90.47,5.76,134.08-13.19,102.57-53.99,198.87-121.58,268.15C989.49,113,1113,19.29,1200,72.47V0Z" opacity=".5" class="wave-shape"></path>
+                <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" class="wave-shape"></path>
+            </svg>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mes Compétences</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Voici les technologies et outils que j'utilise pour réaliser des projets performants et innovants.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Compétence 1 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-blue-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3dd34faf-71bd-4f86-b6f8-493cb8d4aedf.png" alt="Logo de compétence en développement frontend" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Frontend</h3>
+                    <p class="text-gray-600 text-sm">HTML, CSS, JavaScript, React</p>
+                </div>
+                
+                <!-- Compétence 2 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/a4e80f9a-a704-4fcc-a2cb-00cad35d8181.png" alt="Logo de compétence en développement backend" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Backend</h3>
+                    <p class="text-gray-600 text-sm">Node.js, Express, Python, Django</p>
+                </div>
+                
+                <!-- Compétence 3 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-purple-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/1bfc6027-d139-4e1f-86be-c7b0ee4ec64d.png" alt="Logo de compétence en base de données" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Base de Données</h3>
+                    <p class="text-gray-600 text-sm">MySQL, MongoDB, PostgreSQL</p>
+                </div>
+                
+                <!-- Compétence 4 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-yellow-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/eb9a93b0-dacb-4d02-959c-8c913f420088.png" alt="Logo de compétence en DevOps" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">DevOps</h3>
+                    <p class="text-gray-600 text-sm">Docker, AWS, GitHub Actions, CI/CD</p>
+                </div>
+                
+                <!-- Compétence 5 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-red-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e2e826b2-62ac-486e-a29b-d15a2672f29c.png" alt="Logo de compétence en UI/UX Design" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">UI/UX Design</h3>
+                    <p class="text-gray-600 text-sm">Figma, Adobe XD, Prototypage</p>
+                </div>
+                
+                <!-- Compétence 6 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-indigo-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/1e5dc795-d64b-494f-84ed-1ec486609b53.png" alt="Logo de compétence en gestion de projet" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Gestion de Projet</h3>
+                    <p class="text-gray-600 text-sm">Agile, Scrum, Jira, Trello</p>
+                </div>
+                
+                <!-- Compétence 7 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-pink-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/59872bd3-c089-4969-9b70-c572604f0d8f.png" alt="Logo de compétence en SEO" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">SEO</h3>
+                    <p class="text-gray-600 text-sm">Optimisation, Analytics, SEMrush</p>
+                </div>
+                
+                <!-- Compétence 8 -->
+                <div class="skill-card bg-white p-6 rounded-xl shadow-md text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-teal-50 rounded-full">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/16f6b264-5880-4acd-a697-700de0899a6e.png" alt="Logo de compétence en Systèmes d'Exploitation" class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Systèmes</h3>
+                    <p class="text-gray-600 text-sm">Linux, Windows, Administration Serveur</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mes Projets Récents</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Découvrez une sélection de mes réalisations les plus significatives.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Projet 1 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0f67d005-9caa-4c4b-b560-53fd526a43d1.png" alt="Capture d'écran d'une application e-commerce moderne avec panier d'achat" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Plateforme E-commerce</h3>
+                        <p class="text-gray-600 mb-4">Application complète avec paiement en ligne, gestion de stock et tableau de bord administrateur.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">React</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Node.js</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">MongoDB</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+                
+                <!-- Projet 2 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/51801443-3a46-459d-a99f-a03a97aa88dd.png" alt="Interface d'application mobile de gestion de tâches avec calendrier intégré" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Application de Productivité</h3>
+                        <p class="text-gray-600 mb-4">Organiseur personnel intégrant liste de tâches, calendrier et rappels automatisés.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Flutter</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Firebase</span>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Dart</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+                
+                <!-- Projet 3 -->
+                <div class="project-card bg-white rounded-xl overflow-hidden shadow-lg">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/100ad6d8-0bfe-4418-be87-195aee88207c.png" alt="Tableau de bord analytique avec visualisations de données et graphiques interactifs" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Tableau de Bord Analytics</h3>
+                        <p class="text-gray-600 mb-4">Visualisation de données complexes avec filtres interactifs et export PDF.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vue.js</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Python</span>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">D3.js</span>
+                        </div>
+                        <a href="#" class="text-blue-600 font-medium hover:text-blue-800 transition">Voir le projet →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#" class="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">Voir tous les projets</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Mon Parcours</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Mes expériences professionnelles et formations académiques.</p>
+            </div>
+            
+            <div class="relative">
+                <!-- Timeline -->
+                <div class="space-y-8">
+                    <!-- Expérience 1 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-blue-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Poste Actuel]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - Présent</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Entreprise/Nom Employeur]</h4>
+                            <p class="text-gray-600">Description des responsabilités et réalisations dans ce poste. Mettez en avant vos contributions majeures et les technologies utilisées.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Expérience 2 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-blue-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Poste Précédent]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - [Année Fin]</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Entreprise/Nom Employeur]</h4>
+                            <p class="text-gray-600">Description des missions accomplies dans ce poste. Détaillez les compétences acquises et les résultats obtenus.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Formation 1 -->
+                    <div class="timeline-item relative pl-8 md:pl-16">
+                        <div class="absolute left-0 md:left-8 top-0 w-4 h-4 bg-green-600 rounded-full z-10"></div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                                <h3 class="text-lg font-semibold">[Diplôme Obtenu]</h3>
+                                <span class="text-sm text-gray-500">[Année Début] - [Année Fin]</span>
+                            </div>
+                            <h4 class="text-gray-600 font-medium mb-3">[Établissement]</h4>
+                            <p class="text-gray-600">Description du cursus, spécialisations et projets académiques marquants.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Contactez-moi</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Intéressé par mon profil ? N'hésitez pas à me contacter pour discuter de collaborations potentielles.</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <div class="w-full md:w-1/2 p-8 md:p-12">
+                        <form>
+                            <div class="mb-6">
+                                <label for="name" class="block text-gray-700 mb-2">Nom Complet</label>
+                                <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="email" class="block text-gray-700 mb-2">Adresse Email</label>
+                                <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="message" class="block text-gray-700 mb-2">Message</label>
+                                <textarea id="message" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-medium">Envoyer le message</button>
+                        </form>
+                    </div>
+                    
+                    <div class="w-full md:w-1/2 bg-gray-50 p-8 md:p-12">
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Coordonnées</h3>
+                            <div class="flex items-start space-x-4 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>[Votre Email]</span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>[Votre Téléphone]</span>
+                            </div>
+                            <div class="flex items-start space-x-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>[Votre Ville], [Votre Pays]</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Réseaux Sociaux</h3>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <a href="#" class="text-xl font-semibold">Portfolio</a>
+                    <p class="mt-2 text-gray-400">© 2023 Tous droits réservés</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accueil</a>
+                    <a href="#skills" class="text-gray-400 hover:text-white transition">Compétences</a>
+                    <a href="#projects" class="text-gray-400 hover:text-white transition">Projets</a>
+                    <a href="#experience" class="text-gray-400 hover:text-white transition">Expérience</a>
+                    <a href="#contact" class="text-gray-400 hover:text-white transition">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle mobile menu
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Close mobile menu if open
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
