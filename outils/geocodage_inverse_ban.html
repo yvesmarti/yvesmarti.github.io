@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Géocodage Inversé - BAN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        /* Style pour rendre l'interface agréable */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0053b3;
+            text-align: center;
+        }
+        .upload-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #0053b3;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            background-color: #0053b3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #003d82;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #0053b3;
+            margin: 20px 0;
+        }
+        .progress {
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #0053b3;
+            width: 0%;
+            transition: width 0.3s;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #0053b3;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .success {
+            color: #388e3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Géocodage Inversé avec la BAN</h1>
+        
+        <div class="info-box">
+            <strong>Comment utiliser cet outil :</strong>
+            <ol>
+                <li>Préparez un fichier CSV avec des colonnes <strong>latitude</strong> et <strong>longitude</strong></li>
+                <li>Cliquez sur "Choisir un fichier" et sélectionnez votre CSV</li>
+                <li>Cliquez sur "Lancer le géocodage"</li>
+                <li>Attendez que l'outil récupère toutes les adresses</li>
+                <li>Téléchargez le résultat avec le bouton en bas</li>
+            </ol>
+        </div>
+
+        <!-- Section pour charger le fichier -->
+        <div class="upload-section">
+            <h2>📁 Charger votre fichier CSV</h2>
+            <input type="file" id="fileInput" accept=".csv">
+            <br>
+            <button id="processBtn" onclick="lancerGeoccodage()" disabled>Lancer le géocodage</button>
+            <p id="fileStatus"></p>
+        </div>
+
+        <!-- Aperçu du fichier chargé -->
+        <div class="results-section" id="previewSection">
+            <h2>👁️ Aperçu de votre fichier</h2>
+            <div id="previewContainer"></div>
+        </div>
+
+        <!-- Barre de progression -->
+        <div class="progress" id="progressContainer">
+            <h3>⏳ Traitement en cours...</h3>
+            <p id="statusText" style="font-weight: bold; color: #0053b3;">Initialisation...</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <p id="progressText">0 / 0 adresses traitées</p>
+            <p id="speedText" style="font-size: 0.9em; color: #666;"></p>
+        </div>
+
+        <!-- Section des résultats -->
+        <div class="results-section" id="resultsSection">
+            <h2>📊 Résultats du géocodage</h2>
+            <button onclick="telechargerResultats()">💾 Télécharger les résultats (CSV)</button>
+            <div id="tableContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variable globale pour stocker les données
+        let donneesCSV = [];
+        let resultatsGeocodes = [];
+
+        // Quand l'utilisateur sélectionne un fichier
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const fichier = e.target.files[0];
+            if (fichier) {
+                document.getElementById('fileStatus').innerHTML = '<em>⏳ Chargement du fichier...</em>';
+                
+                // Parse le fichier CSV avec PapaParse
+                Papa.parse(fichier, {
+                    header: true,  // La première ligne contient les noms de colonnes
+                    dynamicTyping: true,  // Convertit automatiquement les nombres
+                    skipEmptyLines: true,  // Ignore les lignes vides
+                    complete: function(results) {
+                        donneesCSV = results.data;
+                        console.log('Fichier chargé :', donneesCSV.length, 'lignes');
+                        
+                        // Affiche un message de succès
+                        document.getElementById('fileStatus').innerHTML = 
+                            `<span class="success">✅ Fichier chargé avec succès : ${donneesCSV.length} lignes trouvées</span>`;
+                        
+                        // Affiche l'aperçu du fichier
+                        afficherApercu();
+                        
+                        // Active le bouton de traitement
+                        document.getElementById('processBtn').disabled = false;
+                    },
+                    error: function(error) {
+                        document.getElementById('fileStatus').innerHTML = 
+                            `<span class="error">❌ Erreur : ${error.message}</span>`;
+                    }
+                });
+            }
+        });
+
+        // Fonction pour afficher un aperçu du fichier chargé
+        function afficherApercu() {
+            if (donneesCSV.length === 0) return;
+            
+            document.getElementById('previewSection').style.display = 'block';
+            
+            // Affiche les 5 premières lignes
+            let tableHTML = '<p><strong>Premières lignes de votre fichier :</strong></p><table><thead><tr>';
+            
+            const colonnes = Object.keys(donneesCSV[0]);
+            colonnes.forEach(col => {
+                tableHTML += `<th>${col}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+
+            const lignesAafficher = Math.min(donneesCSV.length, 5);
+            for (let i = 0; i < lignesAafficher; i++) {
+                tableHTML += '<tr>';
+                colonnes.forEach(col => {
+                    const valeur = donneesCSV[i][col] || '';
+                    tableHTML += `<td>${valeur}</td>`;
+                });
+                tableHTML += '</tr>';
+            }
+
+            tableHTML += '</tbody></table>';
+            
+            if (donneesCSV.length > 5) {
+                tableHTML += `<p><em>... et ${donneesCSV.length - 5} autres lignes</em></p>`;
+            }
+
+            document.getElementById('previewContainer').innerHTML = tableHTML;
+        }
+
+        // Fonction principale pour lancer le géocodage
+        async function lancerGeoccodage() {
+            // Vérifie qu'il y a des données
+            if (donneesCSV.length === 0) {
+                alert('Aucune donnée à traiter !');
+                return;
+            }
+
+            // Vérifie que les colonnes latitude et longitude existent
+            const premiereLigne = donneesCSV[0];
+            if (!('latitude' in premiereLigne) && !('lat' in premiereLigne)) {
+                alert('❌ Colonne "latitude" (ou "lat") non trouvée dans le CSV !\n\nColonnes trouvées : ' + Object.keys(premiereLigne).join(', '));
+                return;
+            }
+            if (!('longitude' in premiereLigne) && !('lon' in premiereLigne) && !('lng' in premiereLigne)) {
+                alert('❌ Colonne "longitude" (ou "lon" ou "lng") non trouvée dans le CSV !\n\nColonnes trouvées : ' + Object.keys(premiereLigne).join(', '));
+                return;
+            }
+
+            // Désactive le bouton pendant le traitement
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('processBtn').textContent = '⏳ Traitement en cours...';
+            document.getElementById('progressContainer').style.display = 'block';
+            
+            // Réinitialise les résultats
+            resultatsGeocodes = [];
+            
+            // Variable pour calculer la vitesse
+            const heureDebut = Date.now();
+
+            // Boucle sur chaque ligne du CSV
+            for (let i = 0; i < donneesCSV.length; i++) {
+                const ligne = donneesCSV[i];
+                
+                // Récupère latitude et longitude (gère différents noms de colonnes)
+                const lat = ligne.latitude || ligne.lat;
+                const lon = ligne.longitude || ligne.lon || ligne.lng;
+
+                // Met à jour la barre de progression
+                const pourcentage = Math.round(((i + 1) / donneesCSV.length) * 100);
+                document.getElementById('progressFill').style.width = pourcentage + '%';
+                document.getElementById('progressFill').textContent = pourcentage + '%';
+                document.getElementById('progressText').textContent = `${i + 1} / ${donneesCSV.length} adresses traitées`;
+                
+                // Calcule et affiche la vitesse
+                const tempsEcoule = (Date.now() - heureDebut) / 1000; // en secondes
+                const vitesse = (i + 1) / tempsEcoule;
+                const tempsRestant = (donneesCSV.length - i - 1) / vitesse;
+                document.getElementById('speedText').textContent = 
+                    `Vitesse : ${vitesse.toFixed(1)} adresses/seconde | Temps restant : ${Math.round(tempsRestant)}s`;
+
+                // Met à jour le statut avec l'adresse en cours
+                document.getElementById('statusText').textContent = 
+                    `🔍 Recherche de l'adresse pour : ${lat}, ${lon}`;
+
+                // Si les coordonnées sont présentes, appelle l'API
+                if (lat && lon) {
+                    try {
+                        // Appel de l'API de géocodage inversé de la BAN
+                        const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`;
+                        const reponse = await fetch(url);
+                        const data = await reponse.json();
+
+                        // Extrait les informations de l'adresse
+                        if (data.features && data.features.length > 0) {
+                            const feature = data.features[0];
+                            const props = feature.properties;
+                            
+                            // Crée un objet avec toutes les informations
+                            resultatsGeocodes.push({
+                                ...ligne,  // Garde toutes les colonnes d'origine
+                                adresse: props.label || '',
+                                numero: props.housenumber || '',
+                                rue: props.street || '',
+                                code_postal: props.postcode || '',
+                                ville: props.city || '',
+                                score: props.score || 0
+                            });
+                            
+                            // Affiche l'adresse trouvée
+                            document.getElementById('statusText').textContent = 
+                                `✅ Adresse trouvée : ${props.label || 'Inconnue'}`;
+                        } else {
+                            // Aucune adresse trouvée
+                            resultatsGeocodes.push({
+                                ...ligne,
+                                adresse: 'Adresse non trouvée',
+                                numero: '',
+                                rue: '',
+                                code_postal: '',
+                                ville: '',
+                                score: 0
+                            });
+                            document.getElementById('statusText').textContent = 
+                                `⚠️ Aucune adresse trouvée pour ces coordonnées`;
+                        }
+                    } catch (erreur) {
+                        console.error('Erreur pour la ligne', i, ':', erreur);
+                        resultatsGeocodes.push({
+                            ...ligne,
+                            adresse: 'Erreur lors de la recherche',
+                            numero: '',
+                            rue: '',
+                            code_postal: '',
+                            ville: '',
+                            score: 0
+                        });
+                        document.getElementById('statusText').textContent = 
+                            `❌ Erreur lors de la recherche`;
+                    }
+
+                    // Petite pause pour ne pas surcharger l'API (50ms entre chaque requête)
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                } else {
+                    // Coordonnées manquantes
+                    resultatsGeocodes.push({
+                        ...ligne,
+                        adresse: 'Coordonnées manquantes',
+                        numero: '',
+                        rue: '',
+                        code_postal: '',
+                        ville: '',
+                        score: 0
+                    });
+                    document.getElementById('statusText').textContent = 
+                        `⚠️ Coordonnées manquantes`;
+                }
+            }
+
+            // Affiche un message de fin
+            document.getElementById('statusText').textContent = 
+                `🎉 Traitement terminé avec succès !`;
+            document.getElementById('statusText').style.color = '#388e3c';
+
+            // Affiche les résultats
+            afficherResultats();
+            document.getElementById('processBtn').disabled = false;
+            document.getElementById('processBtn').textContent = 'Lancer le géocodage';
+        }
+
+        // Fonction pour afficher les résultats dans un tableau
+        function afficherResultats() {
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            // Crée le tableau HTML
+            let tableHTML = '<table><thead><tr>';
+            
+            // En-têtes du tableau (toutes les colonnes)
+            const colonnes = Object.keys(resultatsGeocodes[0]);
+            colonnes.forEach(col => {
+                tableHTML += `<th>${col}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+
+            // Lignes du tableau (limite à 100 pour ne pas surcharger)
+            const lignesAafficher = Math.min(resultatsGeocodes.length, 100);
+            for (let i = 0; i < lignesAafficher; i++) {
+                tableHTML += '<tr>';
+                colonnes.forEach(col => {
+                    const valeur = resultatsGeocodes[i][col] || '';
+                    tableHTML += `<td>${valeur}</td>`;
+                });
+                tableHTML += '</tr>';
+            }
+
+            tableHTML += '</tbody></table>';
+            
+            if (resultatsGeocodes.length > 100) {
+                tableHTML += `<p><em>Affichage limité à 100 lignes. Le fichier complet (${resultatsGeocodes.length} lignes) sera disponible au téléchargement.</em></p>`;
+            }
+
+            document.getElementById('tableContainer').innerHTML = tableHTML;
+        }
+
+        // Fonction pour télécharger les résultats en CSV
+        function telechargerResultats() {
+            // Convertit les résultats en CSV avec PapaParse
+            const csv = Papa.unparse(resultatsGeocodes);
+            
+            // Crée un fichier téléchargeable
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const lien = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            lien.setAttribute('href', url);
+            lien.setAttribute('download', 'resultats_geocodage.csv');
+            lien.style.visibility = 'hidden';
+            document.body.appendChild(lien);
+            lien.click();
+            document.body.removeChild(lien);
+        }
+    </script>
+</body>
+</html>
