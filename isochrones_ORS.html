@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Isochrones OpenRouteService v2</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #sidebar {
+            width: 380px;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #FF8C00;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2::before {
+            content: "▸";
+            margin-right: 8px;
+            color: #FF8C00;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        input[type="file"] {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        textarea {
+            min-height: 80px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #E67E00;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #2196F3;
+            margin-top: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #0b7dda;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            margin-top: 8px;
+        }
+        
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            margin-top: 8px;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .btn-debug {
+            background: #6c757d;
+            margin-top: 8px;
+            font-size: 12px;
+            padding: 8px;
+        }
+        
+        .btn-debug:hover {
+            background: #5a6268;
+        }
+        
+        #status {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        #status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        #status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        #status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        #status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+        
+        .intervals-container {
+            margin-top: 10px;
+        }
+        
+        .interval-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        
+        .interval-item input {
+            margin-bottom: 0;
+            flex: 1;
+        }
+        
+        .interval-item input[type="color"] {
+            width: 50px;
+            height: 35px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .interval-item button {
+            width: 35px;
+            padding: 8px;
+            background: #f44336;
+            font-size: 12px;
+        }
+        
+        .btn-add {
+            background: #2196F3;
+            margin-top: 8px;
+            font-size: 13px;
+            padding: 8px;
+        }
+        
+        #progressBar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        #progressBar div {
+            height: 100%;
+            background: linear-gradient(90deg, #FF8C00, #E67E00);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0066cc;
+            margin-top: 8px;
+        }
+        
+        .info-box a {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        #debugConsole {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        #debugConsole.visible {
+            display: block;
+        }
+        
+        .debug-line {
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+        
+        .debug-error {
+            color: #f48771;
+        }
+        
+        .debug-success {
+            color: #73c991;
+        }
+        
+        .debug-info {
+            color: #75beff;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>🗺️ Isochrones ORS v2</h1>
+        
+        <!-- Configuration API -->
+        <div class="section">
+            <h2>Configuration API</h2>
+            <label>Clé API OpenRouteService</label>
+            <input type="password" id="apiKey" placeholder="Votre clé API HeiGIT">
+            <div class="info-box">
+                <strong>Besoin d'une clé API ?</strong><br>
+                Créez un compte gratuit sur <a href="https://openrouteservice.org/dev/#/signup" target="_blank">OpenRouteService</a>
+            </div>
+            
+            <label>Limite de requêtes par minute</label>
+            <input type="number" id="rateLimit" value="40" min="1" max="120" step="1">
+            <small style="color: #888; font-size: 11px;">API gratuite : max 40/min recommandé</small>
+            
+            <button class="btn-info" onclick="testApiKey()">🔍 Tester la clé API</button>
+            <button class="btn-debug" onclick="toggleDebug()">🐛 Activer mode debug</button>
+        </div>
+        
+        <!-- Import GeoJSON -->
+        <div class="section">
+            <h2>Import des points</h2>
+            <label>Fichier GeoJSON</label>
+            <input type="file" id="fileInput" accept=".geojson,.json">
+            <label>Ou collez le GeoJSON</label>
+            <textarea id="geojsonInput" placeholder='{"type":"FeatureCollection","features":[...]}'></textarea>
+            <button onclick="loadGeoJSON()">📍 Charger les points</button>
+        </div>
+        
+        <!-- Paramètres -->
+        <div class="section">
+            <h2>Paramètres</h2>
+            
+            <label>Type d'analyse</label>
+            <select id="analysisType" onchange="updateIntervalLabel()">
+                <option value="time">Isochrone (temps)</option>
+                <option value="distance">Isodistance (distance)</option>
+            </select>
+            
+            <label>Mode de transport</label>
+            <select id="transportMode">
+                <option value="driving-car">🚗 Voiture</option>
+                <option value="driving-hgv">🚛 Poids lourd</option>
+                <option value="cycling-regular">🚴 Vélo</option>
+                <option value="cycling-road">🚴‍♂️ Vélo de route</option>
+                <option value="cycling-mountain">🚵 VTT</option>
+                <option value="cycling-electric">⚡ Vélo électrique</option>
+                <option value="foot-walking">🚶 Marche</option>
+                <option value="foot-hiking">🥾 Randonnée</option>
+                <option value="wheelchair">♿ Fauteuil roulant</option>
+            </select>
+            
+            <label id="intervalLabel">Intervalles (secondes)</label>
+            <div class="intervals-container" id="intervalsContainer">
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="300" min="1">
+                    <input type="color" class="interval-color" value="#ff4444">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="600" min="1">
+                    <input type="color" class="interval-color" value="#ffaa00">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="900" min="1">
+                    <input type="color" class="interval-color" value="#88dd00">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addInterval()">+ Ajouter un intervalle</button>
+        </div>
+        
+        <!-- Actions -->
+        <div class="section">
+            <h2>Actions</h2>
+            <button onclick="generateIsochrones()" id="generateBtn">🚀 Générer les isochrones</button>
+            <button class="btn-secondary" onclick="downloadGeoJSON()" id="downloadBtn" disabled>💾 Télécharger GeoJSON</button>
+            <button class="btn-danger" onclick="clearMap()">🗑️ Effacer la carte</button>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Points chargés</div>
+                    <div class="stat-value" id="pointsCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Requêtes effectuées</div>
+                    <div class="stat-value" id="requestsCount">0</div>
+                </div>
+            </div>
+            
+            <div id="progressBar">
+                <div id="progressBarInner">0%</div>
+            </div>
+            <div id="status"></div>
+            <div id="debugConsole"></div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Variables globales
+        let map;
+        let pointsLayer;
+        let isochronesLayer;
+        let inputPoints = [];
+        let generatedIsochrones = null;
+        let requestsCount = 0;
+        let lastRequestTime = Date.now();
+        let debugMode = false;
+        
+        // Fonction de logging pour debug
+        function debugLog(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}]`, message);
+            
+            if (debugMode) {
+                const debugConsole = document.getElementById('debugConsole');
+                const line = document.createElement('div');
+                line.className = `debug-line debug-${type}`;
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                debugConsole.appendChild(line);
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+            }
+        }
+        
+        // Toggle debug console
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugConsole = document.getElementById('debugConsole');
+            debugConsole.classList.toggle('visible');
+            debugLog('Mode debug ' + (debugMode ? 'activé' : 'désactivé'), 'info');
+        }
+        
+        // Initialisation de la carte
+        function initMap() {
+            debugLog('Initialisation de la carte...', 'info');
+            map = L.map('map').setView([46.8, 2.3], 6);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            pointsLayer = L.layerGroup().addTo(map);
+            isochronesLayer = L.layerGroup().addTo(map);
+            debugLog('Carte initialisée avec succès', 'success');
+        }
+        
+        // Tester la clé API
+        async function testApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showStatus('Veuillez entrer une clé API', 'error');
+                return;
+            }
+            
+            showStatus('Test de la clé API...', 'info');
+            debugLog('Test de la clé API...', 'info');
+            
+            try {
+                const profile = 'driving-car';
+                const url = `https://api.openrouteservice.org/v2/isochrones/${profile}`;
+                
+                debugLog(`URL de test: ${url}`, 'info');
+                
+                const requestBody = {
+                    locations: [[2.3522, 48.8566]],
+                    range: [300]
+                };
+                
+                debugLog('Corps de la requête: ' + JSON.stringify(requestBody), 'info');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                debugLog(`Statut de la réponse: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    debugLog('Réponse API: ' + JSON.stringify(data).substring(0, 200) + '...', 'success');
+                    showStatus('✅ Clé API valide et fonctionnelle !', 'success');
+                } else {
+                    const errorText = await response.text();
+                    debugLog(`Erreur API: ${errorText}`, 'error');
+                    showStatus(`❌ Erreur ${response.status}: Clé invalide ou problème d'authentification`, 'error');
+                }
+            } catch (error) {
+                debugLog(`Exception: ${error.message}`, 'error');
+                showStatus('❌ Erreur de connexion: ' + error.message, 'error');
+            }
+        }
+        
+        // Charger le GeoJSON
+        function loadGeoJSON() {
+            showStatus('Chargement des points...', 'info');
+            debugLog('Chargement du GeoJSON...', 'info');
+            
+            const fileInput = document.getElementById('fileInput');
+            const textInput = document.getElementById('geojsonInput');
+            
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                debugLog(`Lecture du fichier: ${file.name}`, 'info');
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const geojson = JSON.parse(e.target.result);
+                        processGeoJSON(geojson);
+                    } catch (error) {
+                        debugLog(`Erreur de parsing: ${error.message}`, 'error');
+                        showStatus('Erreur de lecture du fichier : ' + error.message, 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            } else if (textInput.value.trim()) {
+                try {
+                    const geojson = JSON.parse(textInput.value);
+                    processGeoJSON(geojson);
+                } catch (error) {
+                    debugLog(`Erreur de parsing: ${error.message}`, 'error');
+                    showStatus('Erreur de parsing JSON : ' + error.message, 'error');
+                }
+            } else {
+                showStatus('Veuillez fournir un fichier ou coller du GeoJSON', 'error');
+            }
+        }
+        
+        // Traiter le GeoJSON
+        function processGeoJSON(geojson) {
+            debugLog('Traitement du GeoJSON...', 'info');
+            inputPoints = [];
+            pointsLayer.clearLayers();
+            
+            if (geojson.type === 'FeatureCollection') {
+                geojson.features.forEach((feature, index) => {
+                    if (feature.geometry.type === 'Point') {
+                        const coords = feature.geometry.coordinates;
+                        inputPoints.push({
+                            lng: coords[0],
+                            lat: coords[1],
+                            properties: feature.properties || {},
+                            id: index
+                        });
+                        
+                        const marker = L.circleMarker([coords[1], coords[0]], {
+                            radius: 8,
+                            fillColor: '#FF8C00',
+                            color: '#fff',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                        
+                        const popupContent = `<strong>Point ${index + 1}</strong><br>` +
+                            `Coordonnées: ${coords[1].toFixed(5)}, ${coords[0].toFixed(5)}`;
+                        marker.bindPopup(popupContent).addTo(pointsLayer);
+                    }
+                });
+            } else if (geojson.type === 'Feature' && geojson.geometry.type === 'Point') {
+                const coords = geojson.geometry.coordinates;
+                inputPoints.push({
+                    lng: coords[0],
+                    lat: coords[1],
+                    properties: geojson.properties || {},
+                    id: 0
+                });
+                
+                L.circleMarker([coords[1], coords[0]], {
+                    radius: 8,
+                    fillColor: '#FF8C00',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).bindPopup('Point d\'origine').addTo(pointsLayer);
+            }
+            
+            if (inputPoints.length === 0) {
+                debugLog('Aucun point trouvé dans le GeoJSON', 'error');
+                showStatus('Aucun point trouvé dans le GeoJSON', 'error');
+                return;
+            }
+            
+            debugLog(`${inputPoints.length} points extraits`, 'success');
+            
+            // Centrer la carte sur les points
+            const bounds = L.latLngBounds(inputPoints.map(p => [p.lat, p.lng]));
+            map.fitBounds(bounds, { padding: [50, 50] });
+            
+            document.getElementById('pointsCount').textContent = inputPoints.length;
+            showStatus(`${inputPoints.length} point(s) chargé(s) avec succès`, 'success');
+        }
+        
+        // Générer les isochrones
+        async function generateIsochrones() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showStatus('⚠️ Veuillez entrer votre clé API OpenRouteService', 'error');
+                return;
+            }
+            
+            if (inputPoints.length === 0) {
+                showStatus('Veuillez d\'abord charger des points', 'error');
+                return;
+            }
+            
+            debugLog('=== DÉBUT DE LA GÉNÉRATION DES ISOCHRONES ===', 'info');
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            generateBtn.disabled = true;
+            downloadBtn.disabled = true;
+            
+            showStatus('Génération des isochrones en cours...', 'info');
+            showProgress(0);
+            requestsCount = 0;
+            document.getElementById('requestsCount').textContent = requestsCount;
+            
+            try {
+                const analysisType = document.getElementById('analysisType').value;
+                const transportMode = document.getElementById('transportMode').value;
+                const intervals = getIntervals();
+                const rateLimit = parseInt(document.getElementById('rateLimit').value);
+                
+                debugLog(`Type: ${analysisType}, Mode: ${transportMode}`, 'info');
+                debugLog(`Intervalles: ${JSON.stringify(intervals)}`, 'info');
+                debugLog(`Rate limit: ${rateLimit} req/min`, 'info');
+                
+                generatedIsochrones = {
+                    type: 'FeatureCollection',
+                    features: []
+                };
+                
+                // Calculer le délai entre requêtes (en millisecondes)
+                const delayBetweenRequests = 60000 / rateLimit;
+                debugLog(`Délai entre requêtes: ${delayBetweenRequests}ms`, 'info');
+                
+                for (let i = 0; i < inputPoints.length; i++) {
+                    const point = inputPoints[i];
+                    
+                    showStatus(`Traitement du point ${i + 1}/${inputPoints.length}...`, 'info');
+                    debugLog(`--- Point ${i + 1}/${inputPoints.length} ---`, 'info');
+                    debugLog(`Coordonnées: [${point.lng}, ${point.lat}]`, 'info');
+                    
+                    // Attendre si nécessaire pour respecter le rate limit
+                    const timeSinceLastRequest = Date.now() - lastRequestTime;
+                    if (timeSinceLastRequest < delayBetweenRequests && i > 0) {
+                        const waitTime = delayBetweenRequests - timeSinceLastRequest;
+                        debugLog(`Attente de ${waitTime}ms pour respecter le rate limit...`, 'info');
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                    }
+                    
+                    const isochroneGeoJSON = await fetchIsochrones(
+                        apiKey,
+                        point,
+                        intervals,
+                        analysisType,
+                        transportMode
+                    );
+                    
+                    lastRequestTime = Date.now();
+                    requestsCount++;
+                    document.getElementById('requestsCount').textContent = requestsCount;
+                    
+                    if (isochroneGeoJSON && isochroneGeoJSON.features) {
+                        debugLog(`${isochroneGeoJSON.features.length} isochrone(s) reçu(s)`, 'success');
+                        
+                        // Ajouter les métadonnées du point
+                        isochroneGeoJSON.features.forEach(feature => {
+                            feature.properties.point_id = point.id;
+                            feature.properties.point_properties = point.properties;
+                            generatedIsochrones.features.push(feature);
+                        });
+                    } else {
+                        debugLog('Aucun isochrone reçu pour ce point', 'error');
+                    }
+                    
+                    const progress = ((i + 1) / inputPoints.length) * 100;
+                    showProgress(progress);
+                }
+                
+                debugLog(`Total d'isochrones générés: ${generatedIsochrones.features.length}`, 'success');
+                
+                if (generatedIsochrones.features.length > 0) {
+                    displayIsochrones(generatedIsochrones);
+                    showStatus(`✅ ${generatedIsochrones.features.length} isochrone(s) généré(s) avec succès !`, 'success');
+                    downloadBtn.disabled = false;
+                } else {
+                    showStatus('⚠️ Aucun isochrone généré. Vérifiez les logs de debug.', 'warning');
+                }
+                
+                hideProgress();
+                
+            } catch (error) {
+                debugLog(`ERREUR GLOBALE: ${error.message}`, 'error');
+                debugLog(`Stack: ${error.stack}`, 'error');
+                showStatus('❌ Erreur : ' + error.message, 'error');
+                hideProgress();
+            } finally {
+                generateBtn.disabled = false;
+                debugLog('=== FIN DE LA GÉNÉRATION ===', 'info');
+            }
+        }
+        
+        // Appeler l'API ORS pour un point
+        async function fetchIsochrones(apiKey, point, intervals, analysisType, profile) {
+            const url = `https://api.openrouteservice.org/v2/isochrones/${profile}`;
+            
+            const requestBody = {
+                locations: [[point.lng, point.lat]],
+                range_type: analysisType,
+                range: intervals.map(i => i.value)
+            };
+            
+            debugLog(`URL: ${url}`, 'info');
+            debugLog(`Corps: ${JSON.stringify(requestBody)}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, application/geo+json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                debugLog(`Statut HTTP: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debugLog(`Erreur API: ${errorText}`, 'error');
+                    throw new Error(`API Error ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                debugLog(`Données reçues: ${JSON.stringify(data).substring(0, 300)}...`, 'info');
+                
+                // Ajouter les couleurs aux features
+                if (data.features && Array.isArray(data.features)) {
+                    debugLog(`Traitement de ${data.features.length} feature(s)`, 'info');
+                    data.features.forEach((feature, idx) => {
+                        const value = feature.properties.value;
+                        const intervalConfig = intervals.find(i => i.value === value);
+                        if (intervalConfig) {
+                            feature.properties.color = intervalConfig.color;
+                            debugLog(`Feature ${idx}: valeur=${value}, couleur=${intervalConfig.color}`, 'info');
+                        }
+                    });
+                }
+                
+                return data;
+                
+            } catch (error) {
+                debugLog(`Exception lors de fetchIsochrones: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Afficher les isochrones sur la carte
+        function displayIsochrones(geojson) {
+            debugLog('Affichage des isochrones sur la carte...', 'info');
+            isochronesLayer.clearLayers();
+            
+            if (!geojson || !geojson.features || geojson.features.length === 0) {
+                debugLog('Aucune feature à afficher', 'warning');
+                return;
+            }
+            
+            debugLog(`Affichage de ${geojson.features.length} feature(s)`, 'info');
+            
+            // Trier par valeur décroissante pour afficher les plus grands en dessous
+            const sortedFeatures = [...geojson.features].sort((a, b) => {
+                return (b.properties.value || 0) - (a.properties.value || 0);
+            });
+            
+            sortedFeatures.forEach((feature, idx) => {
+                const color = feature.properties.color || '#FF8C00';
+                const value = feature.properties.value;
+                const rangeType = feature.properties.range_type || 'time';
+                
+                debugLog(`Feature ${idx}: type=${feature.geometry.type}, valeur=${value}`, 'info');
+                
+                // Conversion pour affichage
+                let displayValue = value;
+                let displayUnit = rangeType === 'time' ? 's' : 'm';
+                
+                if (rangeType === 'time') {
+                    displayValue = Math.round(value / 60);
+                    displayUnit = 'min';
+                } else {
+                    displayValue = Math.round(value / 1000);
+                    displayUnit = 'km';
+                }
+                
+                try {
+                    const layer = L.geoJSON(feature, {
+                        style: {
+                            fillColor: color,
+                            fillOpacity: 0.3,
+                            color: color,
+                            weight: 2,
+                            opacity: 0.8
+                        }
+                    });
+                    
+                    layer.bindPopup(`
+                        <strong>Isochrone</strong><br>
+                        Valeur: ${displayValue} ${displayUnit}<br>
+                        ${feature.properties.point_id !== undefined ? `Point: ${feature.properties.point_id + 1}` : ''}
+                    `);
+                    
+                    layer.addTo(isochronesLayer);
+                    debugLog(`Feature ${idx} ajoutée à la carte`, 'success');
+                } catch (error) {
+                    debugLog(`Erreur lors de l'ajout de la feature ${idx}: ${error.message}`, 'error');
+                }
+            });
+            
+            debugLog('Affichage terminé', 'success');
+        }
+        
+        // Télécharger le GeoJSON
+        function downloadGeoJSON() {
+            if (!generatedIsochrones || generatedIsochrones.features.length === 0) {
+                showStatus('Aucun isochrone à télécharger', 'error');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(generatedIsochrones, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.download = `isochrones_ors_${timestamp}.geojson`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showStatus('✅ Fichier téléchargé avec succès', 'success');
+            debugLog('GeoJSON téléchargé', 'success');
+        }
+        
+        // Effacer la carte
+        function clearMap() {
+            pointsLayer.clearLayers();
+            isochronesLayer.clearLayers();
+            inputPoints = [];
+            generatedIsochrones = null;
+            requestsCount = 0;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('geojsonInput').value = '';
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('pointsCount').textContent = '0';
+            document.getElementById('requestsCount').textContent = '0';
+            showStatus('Carte effacée', 'info');
+            debugLog('Carte effacée', 'info');
+        }
+        
+        // Récupérer les intervalles
+        function getIntervals() {
+            const items = document.querySelectorAll('.interval-item');
+            const intervals = [];
+            
+            items.forEach(item => {
+                const value = parseInt(item.querySelector('.interval-value').value);
+                const color = item.querySelector('.interval-color').value;
+                intervals.push({ value, color });
+            });
+            
+            return intervals.sort((a, b) => a.value - b.value);
+        }
+        
+        // Ajouter un intervalle
+        function addInterval() {
+            const container = document.getElementById('intervalsContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'interval-item';
+            newItem.innerHTML = `
+                <input type="number" class="interval-value" value="1200" min="1">
+                <input type="color" class="interval-color" value="#00ff88">
+                <button onclick="removeInterval(this)">×</button>
+            `;
+            container.appendChild(newItem);
+        }
+        
+        // Supprimer un intervalle
+        function removeInterval(button) {
+            const items = document.querySelectorAll('.interval-item');
+            if (items.length > 1) {
+                button.parentElement.remove();
+            } else {
+                showStatus('Au moins un intervalle est requis', 'error');
+            }
+        }
+        
+        // Mettre à jour le label des intervalles
+        function updateIntervalLabel() {
+            const analysisType = document.getElementById('analysisType').value;
+            const label = document.getElementById('intervalLabel');
+            label.textContent = analysisType === 'time' ? 'Intervalles (secondes)' : 'Intervalles (mètres)';
+        }
+        
+        // Afficher un message de statut
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
+        
+        // Afficher la barre de progression
+        function showProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressBarInner = document.getElementById('progressBarInner');
+            progressBar.style.display = 'block';
+            progressBarInner.style.width = percent + '%';
+            progressBarInner.textContent = Math.round(percent) + '%';
+        }
+        
+        // Cacher la barre de progression
+        function hideProgress() {
+            setTimeout(() => {
+                document.getElementById('progressBar').style.display = 'none';
+            }, 1000);
+        }
+        
+        // Initialisation
+        initMap();
+        updateIntervalLabel();
+        debugLog('Application initialisée', 'success');
+    </script>
+</body>
+</html>
