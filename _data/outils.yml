@@ -5,7 +5,7 @@
   outils:
     - nom: Création d'Isochrones via ORS
       description: Générez des zones d'accessibilité temporelle autour d'un point pour analyser la couverture territoriale.
-      lien: isochrones_ORS.html
+      lien: outils/isochrones_ORS.html
       actif: true
 
     - nom: Géocodage Inverse
