@@ -1,0 +1,23 @@
+---
+layout: page
+title: Mes Outils
+subtitle: Applications web pour la géomatique et l'analyse de données
+---
+
+{% for categorie in site.data.outils %}
+<section class="outils-section">
+    <h2 class="outils-categorie">{{ categorie.categorie }}</h2>
+    <div class="outils-grid">
+        {% for outil in categorie.outils %}
+        <a href="{% if outil.actif %}{{ outil.lien | relative_url }}{% else %}#{% endif %}" 
+           class="outil-card {% unless outil.actif %}inactive{% endunless %}">
+            <h3>{{ outil.nom }}</h3>
+            <p>{{ outil.description }}</p>
+            <span class="outil-badge">
+                {% if outil.actif %}Disponible{% else %}À venir{% endif %}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}

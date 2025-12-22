@@ -1,0 +1,648 @@
+/* ===========================================
+   VARIABLES & RESET
+   =========================================== */
+
+:root {
+    --color-primary: #1a3a32;
+    --color-accent: #3d8b6e;
+    --color-light: #f7f9f8;
+    --color-warm: #e8ded4;
+    --color-text: #2c2c2c;
+    --color-muted: #6b7c75;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'Source Sans 3', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background: var(--color-light);
+    line-height: 1.8;
+    font-size: 18px;
+}
+
+/* ===========================================
+   NAVIGATION
+   =========================================== */
+
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.5rem 5%;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: difference;
+}
+
+.nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.nav-mobile-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.nav-mobile-toggle span {
+    width: 25px;
+    height: 2px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+/* ===========================================
+   HERO
+   =========================================== */
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(61, 139, 110, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-content {
+    max-width: 800px;
+    text-align: center;
+    color: white;
+    animation: fadeIn 1.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-name {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+}
+
+.hero-intro {
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.4);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+}
+
+/* ===========================================
+   SECTIONS NARRATIVES
+   =========================================== */
+
+.narrative {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8rem 2rem;
+}
+
+.narrative p {
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+}
+
+.narrative .lead {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1.4;
+    color: var(--color-primary);
+    margin-bottom: 2rem;
+}
+
+.narrative .highlight {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.narrative .aside {
+    font-style: italic;
+    color: var(--color-muted);
+    padding-left: 1.5rem;
+    border-left: 3px solid var(--color-warm);
+    margin: 2.5rem 0;
+}
+
+/* Sections avec fond */
+.section-warm {
+    background: var(--color-warm);
+}
+
+.section-dark {
+    background: var(--color-primary);
+    color: white;
+}
+
+.section-dark .lead {
+    color: white;
+}
+
+.section-dark p {
+    color: rgba(255,255,255,0.85);
+}
+
+.section-dark .highlight {
+    color: var(--color-accent);
+}
+
+/* ===========================================
+   TIMELINE (Parcours)
+   =========================================== */
+
+.section-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 2rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-accent);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+    padding-left: 1.5rem;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -34px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    border: 3px solid var(--color-warm);
+}
+
+.timeline-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-bottom: 0.25rem;
+}
+
+.timeline-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--color-primary);
+    margin-bottom: 0.15rem;
+}
+
+.timeline-company {
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-description {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ===========================================
+   COMPÉTENCES
+   =========================================== */
+
+.skills-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 2rem 0;
+}
+
+.skill-tag {
+    padding: 0.5rem 1.25rem;
+    background: rgba(61, 139, 110, 0.1);
+    border-radius: 30px;
+    font-size: 0.9rem;
+    color: var(--color-primary);
+}
+
+.section-dark .skill-tag {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* ===========================================
+   STATISTIQUES
+   =========================================== */
+
+.stat-inline {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+}
+
+.stat-inline .number {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--color-accent);
+    line-height: 1;
+}
+
+.stat-inline .label {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.section-dark .stat-inline .label {
+    color: rgba(255,255,255,0.6);
+}
+
+.stats-row {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+    margin: 2.5rem 0;
+}
+
+/* ===========================================
+   CITATION
+   =========================================== */
+
+.quote-block {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.75rem;
+    line-height: 1.5;
+    color: var(--color-primary);
+    margin: 3rem 0;
+    position: relative;
+    padding-left: 2rem;
+}
+
+.quote-block::before {
+    content: '"';
+    position: absolute;
+    left: -0.5rem;
+    top: -1rem;
+    font-size: 5rem;
+    color: var(--color-warm);
+    font-family: var(--font-display);
+    line-height: 1;
+}
+
+.section-dark .quote-block {
+    color: white;
+}
+
+.section-dark .quote-block::before {
+    color: rgba(255,255,255,0.1);
+}
+
+/* ===========================================
+   OUTILS (teaser sur accueil)
+   =========================================== */
+
+.tools-teaser {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    margin: 3rem 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.tools-teaser h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.tools-teaser p {
+    color: var(--color-muted);
+    margin-bottom: 1.5rem;
+}
+
+.tools-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: gap 0.3s ease;
+}
+
+.tools-link:hover {
+    gap: 1rem;
+}
+
+/* ===========================================
+   PAGE OUTILS
+   =========================================== */
+
+.page-header {
+    background: var(--color-primary);
+    padding: 8rem 10% 4rem;
+    color: white;
+}
+
+.page-header-content {
+    max-width: 800px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: white;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 1rem;
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 300;
+}
+
+.outils-section {
+    padding: 4rem 10%;
+    background: white;
+}
+
+.outils-section:nth-child(even) {
+    background: var(--color-light);
+}
+
+.outils-categorie {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.outils-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.outil-card {
+    display: block;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.outils-section:nth-child(odd) .outil-card {
+    background: var(--color-light);
+}
+
+.outil-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    border-color: var(--color-accent);
+}
+
+.outil-card.inactive {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.outil-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.outil-card p {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.outil-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.25rem 0.75rem;
+    background: var(--color-warm);
+    color: var(--color-muted);
+    border-radius: 20px;
+    margin-top: 1rem;
+}
+
+.outil-card:not(.inactive) .outil-badge {
+    background: var(--color-accent);
+    color: white;
+}
+
+/* ===========================================
+   CONTACT
+   =========================================== */
+
+.contact-section {
+    text-align: center;
+    padding: 8rem 2rem;
+    background: var(--color-primary);
+}
+
+.contact-section .lead {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.contact-section p {
+    color: rgba(255,255,255,0.7);
+    max-width: 500px;
+    margin: 0 auto 2.5rem;
+}
+
+.contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: var(--color-accent);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    background: #4a9f7f;
+    transform: translateY(-2px);
+}
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+
+.footer {
+    background: var(--color-primary);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--color-primary);
+        flex-direction: column;
+        padding: 1rem 5%;
+        gap: 1rem;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-mobile-toggle {
+        display: flex;
+    }
+
+    .narrative {
+        padding: 5rem 1.5rem;
+    }
+
+    .narrative .lead {
+        font-size: 1.5rem;
+    }
+
+    .stats-row {
+        gap: 2rem;
+    }
+
+    .timeline {
+        padding-left: 25px;
+    }
+
+    .timeline-item::before {
+        left: -29px;
+    }
+
+    .outils-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .outils-section {
+        padding: 3rem 5%;
+    }
+}

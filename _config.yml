@@ -1,0 +1,22 @@
+# Configuration du site
+title: Yves MARTI
+description: Chargé de mission déchets/SIG - Portfolio
+author: Yves Marti
+
+# URL (important pour GitHub Pages)
+baseurl: ""
+url: "https://yvesmarti.github.io"
+
+# Réseaux sociaux
+linkedin: yvesmarti
+
+# Configuration Jekyll
+markdown: kramdown
+permalink: pretty
+
+# Exclure certains fichiers de la compilation
+exclude:
+  - README.md
+  - GUIDE.md
+  - Gemfile
+  - Gemfile.lock

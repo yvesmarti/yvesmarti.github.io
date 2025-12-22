@@ -1,0 +1,53 @@
+# Liste des outils par catégorie
+# actif: true = outil fonctionnel | false = "à venir" (grisé)
+
+- categorie: Géomatique & Cartographie
+  outils:
+    - nom: Création d'Isochrones via ORS
+      description: Générez des zones d'accessibilité temporelle autour d'un point pour analyser la couverture territoriale.
+      lien: isochrones_ORS.html
+      actif: true
+
+    - nom: Géocodage Inverse
+      description: Obtenez une adresse à partir de coordonnées GPS pour identifier rapidement un lieu.
+      lien: outils/geocodage_inverse_ban.html
+      actif: true
+
+    - nom: Géocodage adresses
+      description: Transformez une adresse en coordonnées GPS exploitables.
+      lien: outils/geocodage_adresse_ban.html
+      actif: true
+
+    - nom: Visualiseur de Photos
+      description: Visualisez l'emplacement de vos photos sur une carte interactive.
+      lien: outils/photomapviewer.html
+      actif: true
+
+    - nom: Extraction de données OSM
+      description: Récupérez des données OpenStreetMap pour une zone donnée.
+      lien: outils/extracteurosm.html
+      actif: true
+
+- categorie: Analyse de Données
+  outils:
+    - nom: Outil d'analyse statistique
+      description: Emplacement disponible pour un outil d'analyse statistique.
+      lien: "#"
+      actif: false
+
+    - nom: Exploration de données
+      description: Emplacement disponible pour un outil d'exploration de données.
+      lien: "#"
+      actif: false
+
+- categorie: Environnement & Déchets
+  outils:
+    - nom: Outil gestion déchets
+      description: Emplacement disponible pour un outil lié à la gestion des déchets.
+      lien: "#"
+      actif: false
+
+    - nom: Outil environnemental
+      description: Emplacement disponible pour un outil environnemental.
+      lien: "#"
+      actif: false

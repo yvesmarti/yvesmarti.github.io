@@ -1,0 +1,129 @@
+---
+layout: default
+---
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-name">Yves Marti</h1>
+        <p class="hero-intro">
+            Des données aux décisions : je transforme les chiffres en cartes et indicateurs utiles.
+        </p>
+    </div>
+    <span class="scroll-indicator">Défiler</span>
+</section>
+
+<!-- Introduction narrative -->
+<div class="narrative">
+    <p class="lead">
+        J'ai accompagné pendant près de 10 ans les collectivités normandes dans un défi quotidien : comprendre et optimiser la gestion de leurs déchets.
+    </p>
+    <p>
+        Mon terrain, c'est la <span class="highlight">Normandie</span>. Cinq départements, plus de trois millions d'habitants, des dizaines de collectivités avec chacune ses spécificités. Mon rôle ? Transformer des montagnes de données en cartes lisibles et en indicateurs qui éclairent les décisions.
+    </p>
+    <p class="aside">
+        Un camion de collecte qui passe, c'est un point sur une carte. Mille camions sur un an, c'est une histoire à raconter — celle d'un territoire qui fonctionne.
+    </p>
+</div>
+
+<!-- Parcours -->
+<section class="section-warm" id="parcours">
+    <div class="narrative">
+        <h2 class="section-title">Expériences professionnelles</h2>
+        
+        <div class="timeline">
+            {% for exp in site.data.experiences %}
+            <div class="timeline-item">
+                <div class="timeline-date">{{ exp.periode }}</div>
+                <div class="timeline-title">{{ exp.poste }}</div>
+                <div class="timeline-company">{{ exp.organisation }}</div>
+                <div class="timeline-description">{{ exp.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2 class="section-title" style="margin-top: 4rem;">Formation</h2>
+        
+        <div class="timeline">
+            {% for formation in site.data.formations %}
+            <div class="timeline-item">
+                <div class="timeline-date">{{ formation.periode }}</div>
+                <div class="timeline-title">{{ formation.diplome }}</div>
+                <div class="timeline-company">{{ formation.etablissement }}</div>
+                <div class="timeline-description">{{ formation.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Ce que je fais -->
+<section class="section-dark">
+    <div class="narrative">
+        <p class="lead">
+            Concrètement, je fais parler les données territoriales.
+        </p>
+        
+        <div class="skills-inline">
+            {% for competence in site.data.competences %}
+            <span class="skill-tag">{{ competence }}</span>
+            {% endfor %}
+        </div>
+
+        <p>
+            J'analyse les flux de déchets, je modélise les zones de collecte, je crée des outils qui permettent aux élus et techniciens de prendre des décisions éclairées. De la tarification incitative à l'optimisation des tournées, chaque projet est une nouvelle carte à dessiner.
+        </p>
+
+        <div class="stats-row">
+            {% for stat in site.data.stats %}
+            <div class="stat-inline">
+                <span class="number">{{ stat.nombre }}</span>
+                <span class="label">{{ stat.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="quote-block">
+            Une bonne carte ne montre pas tout, elle montre ce qui compte.
+        </div>
+    </div>
+</section>
+
+<!-- Outils -->
+<section id="outils">
+    <div class="narrative">
+        <p class="lead">
+            Au fil des projets, j'ai développé mes propres outils.
+        </p>
+        <p>
+            Des applications web pour répondre à des besoins récurrents : calculer des isochrones, géocoder des adresses, extraire des données OpenStreetMap. Rien de spectaculaire, juste des outils qui font gagner du temps.
+        </p>
+
+        <div class="tools-teaser">
+            <h3>Applications géomatiques</h3>
+            <p>Isochrones, géocodage, extraction OSM, visualisation de photos géolocalisées — des outils simples pour des tâches courantes.</p>
+            <a href="{{ '/outils' | relative_url }}" class="tools-link">
+                Voir les outils
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Contact -->
+<section class="contact-section" id="contact">
+    <p class="lead" style="font-family: var(--font-display); font-size: 2rem;">
+        Envie d'échanger ?
+    </p>
+    <p>
+        Projets territoriaux, questions SIG, gestion des déchets — je suis toujours curieux de découvrir de nouveaux défis.
+    </p>
+    <a href="https://www.linkedin.com/in/{{ site.linkedin }}/" class="contact-link" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+        Me contacter sur LinkedIn
+    </a>
+</section>
