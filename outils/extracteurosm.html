@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracteur de POI OpenStreetMap</title>
+    
+    <!-- Leaflet CSS pour la carte -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Draw CSS pour dessiner sur la carte -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        /* ==========================================
+           STYLES GÉNÉRAUX
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        /* ==========================================
+           LAYOUT PRINCIPAL (panneau + carte)
+           ========================================== */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Panneau latéral gauche */
+        .sidebar {
+            width: 350px;
+            background-color: #2c3e50;
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        /* Zone de la carte */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==========================================
+           EN-TÊTE DU PANNEAU
+           ========================================== */
+        .header {
+            background-color: #34495e;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+
+        /* ==========================================
+           SECTIONS DU PANNEAU
+           ========================================== */
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #3498db;
+        }
+
+        /* ==========================================
+           INSTRUCTIONS & AIDE
+           ========================================== */
+        .instructions {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        /* ==========================================
+           BOUTONS DE CONTRÔLE
+           ========================================== */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #229954;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #c0392b;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background-color: #e67e22;
+        }
+
+        /* ==========================================
+           CATÉGORIES DE POI
+           ========================================== */
+        .category {
+            margin-bottom: 15px;
+            background-color: #34495e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            padding: 12px 15px;
+            background-color: #2c3e50;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.3s;
+        }
+
+        .category-header:hover {
+            background-color: #34495e;
+        }
+
+        .category-header.active {
+            background-color: #3498db;
+        }
+
+        .category-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .category-toggle {
+            transition: transform 0.3s;
+        }
+
+        .category-toggle.open {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 15px;
+        }
+
+        .category-content.open {
+            max-height: 500px;
+            padding: 15px;
+        }
+
+        /* Cases à cocher pour les POI */
+        .poi-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .poi-item:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .poi-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .poi-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        /* Bouton tout sélectionner/désélectionner dans une catégorie */
+        .select-all {
+            padding: 5px 10px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .select-all:hover {
+            background-color: #2980b9;
+        }
+
+        /* ==========================================
+           STATISTIQUES & RÉSULTATS
+           ========================================== */
+        .stats {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* ==========================================
+           MESSAGES & NOTIFICATIONS
+           ========================================== */
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message-info {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .message-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .message-error {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .message-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        /* ==========================================
+           LOADER (animation de chargement)
+           ========================================== */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ==========================================
+           SCROLLBAR PERSONNALISÉE
+           ========================================== */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #2c3e50;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #2980b9;
+        }
+
+        /* ==========================================
+           LÉGENDE DE LA CARTE
+           ========================================== */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 12px;
+            max-width: 200px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* ==========================================
+           RESPONSIVE (tablette)
+           ========================================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            
+            .container {
+                flex-direction: column;
+            }
+
+            .map-container {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ==========================================
+             PANNEAU LATÉRAL GAUCHE
+             ========================================== -->
+        <div class="sidebar">
+            <!-- En-tête -->
+            <div class="header">
+                <h1><i class="fas fa-map-marked-alt"></i> Extracteur POI OSM</h1>
+                <p>Extraire des points d'intérêt d'OpenStreetMap</p>
+            </div>
+
+            <!-- SECTION : Instructions -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> Comment utiliser l'outil
+                </div>
+                <div class="instructions">
+                    <strong>Étapes :</strong>
+                    <ul>
+                        <li>Dessinez une zone sur la carte (polygone ou rectangle)</li>
+                        <li>Sélectionnez les types de POI souhaités</li>
+                        <li>Cliquez sur "Extraire les POI"</li>
+                        <li>Téléchargez le fichier GeoJSON pour QGIS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SECTION : Contrôles de dessin -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-draw-polygon"></i> Étape 1 : Définir la zone
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="drawPolygonBtn">
+                        <i class="fas fa-draw-polygon"></i> Dessiner un polygone
+                    </button>
+                    <button class="btn btn-primary" id="drawRectangleBtn">
+                        <i class="far fa-square"></i> Dessiner un rectangle
+                    </button>
+                    <button class="btn btn-danger" id="clearDrawingBtn" disabled>
+                        <i class="fas fa-trash"></i> Effacer la zone
+                    </button>
+                </div>
+                <div id="zoneMessage" class="message"></div>
+            </div>
+
+            <!-- SECTION : Sélection des POI -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-list-check"></i> Étape 2 : Choisir les POI
+                </div>
+                
+                <!-- Les catégories seront générées dynamiquement par JavaScript -->
+                <div id="categoriesContainer"></div>
+            </div>
+
+            <!-- SECTION : Extraction -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-download"></i> Étape 3 : Extraire
+                </div>
+                <div class="controls">
+                    <button class="btn btn-success" id="extractBtn" disabled>
+                        <i class="fas fa-play"></i> Extraire les POI
+                    </button>
+                    <button class="btn btn-warning" id="exportBtn" disabled>
+                        <i class="fas fa-file-download"></i> Télécharger GeoJSON
+                    </button>
+                </div>
+                
+                <!-- Loader pendant l'extraction -->
+                <div id="loader" class="loader">
+                    <div class="spinner"></div>
+                    <p>Extraction en cours...</p>
+                </div>
+                
+                <!-- Messages de résultat -->
+                <div id="resultMessage" class="message"></div>
+                
+                <!-- Statistiques -->
+                <div id="statsContainer" class="stats" style="display: none;">
+                    <div class="section-title">
+                        <i class="fas fa-chart-bar"></i> Résultats
+                    </div>
+                    <div id="statsContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             CARTE INTERACTIVE
+             ========================================== -->
+        <div class="map-container">
+            <!-- Indicateur de chargement (disparaît quand la carte est prête) -->
+            <div id="loading-indicator" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 2000; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <div style="border: 4px solid rgba(52, 152, 219, 0.3); border-radius: 50%; border-top: 4px solid #3498db; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+                <p style="color: #2c3e50; font-weight: bold;">Chargement de la carte...</p>
+                <p style="color: #7f8c8d; font-size: 12px;">Vérifiez votre connexion si cela prend trop de temps</p>
+            </div>
+            
+            <div id="map"></div>
+            
+            <!-- Légende (sera remplie dynamiquement) -->
+            <div class="legend" id="legend" style="display: none;">
+                <div class="legend-title">POI affichés</div>
+                <div id="legendContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         BIBLIOTHÈQUES JAVASCRIPT
+         ========================================== -->
+    
+    <!-- Leaflet.js pour la carte -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw pour dessiner sur la carte -->
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    
+    <!-- FileSaver.js pour télécharger les fichiers -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- ==========================================
+         CODE JAVASCRIPT PRINCIPAL
+         ========================================== -->
+    <script>
+        /* ==========================================
+           CONFIGURATION DES CATÉGORIES DE POI
+           
+           Explication : Ce grand objet contient toutes les catégories de POI
+           que l'utilisateur pourra sélectionner. Chaque catégorie a :
+           - name : le nom affiché
+           - icon : l'icône Font Awesome
+           - color : la couleur des marqueurs sur la carte
+           - types : la liste des types de POI avec leur requête Overpass
+           
+           Tu peux facilement ajouter/modifier/supprimer des catégories ici !
+           ========================================== */
+        const POI_CATEGORIES = {
+            administratif: {
+                name: 'Administratif',
+                icon: 'fa-landmark',
+                color: '#9b59b6',
+                types: [
+                    { name: 'Mairie', query: 'amenity=townhall' },
+                    { name: 'Poste', query: 'amenity=post_office' },
+                    { name: 'Bibliothèque', query: 'amenity=library' },
+                    { name: 'Commissariat', query: 'amenity=police' },
+                    { name: 'Caserne de pompiers', query: 'amenity=fire_station' },
+                    { name: 'Bureau d\'information', query: 'office=government' }
+                ]
+            },
+            commerces: {
+                name: 'Commerces',
+                icon: 'fa-shopping-cart',
+                color: '#e67e22',
+                types: [
+                    { name: 'Supermarché', query: 'shop=supermarket' },
+                    { name: 'Boulangerie', query: 'shop=bakery' },
+                    { name: 'Boucherie', query: 'shop=butcher' },
+                    { name: 'Pharmacie', query: 'amenity=pharmacy' },
+                    { name: 'Magasin de vêtements', query: 'shop=clothes' },
+                    { name: 'Magasin de chaussures', query: 'shop=shoes' },
+                    { name: 'Librairie', query: 'shop=books' },
+                    { name: 'Fleuriste', query: 'shop=florist' },
+                    { name: 'Magasin de bricolage', query: 'shop=doityourself' },
+                    { name: 'Épicerie', query: 'shop=convenience' }
+                ]
+            },
+            restauration: {
+                name: 'Restauration',
+                icon: 'fa-utensils',
+                color: '#e74c3c',
+                types: [
+                    { name: 'Restaurant', query: 'amenity=restaurant' },
+                    { name: 'Bar', query: 'amenity=bar' },
+                    { name: 'Café', query: 'amenity=cafe' },
+                    { name: 'Fast-food', query: 'amenity=fast_food' },
+                    { name: 'Pub', query: 'amenity=pub' },
+                    { name: 'Brasserie', query: 'amenity=biergarten' }
+                ]
+            },
+            tourisme: {
+                name: 'Tourisme',
+                icon: 'fa-camera',
+                color: '#3498db',
+                types: [
+                    { name: 'Hôtel', query: 'tourism=hotel' },
+                    { name: 'Musée', query: 'tourism=museum' },
+                    { name: 'Monument', query: 'historic=monument' },
+                    { name: 'Site touristique', query: 'tourism=attraction' },
+                    { name: 'Point de vue', query: 'tourism=viewpoint' },
+                    { name: 'Office de tourisme', query: 'tourism=information' },
+                    { name: 'Château', query: 'historic=castle' },
+                    { name: 'Camping', query: 'tourism=camp_site' }
+                ]
+            },
+            sante: {
+                name: 'Santé',
+                icon: 'fa-hospital',
+                color: '#c0392b',
+                types: [
+                    { name: 'Hôpital', query: 'amenity=hospital' },
+                    { name: 'Clinique', query: 'amenity=clinic' },
+                    { name: 'Médecin', query: 'amenity=doctors' },
+                    { name: 'Dentiste', query: 'amenity=dentist' },
+                    { name: 'Pharmacie', query: 'amenity=pharmacy' },
+                    { name: 'Vétérinaire', query: 'amenity=veterinary' }
+                ]
+            },
+            education: {
+                name: 'Éducation',
+                icon: 'fa-graduation-cap',
+                color: '#16a085',
+                types: [
+                    { name: 'École maternelle', query: 'amenity=kindergarten' },
+                    { name: 'École primaire', query: 'amenity=school' },
+                    { name: 'Collège', query: 'amenity=school' },
+                    { name: 'Lycée', query: 'amenity=school' },
+                    { name: 'Université', query: 'amenity=university' },
+                    { name: 'Centre de formation', query: 'amenity=college' }
+                ]
+            },
+            transport: {
+                name: 'Transport',
+                icon: 'fa-bus',
+                color: '#2980b9',
+                types: [
+                    { name: 'Arrêt de bus', query: 'highway=bus_stop' },
+                    { name: 'Gare', query: 'railway=station' },
+                    { name: 'Station de métro', query: 'railway=subway_entrance' },
+                    { name: 'Arrêt de tram', query: 'railway=tram_stop' },
+                    { name: 'Parking', query: 'amenity=parking' },
+                    { name: 'Station-service', query: 'amenity=fuel' },
+                    { name: 'Taxi', query: 'amenity=taxi' }
+                ]
+            },
+            environnement: {
+                name: 'Environnement',
+                icon: 'fa-recycle',
+                color: '#27ae60',
+                types: [
+                    { name: 'Point d\'apport volontaire', query: 'amenity=recycling' },
+                    { name: 'Déchetterie', query: 'amenity=waste_disposal' },
+                    { name: 'Borne de recyclage verre', query: 'recycling:glass=yes' },
+                    { name: 'Borne de recyclage papier', query: 'recycling:paper=yes' },
+                    { name: 'Composteur collectif', query: 'amenity=waste_basket|recycling:organic=yes' }
+                ]
+            },
+            loisirs: {
+                name: 'Loisirs',
+                icon: 'fa-futbol',
+                color: '#f39c12',
+                types: [
+                    { name: 'Stade', query: 'leisure=stadium' },
+                    { name: 'Piscine', query: 'leisure=swimming_pool' },
+                    { name: 'Cinéma', query: 'amenity=cinema' },
+                    { name: 'Théâtre', query: 'amenity=theatre' },
+                    { name: 'Parc', query: 'leisure=park' },
+                    { name: 'Terrain de sport', query: 'leisure=pitch' },
+                    { name: 'Salle de sport', query: 'leisure=fitness_centre' },
+                    { name: 'Aire de jeux', query: 'leisure=playground' }
+                ]
+            }
+        };
+
+        /* ==========================================
+           VARIABLES GLOBALES
+           
+           Ces variables stockent l'état de l'application :
+           - map : l'objet carte Leaflet
+           - drawnItems : les formes dessinées sur la carte
+           - currentZone : la zone actuellement dessinée
+           - extractedData : les POI extraits
+           - markersLayer : la couche contenant les marqueurs POI
+           ========================================== */
+        let map;
+        let drawnItems;
+        let currentZone = null;
+        let extractedData = null;
+        let markersLayer;
+
+        /* ==========================================
+           INITIALISATION DE LA CARTE
+           
+           Explication : On crée la carte Leaflet centrée sur la Normandie
+           et on ajoute le fond de carte OpenStreetMap
+           ========================================== */
+        function initMap() {
+            // Masquer l'indicateur de chargement
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            
+            // Création de la carte centrée sur la Normandie (latitude 49.0, longitude 0.2)
+            map = L.map('map').setView([49.0, 0.2], 8);
+
+            // Ajout du fond de carte OpenStreetMap (gratuit)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Création d'une couche pour les formes dessinées
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            // Création d'une couche pour les marqueurs POI
+            markersLayer = L.layerGroup().addTo(map);
+
+            // Configuration des outils de dessin
+            const drawControl = new L.Control.Draw({
+                draw: {
+                    polygon: false,  // On active via les boutons, pas via le contrôle
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                    marker: false,
+                    polyline: false
+                },
+                edit: {
+                    featureGroup: drawnItems,
+                    remove: false
+                }
+            });
+            map.addControl(drawControl);
+
+            // Écouteur d'événement : quand une forme est créée
+            map.on('draw:created', function(e) {
+                // Effacer l'ancienne zone si elle existe
+                drawnItems.clearLayers();
+                
+                // Ajouter la nouvelle zone
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                currentZone = layer;
+
+                // Activer les boutons
+                document.getElementById('clearDrawingBtn').disabled = false;
+                document.getElementById('extractBtn').disabled = false;
+
+                // Message de confirmation
+                showMessage('zoneMessage', 'Zone définie avec succès !', 'success');
+            });
+        }
+
+        /* ==========================================
+           GÉNÉRATION DE L'INTERFACE DES CATÉGORIES
+           
+           Explication : Cette fonction crée dynamiquement tous les
+           éléments HTML pour afficher les catégories et leurs POI
+           ========================================== */
+        function generateCategoriesUI() {
+            const container = document.getElementById('categoriesContainer');
+            
+            // Pour chaque catégorie dans notre configuration
+            Object.keys(POI_CATEGORIES).forEach(categoryKey => {
+                const category = POI_CATEGORIES[categoryKey];
+                
+                // Créer le bloc de catégorie
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                // En-tête de la catégorie (cliquable pour ouvrir/fermer)
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <div class="category-name">
+                        <i class="fas ${category.icon}"></i>
+                        <span>${category.name}</span>
+                    </div>
+                    <i class="fas fa-chevron-down category-toggle"></i>
+                `;
+                
+                // Contenu de la catégorie (liste des POI)
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content';
+                
+                // Bouton "Tout sélectionner" dans cette catégorie
+                const selectAllBtn = document.createElement('button');
+                selectAllBtn.className = 'select-all';
+                selectAllBtn.textContent = 'Tout sélectionner';
+                selectAllBtn.onclick = function() {
+                    toggleCategorySelection(categoryKey);
+                };
+                categoryContent.appendChild(selectAllBtn);
+                
+                // Pour chaque type de POI dans la catégorie
+                category.types.forEach((type, index) => {
+                    const poiItem = document.createElement('div');
+                    poiItem.className = 'poi-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `poi_${categoryKey}_${index}`;
+                    checkbox.dataset.category = categoryKey;
+                    checkbox.dataset.query = type.query;
+                    checkbox.dataset.name = type.name;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.textContent = type.name;
+                    
+                    poiItem.appendChild(checkbox);
+                    poiItem.appendChild(label);
+                    categoryContent.appendChild(poiItem);
+                });
+                
+                // Événement pour ouvrir/fermer la catégorie
+                categoryHeader.onclick = function() {
+                    categoryHeader.classList.toggle('active');
+                    categoryContent.classList.toggle('open');
+                    categoryHeader.querySelector('.category-toggle').classList.toggle('open');
+                };
+                
+                categoryDiv.appendChild(categoryHeader);
+                categoryDiv.appendChild(categoryContent);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        /* ==========================================
+           TOUT SÉLECTIONNER / DÉSÉLECTIONNER
+           
+           Explication : Cette fonction coche ou décoche toutes les
+           cases d'une catégorie en un seul clic
+           ========================================== */
+        function toggleCategorySelection(categoryKey) {
+            // Trouver toutes les checkbox de cette catégorie
+            const checkboxes = document.querySelectorAll(`input[data-category="${categoryKey}"]`);
+            
+            // Vérifier si toutes sont déjà cochées
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            // Si toutes cochées, on décoche tout. Sinon, on coche tout
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+        }
+
+        /* ==========================================
+           ACTIVATION DU DESSIN DE POLYGONE
+           ========================================== */
+        function startDrawingPolygon() {
+            new L.Draw.Polygon(map, {
+                shapeOptions: {
+                    color: '#3498db',
+                    fillColor: '#3498db',
+                    fillOpacity: 0.2
+                }
+            }).enable();
+            
+            showMessage('zoneMessage', 'Cliquez sur la carte pour dessiner un polygone. Double-cliquez pour terminer.', 'info');
+        }
+
+        /* ==========================================
+           ACTIVATION DU DESSIN DE RECTANGLE
+           ========================================== */
+        function startDrawingRectangle() {
+            new L.Draw.Rectangle(map, {
+                shapeOptions: {
+                    color: '#3498db',
+                    fillColor: '#3498db',
+                    fillOpacity: 0.2
+                }
+            }).enable();
+            
+            showMessage('zoneMessage', 'Cliquez et glissez pour dessiner un rectangle.', 'info');
+        }
+
+        /* ==========================================
+           EFFACER LA ZONE DESSINÉE
+           ========================================== */
+        function clearDrawing() {
+            drawnItems.clearLayers();
+            currentZone = null;
+            document.getElementById('clearDrawingBtn').disabled = true;
+            document.getElementById('extractBtn').disabled = true;
+            showMessage('zoneMessage', 'Zone effacée.', 'info');
+        }
+
+        /* ==========================================
+           EXTRACTION DES POI DEPUIS OVERPASS API
+           
+           Explication : C'est le cœur de l'outil !
+           Cette fonction :
+           1. Récupère la zone dessinée
+           2. Récupère les POI sélectionnés
+           3. Construit une requête Overpass
+           4. Envoie la requête à l'API
+           5. Affiche les résultats sur la carte
+           ========================================== */
+        async function extractPOI() {
+            // Vérifier qu'une zone est dessinée
+            if (!currentZone) {
+                showMessage('resultMessage', 'Veuillez d\'abord dessiner une zone sur la carte.', 'error');
+                return;
+            }
+
+            // Récupérer les POI sélectionnés
+            const selectedPOI = getSelectedPOI();
+            if (selectedPOI.length === 0) {
+                showMessage('resultMessage', 'Veuillez sélectionner au moins un type de POI.', 'error');
+                return;
+            }
+
+            // Afficher le loader
+            document.getElementById('loader').classList.add('show');
+            document.getElementById('extractBtn').disabled = true;
+            showMessage('resultMessage', '');
+
+            try {
+                // Construire la requête Overpass
+                const query = buildOverpassQuery(currentZone, selectedPOI);
+                
+                // Envoyer la requête à l'API Overpass
+                const response = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    body: query
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la requête Overpass');
+                }
+
+                const data = await response.json();
+                
+                // Convertir les données en GeoJSON
+                extractedData = convertToGeoJSON(data, selectedPOI);
+                
+                // Afficher les POI sur la carte
+                displayPOIOnMap(extractedData);
+                
+                // Afficher les statistiques
+                displayStats(extractedData);
+                
+                // Activer le bouton d'export
+                document.getElementById('exportBtn').disabled = false;
+                
+                // Message de succès
+                const poiCount = extractedData.features.length;
+                if (poiCount === 0) {
+                    showMessage('resultMessage', 'Aucun POI trouvé dans cette zone avec les critères sélectionnés.', 'warning');
+                } else if (poiCount >= 1000) {
+                    showMessage('resultMessage', `Limite atteinte : 1000 POI extraits. Il peut y en avoir plus dans la zone.`, 'warning');
+                } else {
+                    showMessage('resultMessage', `${poiCount} POI extraits avec succès !`, 'success');
+                }
+
+            } catch (error) {
+                showMessage('resultMessage', `Erreur : ${error.message}. Réessayez ou réduisez la zone.`, 'error');
+                console.error(error);
+            } finally {
+                // Masquer le loader
+                document.getElementById('loader').classList.remove('show');
+                document.getElementById('extractBtn').disabled = false;
+            }
+        }
+
+        /* ==========================================
+           RÉCUPÉRER LES POI SÉLECTIONNÉS
+           
+           Explication : On parcourt toutes les cases cochées
+           et on récupère leurs informations
+           ========================================== */
+        function getSelectedPOI() {
+            const selected = [];
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            
+            checkboxes.forEach(cb => {
+                selected.push({
+                    category: cb.dataset.category,
+                    query: cb.dataset.query,
+                    name: cb.dataset.name
+                });
+            });
+            
+            return selected;
+        }
+
+        /* ==========================================
+           CONSTRUIRE LA REQUÊTE OVERPASS
+           
+           Explication : Overpass Query Language (QL) est le langage
+           pour interroger OpenStreetMap. On construit une requête
+           qui demande tous les POI sélectionnés dans la zone dessinée.
+           ========================================== */
+        function buildOverpassQuery(zone, selectedPOI) {
+            // Récupérer les coordonnées de la zone
+            const bounds = zone.getBounds();
+            const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
+            
+            // Début de la requête
+            let query = '[out:json][timeout:25];(\n';
+            
+            // Pour chaque POI sélectionné, ajouter une ligne de requête
+            selectedPOI.forEach(poi => {
+                // Séparer la requête si elle contient plusieurs tags (séparés par |)
+                const queries = poi.query.split('|');
+                queries.forEach(q => {
+                    const [key, value] = q.split('=');
+                    query += `  node["${key}"="${value}"](${bbox});\n`;
+                    query += `  way["${key}"="${value}"](${bbox});\n`;
+                });
+            });
+            
+            // Fin de la requête
+            query += ');\nout center 1000;';  // Limite à 1000 résultats
+            
+            return query;
+        }
+
+        /* ==========================================
+           CONVERTIR LES DONNÉES EN GEOJSON
+           
+           Explication : L'API Overpass renvoie un format JSON spécifique.
+           On le transforme en GeoJSON, le format standard pour les SIG.
+           GeoJSON c'est comme un "langage commun" que QGIS comprend.
+           ========================================== */
+        function convertToGeoJSON(data, selectedPOI) {
+            const features = [];
+            
+            // Pour chaque élément renvoyé par Overpass
+            data.elements.forEach(element => {
+                // Déterminer les coordonnées
+                let coordinates;
+                if (element.type === 'node') {
+                    coordinates = [element.lon, element.lat];
+                } else if (element.center) {
+                    coordinates = [element.center.lon, element.center.lat];
+                } else {
+                    return; // Ignorer si pas de coordonnées
+                }
+                
+                // Déterminer la catégorie et la couleur du POI
+                const poiInfo = identifyPOIType(element.tags, selectedPOI);
+                
+                // Créer une feature GeoJSON
+                const feature = {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: coordinates
+                    },
+                    properties: {
+                        name: element.tags.name || 'Sans nom',
+                        type: poiInfo.name,
+                        category: poiInfo.category,
+                        color: poiInfo.color,
+                        ...element.tags  // Tous les autres attributs OSM
+                    }
+                };
+                
+                features.push(feature);
+            });
+            
+            return {
+                type: 'FeatureCollection',
+                features: features
+            };
+        }
+
+        /* ==========================================
+           IDENTIFIER LE TYPE DE POI
+           
+           Explication : On regarde les tags OSM de chaque POI
+           et on détermine à quelle catégorie il appartient
+           ========================================== */
+        function identifyPOIType(tags, selectedPOI) {
+            for (const poi of selectedPOI) {
+                const queries = poi.query.split('|');
+                for (const q of queries) {
+                    const [key, value] = q.split('=');
+                    if (tags[key] === value) {
+                        const category = POI_CATEGORIES[poi.category];
+                        return {
+                            name: poi.name,
+                            category: category.name,
+                            color: category.color
+                        };
+                    }
+                }
+            }
+            return {
+                name: 'Autre',
+                category: 'Autre',
+                color: '#95a5a6'
+            };
+        }
+
+        /* ==========================================
+           AFFICHER LES POI SUR LA CARTE
+           
+           Explication : On crée un marqueur pour chaque POI
+           avec une couleur selon sa catégorie, et une popup
+           avec ses informations
+           ========================================== */
+        function displayPOIOnMap(geojson) {
+            // Effacer les anciens marqueurs
+            markersLayer.clearLayers();
+            
+            // Compter les POI par catégorie pour la légende
+            const categoryCounts = {};
+            
+            // Pour chaque POI
+            geojson.features.forEach(feature => {
+                const coords = feature.geometry.coordinates;
+                const props = feature.properties;
+                
+                // Créer un marqueur coloré
+                const marker = L.circleMarker([coords[1], coords[0]], {
+                    radius: 8,
+                    fillColor: props.color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                // Créer une popup avec les infos
+                const popupContent = `
+                    <strong>${props.name}</strong><br>
+                    <em>${props.type}</em><br>
+                    <small>Catégorie: ${props.category}</small>
+                `;
+                marker.bindPopup(popupContent);
+                
+                // Ajouter le marqueur à la couche
+                marker.addTo(markersLayer);
+                
+                // Compter pour la légende
+                if (!categoryCounts[props.category]) {
+                    categoryCounts[props.category] = {
+                        count: 0,
+                        color: props.color
+                    };
+                }
+                categoryCounts[props.category].count++;
+            });
+            
+            // Afficher la légende
+            displayLegend(categoryCounts);
+            
+            // Centrer la carte sur les POI
+            if (geojson.features.length > 0) {
+                const group = L.featureGroup(markersLayer.getLayers());
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        /* ==========================================
+           AFFICHER LA LÉGENDE
+           
+           Explication : La légende montre quelles couleurs
+           correspondent à quelles catégories de POI
+           ========================================== */
+        function displayLegend(categoryCounts) {
+            const legendContent = document.getElementById('legendContent');
+            legendContent.innerHTML = '';
+            
+            Object.keys(categoryCounts).forEach(category => {
+                const item = categoryCounts[category];
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background-color: ${item.color}"></div>
+                    <span>${category} (${item.count})</span>
+                `;
+                legendContent.appendChild(legendItem);
+            });
+            
+            document.getElementById('legend').style.display = 'block';
+        }
+
+        /* ==========================================
+           AFFICHER LES STATISTIQUES
+           
+           Explication : Un petit récapitulatif du nombre de POI
+           extraits par catégorie
+           ========================================== */
+        function displayStats(geojson) {
+            const statsContent = document.getElementById('statsContent');
+            statsContent.innerHTML = '';
+            
+            // Compter par catégorie
+            const stats = {};
+            geojson.features.forEach(feature => {
+                const category = feature.properties.category;
+                stats[category] = (stats[category] || 0) + 1;
+            });
+            
+            // Total
+            const total = geojson.features.length;
+            const totalItem = document.createElement('div');
+            totalItem.className = 'stat-item';
+            totalItem.innerHTML = `
+                <span class="stat-label">Total POI :</span>
+                <span class="stat-value">${total}</span>
+            `;
+            statsContent.appendChild(totalItem);
+            
+            // Par catégorie
+            Object.keys(stats).sort().forEach(category => {
+                const item = document.createElement('div');
+                item.className = 'stat-item';
+                item.innerHTML = `
+                    <span class="stat-label">${category} :</span>
+                    <span class="stat-value">${stats[category]}</span>
+                `;
+                statsContent.appendChild(item);
+            });
+            
+            document.getElementById('statsContainer').style.display = 'block';
+        }
+
+        /* ==========================================
+           EXPORTER EN GEOJSON
+           
+           Explication : On prend les données extraites et on les
+           transforme en fichier .geojson que l'utilisateur peut
+           télécharger et ouvrir directement dans QGIS
+           ========================================== */
+        function exportGeoJSON() {
+            if (!extractedData) {
+                showMessage('resultMessage', 'Aucune donnée à exporter. Extrayez d\'abord des POI.', 'error');
+                return;
+            }
+            
+            // Convertir en JSON formaté (plus lisible)
+            const jsonString = JSON.stringify(extractedData, null, 2);
+            
+            // Créer un blob (un fichier en mémoire)
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            // Générer un nom de fichier avec la date
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `poi_osm_${date}.geojson`;
+            
+            // Télécharger le fichier
+            saveAs(blob, filename);
+            
+            showMessage('resultMessage', `Fichier ${filename} téléchargé !`, 'success');
+        }
+
+        /* ==========================================
+           AFFICHER UN MESSAGE
+           
+           Explication : Fonction utilitaire pour afficher des messages
+           de succès, d'erreur, d'info, etc.
+           ========================================== */
+        function showMessage(elementId, message, type) {
+            const messageElement = document.getElementById(elementId);
+            messageElement.textContent = message;
+            messageElement.className = `message message-${type}`;
+            messageElement.classList.add('show');
+            
+            // Masquer automatiquement après 5 secondes sauf pour les erreurs
+            if (type !== 'error' && message) {
+                setTimeout(() => {
+                    messageElement.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        /* ==========================================
+           INITIALISATION AU CHARGEMENT DE LA PAGE
+           
+           IMPORTANT : On attend que TOUTES les bibliothèques soient chargées
+           avant d'initialiser la carte. C'est pour ça qu'on utilise
+           window.addEventListener('load') au lieu de document.ready
+           ========================================== */
+        window.addEventListener('load', function() {
+            // Vérifier que Leaflet est bien chargé
+            if (typeof L === 'undefined') {
+                alert('Erreur : Leaflet n\'a pas pu être chargé. Vérifiez votre connexion internet.');
+                return;
+            }
+            
+            // Initialiser la carte et l'interface
+            initMap();
+            generateCategoriesUI();
+            
+            // Attacher les événements aux boutons (APRÈS que tout soit chargé)
+            document.getElementById('drawPolygonBtn').addEventListener('click', startDrawingPolygon);
+            document.getElementById('drawRectangleBtn').addEventListener('click', startDrawingRectangle);
+            document.getElementById('clearDrawingBtn').addEventListener('click', clearDrawing);
+            document.getElementById('extractBtn').addEventListener('click', extractPOI);
+            document.getElementById('exportBtn').addEventListener('click', exportGeoJSON);
+        });
+    </script>
+</body>
+</html>

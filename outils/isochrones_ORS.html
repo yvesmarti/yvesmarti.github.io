@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Isochrones - ORS & HereMaps</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #sidebar {
+            width: 400px;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        #map {
+            flex: 1;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        #map.disabled-click {
+            cursor: default;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #FF8C00;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2::before {
+            content: "▸";
+            margin-right: 8px;
+            color: #FF8C00;
+        }
+        
+        /* Styles pour les onglets de mode */
+        .mode-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .mode-tab {
+            flex: 1;
+            padding: 10px;
+            background: #ddd;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .mode-tab:hover {
+            background: #ccc;
+        }
+        
+        .mode-tab.active {
+            background: #FF8C00;
+            color: white;
+        }
+        
+        /* Sélecteur de service API */
+        .service-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .service-option {
+            padding: 10px;
+            background: #e0e0e0;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .service-option:hover {
+            background: #d0d0d0;
+        }
+        
+        .service-option.active {
+            background: #2196F3;
+            color: white;
+            border-color: #0b7dda;
+        }
+        
+        .service-option .service-name {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .service-option .service-desc {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        /* Cacher les sections selon le mode */
+        .mode-content {
+            display: none;
+        }
+        
+        .mode-content.active {
+            display: block;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        input[type="file"] {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        textarea {
+            min-height: 80px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #E67E00;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #2196F3;
+            margin-top: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #0b7dda;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            margin-top: 8px;
+        }
+        
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            margin-top: 8px;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .btn-debug {
+            background: #6c757d;
+            margin-top: 8px;
+            font-size: 12px;
+            padding: 8px;
+        }
+        
+        .btn-debug:hover {
+            background: #5a6268;
+        }
+        
+        #status {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        #status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        #status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        #status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        #status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+        
+        .intervals-container {
+            margin-top: 10px;
+        }
+        
+        .interval-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        
+        .interval-item input {
+            margin-bottom: 0;
+            flex: 1;
+        }
+        
+        .interval-item input[type="color"] {
+            width: 50px;
+            height: 35px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .interval-item button {
+            width: 35px;
+            padding: 8px;
+            background: #f44336;
+            font-size: 12px;
+        }
+        
+        .btn-add {
+            background: #2196F3;
+            margin-top: 8px;
+            font-size: 13px;
+            padding: 8px;
+        }
+        
+        #progressBar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        #progressBar div {
+            height: 100%;
+            background: linear-gradient(90deg, #FF8C00, #FFB347);
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: width 0.3s;
+        }
+        
+        .debug-section {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .debug-line {
+            margin: 2px 0;
+            padding: 2px 4px;
+            border-left: 3px solid transparent;
+        }
+        
+        .debug-line.info {
+            border-left-color: #3498db;
+        }
+        
+        .debug-line.success {
+            border-left-color: #2ecc71;
+        }
+        
+        .debug-line.error {
+            border-left-color: #e74c3c;
+        }
+        
+        .debug-line.warning {
+            border-left-color: #f39c12;
+        }
+        
+        /* Style pour l'aide visuelle en mode clic */
+        .click-help {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .click-help strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* Style pour la liste des points cliqués */
+        .points-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .point-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+        
+        .point-item:last-child {
+            border-bottom: none;
+        }
+        
+        .point-item button {
+            width: auto;
+            padding: 4px 8px;
+            background: #f44336;
+            font-size: 11px;
+            margin: 0;
+        }
+        
+        small {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .service-info {
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #1565c0;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>🗺️ Générateur d'Isochrones</h1>
+        
+        <!-- SÉLECTEUR DE SERVICE API -->
+        <div class="section">
+            <h2>Service de calcul</h2>
+            <div class="service-selector">
+                <div class="service-option active" onclick="selectService('ors')">
+                    <div class="service-name">OpenRouteService</div>
+                    <div class="service-desc">Gratuit • Fiable</div>
+                </div>
+                <div class="service-option" onclick="selectService('heremaps')">
+                    <div class="service-name">HereMaps</div>
+                    <div class="service-desc">Avancé • Précis</div>
+                </div>
+            </div>
+            
+            <div class="service-info" id="serviceInfo">
+                OpenRouteService sélectionné - 40 req/min gratuit
+            </div>
+        </div>
+        
+        <!-- ONGLETS DE MODE -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('geojson')">
+                📁 Fichier GeoJSON
+            </button>
+            <button class="mode-tab" onclick="switchMode('click')">
+                📍 Clic sur carte
+            </button>
+        </div>
+        
+        <!-- MODE 1 : FICHIER GEOJSON -->
+        <div id="geojson-mode" class="mode-content active">
+            <div class="section">
+                <h2>Importer des points</h2>
+                
+                <label>Fichier GeoJSON (.geojson, .json)</label>
+                <input type="file" id="fileInput" accept=".geojson,.json" onchange="loadFile()">
+                
+                <label>Ou coller le GeoJSON</label>
+                <textarea id="geojsonInput" placeholder='{"type":"FeatureCollection","features":[...]}'></textarea>
+                <button onclick="loadFromText()" class="btn-secondary">Charger depuis le texte</button>
+            </div>
+        </div>
+        
+        <!-- MODE 2 : CLIC SUR CARTE -->
+        <div id="click-mode" class="mode-content">
+            <div class="section">
+                <h2>Placer des points sur la carte</h2>
+                
+                <div class="click-help">
+                    <strong>💡 Comment ça marche ?</strong>
+                    Cliquez directement sur la carte pour placer des points. Chaque clic ajoute un nouveau point pour lequel un isochrone sera calculé.
+                </div>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button onclick="enableClickMode()" class="btn-secondary" style="flex: 1;">
+                        ✓ Activer le mode clic
+                    </button>
+                    <button onclick="disableClickMode()" class="btn-danger" style="flex: 1;">
+                        ✗ Désactiver
+                    </button>
+                </div>
+                
+                <label>Points placés : <span id="clickedPointsCount">0</span></label>
+                <div id="pointsList" class="points-list"></div>
+                
+                <button onclick="clearClickedPoints()" class="btn-danger" style="margin-top: 8px;">
+                    🗑️ Effacer tous les points
+                </button>
+            </div>
+        </div>
+        
+        <!-- CONFIGURATION API -->
+        <div class="section">
+            <h2>Configuration API</h2>
+            
+            <!-- Clé ORS -->
+            <div id="orsApiKeySection">
+                <label>Clé API OpenRouteService</label>
+                <input type="password" id="orsApiKey" placeholder="Votre clé API ORS" value="">
+                <small>Obtenez votre clé gratuite sur <a href="https://openrouteservice.org" target="_blank">openrouteservice.org</a></small>
+            </div>
+            
+            <!-- Clé HereMaps -->
+            <div id="heremapsApiKeySection" style="display: none;">
+                <label>Clé API HereMaps</label>
+                <input type="password" id="heremapsApiKey" placeholder="Votre clé API HereMaps" value="">
+                <small>Obtenez votre clé gratuite sur <a href="https://developer.here.com" target="_blank">developer.here.com</a></small>
+            </div>
+        </div>
+        
+        <!-- PARAMÈTRES -->
+        <div class="section">
+            <h2>Paramètres de l'analyse</h2>
+            
+            <label>Type d'analyse</label>
+            <select id="analysisType" onchange="updateIntervalLabel()">
+                <option value="time">Temps (secondes)</option>
+                <option value="distance">Distance (mètres)</option>
+            </select>
+            
+            <label>Profil de déplacement</label>
+            <select id="profile">
+                <!-- Les options seront mises à jour selon le service -->
+            </select>
+            
+            <label id="intervalLabel">Intervalles (secondes)</label>
+            <div id="intervalsContainer" class="intervals-container">
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="300" min="1">
+                    <input type="color" class="interval-color" value="#ff0000">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="600" min="1">
+                    <input type="color" class="interval-color" value="#ff8800">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+                <div class="interval-item">
+                    <input type="number" class="interval-value" value="900" min="1">
+                    <input type="color" class="interval-color" value="#00ff00">
+                    <button onclick="removeInterval(this)">×</button>
+                </div>
+            </div>
+            <button onclick="addInterval()" class="btn-add">+ Ajouter un intervalle</button>
+        </div>
+        
+        <!-- ACTIONS -->
+        <div class="section">
+            <h2>Actions</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="text-align: center;">
+                    <small style="color: #666;">Points chargés</small>
+                    <div id="pointsCount" style="font-size: 24px; font-weight: bold; color: #FF8C00;">0</div>
+                </div>
+                <div style="text-align: center;">
+                    <small style="color: #666;">Requêtes API</small>
+                    <div id="requestsCount" style="font-size: 24px; font-weight: bold; color: #2196F3;">0</div>
+                </div>
+            </div>
+            
+            <button id="generateBtn" onclick="generateIsochrones()">
+                🚀 Générer les isochrones
+            </button>
+            
+            <button id="downloadBtn" onclick="downloadGeoJSON()" class="btn-info" disabled>
+                💾 Télécharger le GeoJSON
+            </button>
+            
+            <button onclick="clearMap()" class="btn-danger">
+                🗑️ Effacer la carte
+            </button>
+            
+            <div id="progressBar">
+                <div id="progressBarInner">0%</div>
+            </div>
+        </div>
+        
+        <!-- DEBUG -->
+        <div class="section">
+            <h2>Console de débogage</h2>
+            <button onclick="toggleDebug()" class="btn-debug">
+                👁️ Afficher/Masquer
+            </button>
+            <div id="debugConsole" class="debug-section" style="display: none;"></div>
+            <button onclick="clearDebug()" class="btn-debug">
+                🗑️ Effacer la console
+            </button>
+        </div>
+        
+        <!-- STATUT -->
+        <div id="status"></div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        
+        let map;
+        let pointsLayer;
+        let isochronesLayer;
+        let inputPoints = [];
+        let generatedIsochrones = null;
+        let requestsCount = 0;
+        let currentMode = 'geojson';
+        let clickModeEnabled = false;
+        let currentService = 'ors'; // 'ors' ou 'heremaps'
+        
+        // Profils disponibles selon le service
+        const serviceProfiles = {
+            ors: {
+                time: [
+                    { value: 'driving-car', label: '🚗 Voiture' },
+                    { value: 'cycling-regular', label: '🚴 Vélo' },
+                    { value: 'foot-walking', label: '🚶 À pied' }
+                ],
+                distance: [
+                    { value: 'driving-car', label: '🚗 Voiture' },
+                    { value: 'cycling-regular', label: '🚴 Vélo' },
+                    { value: 'foot-walking', label: '🚶 À pied' }
+                ]
+            },
+            heremaps: {
+                time: [
+                    { value: 'car', label: '🚗 Voiture' },
+                    { value: 'pedestrian', label: '🚶 À pied' },
+                    { value: 'bicycle', label: '🚴 Vélo' },
+                    { value: 'truck', label: '🚚 Camion' }
+                ],
+                distance: [
+                    { value: 'car', label: '🚗 Voiture' },
+                    { value: 'pedestrian', label: '🚶 À pied' },
+                    { value: 'bicycle', label: '🚴 Vélo' },
+                    { value: 'truck', label: '🚚 Camion' }
+                ]
+            }
+        };
+        
+        // ========================================
+        // DÉCODEUR FLEXIBLE POLYLINE (pour HereMaps)
+        // ========================================
+        
+        /**
+         * Décodeur de Flexible Polyline CORRIGÉ (utilisé par HereMaps)
+         * Basé sur le code officiel : https://github.com/heremaps/flexible-polyline
+         * 
+         * IMPORTANT : Ce décodeur lit le HEADER qui contient la précision
+         * contrairement aux décodeurs simplifiés qui produisent des formes déformées
+         */
+        
+        // Table de décodage pour les caractères Base64 URL-safe
+        // ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
+        const DECODING_TABLE = [
+            62, -1, -1, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1,
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+            22, 23, 24, 25, -1, -1, -1, -1, 63, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+            36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+        ];
+        
+        const FORMAT_VERSION = 1;
+        
+        /**
+         * Décoder un seul caractère en utilisant la table de décodage
+         */
+        function decodeChar(char) {
+            const charCode = char.charCodeAt(0);
+            const value = DECODING_TABLE[charCode - 45];
+            
+            if (value === undefined || value < 0) {
+                throw new Error(`Invalid character in polyline: ${char}`);
+            }
+            
+            return value;
+        }
+        
+        /**
+         * Générateur qui yield des valeurs non signées depuis la polyline encodée
+         */
+        function* decodeUnsignedValues(encoded) {
+            let result = 0;
+            let shift = 0;
+            
+            for (let i = 0; i < encoded.length; i++) {
+                const value = decodeChar(encoded[i]);
+                result |= (value & 0x1F) << shift;
+                
+                // Si le bit 0x20 n'est pas set, c'est le dernier chunk
+                if ((value & 0x20) === 0) {
+                    yield result;
+                    result = 0;
+                    shift = 0;
+                } else {
+                    shift += 5;
+                }
+            }
+            
+            // Si des données restent, les yield
+            if (shift > 0) {
+                yield result;
+            }
+        }
+        
+        /**
+         * Convertir une valeur non signée en valeur signée
+         */
+        function toSigned(value) {
+            // Si le premier bit est 1, la valeur est négative
+            if (value & 1) {
+                value = ~value;
+            }
+            value = value >> 1;
+            return value;
+        }
+        
+        /**
+         * Décoder le header de la polyline
+         * Le header contient : version, précision, 3ème dimension, précision 3D
+         */
+        function decodeHeader(decoder) {
+            // Lire la version
+            const version = decoder.next().value;
+            if (version !== FORMAT_VERSION) {
+                throw new Error(`Invalid format version: ${version}, expected ${FORMAT_VERSION}`);
+            }
+            
+            // Lire la valeur du header
+            const headerValue = decoder.next().value;
+            
+            // Extraire la précision (bits 0-3)
+            const precision = headerValue & 15;
+            
+            // Extraire la 3ème dimension (bits 4-6)
+            const thirdDim = (headerValue >> 4) & 7;
+            
+            // Extraire la précision de la 3ème dimension (bits 7-10)
+            const thirdDimPrecision = (headerValue >> 7) & 15;
+            
+            return {
+                precision: precision,
+                thirdDim: thirdDim,
+                thirdDimPrecision: thirdDimPrecision
+            };
+        }
+        
+        /**
+         * Décoder une polyline Flexible complète
+         * 
+         * @param {string} encoded - La polyline encodée
+         * @returns {Array} - Un tableau de coordonnées [lat, lng] ou [lat, lng, z]
+         */
+        function decodeFlexiblePolyline(encoded) {
+            // Créer le générateur de valeurs non signées
+            const decoder = decodeUnsignedValues(encoded);
+            
+            // Décoder le header
+            const header = decodeHeader(decoder);
+            
+            // Calculer les facteurs de conversion selon la précision
+            const factorDegree = Math.pow(10, header.precision);
+            const factorZ = Math.pow(10, header.thirdDimPrecision);
+            const hasThirdDim = header.thirdDim > 0;
+            
+            debugLog(`Décodage polyline - Précision: ${header.precision}, 3D: ${hasThirdDim}`, 'info');
+            
+            const coordinates = [];
+            let lastLat = 0;
+            let lastLng = 0;
+            let lastZ = 0;
+            
+            // Décoder les coordonnées
+            while (true) {
+                // Lire la latitude
+                const latResult = decoder.next();
+                if (latResult.done) break;
+                
+                lastLat += toSigned(latResult.value);
+                
+                // Lire la longitude
+                const lngResult = decoder.next();
+                if (lngResult.done) {
+                    throw new Error('Invalid encoding: incomplete coordinate pair');
+                }
+                
+                lastLng += toSigned(lngResult.value);
+                
+                // Lire la 3ème dimension si présente
+                if (hasThirdDim) {
+                    const zResult = decoder.next();
+                    if (zResult.done) {
+                        throw new Error('Invalid encoding: missing third dimension value');
+                    }
+                    lastZ += toSigned(zResult.value);
+                    
+                    // Ajouter [lat, lng, z]
+                    coordinates.push([
+                        lastLat / factorDegree,
+                        lastLng / factorDegree,
+                        lastZ / factorZ
+                    ]);
+                } else {
+                    // Ajouter [lat, lng]
+                    coordinates.push([
+                        lastLat / factorDegree,
+                        lastLng / factorDegree
+                    ]);
+                }
+            }
+            
+            debugLog(`Polyline décodée : ${coordinates.length} points`, 'success');
+            return coordinates;
+        }
+        
+        // ========================================
+        // INITIALISATION
+        // ========================================
+        
+        function initMap() {
+            debugLog('Initialisation de la carte...', 'info');
+            
+            map = L.map('map').setView([46.603354, 1.888334], 6);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            pointsLayer = L.layerGroup().addTo(map);
+            isochronesLayer = L.layerGroup().addTo(map);
+            
+            map.on('click', onMapClick);
+            
+            updateProfileOptions();
+            
+            debugLog('Carte initialisée avec succès', 'success');
+        }
+        
+        // ========================================
+        // SÉLECTION DU SERVICE
+        // ========================================
+        
+        function selectService(service) {
+            currentService = service;
+            
+            // Mettre à jour l'apparence des boutons
+            document.querySelectorAll('.service-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            event.target.closest('.service-option').classList.add('active');
+            
+            // Afficher/masquer les champs API
+            if (service === 'ors') {
+                document.getElementById('orsApiKeySection').style.display = 'block';
+                document.getElementById('heremapsApiKeySection').style.display = 'none';
+                document.getElementById('serviceInfo').textContent = 'OpenRouteService sélectionné - 40 req/min gratuit';
+            } else {
+                document.getElementById('orsApiKeySection').style.display = 'none';
+                document.getElementById('heremapsApiKeySection').style.display = 'block';
+                document.getElementById('serviceInfo').textContent = 'HereMaps sélectionné - Freemium disponible';
+            }
+            
+            // Mettre à jour les profils disponibles
+            updateProfileOptions();
+            
+            debugLog(`Service changé vers: ${service}`, 'info');
+            showStatus(`Service ${service === 'ors' ? 'OpenRouteService' : 'HereMaps'} sélectionné`, 'info');
+        }
+        
+        /**
+         * Mettre à jour les options de profil selon le service et le type d'analyse
+         */
+        function updateProfileOptions() {
+            const analysisType = document.getElementById('analysisType').value;
+            const profileSelect = document.getElementById('profile');
+            const profiles = serviceProfiles[currentService][analysisType] || serviceProfiles[currentService].time;
+            
+            profileSelect.innerHTML = '';
+            profiles.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.value;
+                option.textContent = p.label;
+                profileSelect.appendChild(option);
+            });
+        }
+        
+        // ========================================
+        // GESTION DES MODES
+        // ========================================
+        
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('geojson-mode').classList.remove('active');
+            document.getElementById('click-mode').classList.remove('active');
+            document.getElementById(mode + '-mode').classList.add('active');
+            
+            if (mode === 'click') {
+                disableClickMode();
+            }
+            
+            debugLog(`Mode basculé vers: ${mode}`, 'info');
+            showStatus(`Mode ${mode === 'geojson' ? 'Fichier GeoJSON' : 'Clic sur carte'} activé`, 'info');
+        }
+        
+        // ========================================
+        // MODE CLIC SUR CARTE
+        // ========================================
+        
+        function enableClickMode() {
+            clickModeEnabled = true;
+            map.getContainer().classList.remove('disabled-click');
+            showStatus('✓ Mode clic activé - Cliquez sur la carte pour placer des points', 'success');
+            debugLog('Mode clic activé', 'success');
+        }
+        
+        function disableClickMode() {
+            clickModeEnabled = false;
+            map.getContainer().classList.add('disabled-click');
+            showStatus('Mode clic désactivé', 'info');
+            debugLog('Mode clic désactivé', 'info');
+        }
+        
+        function onMapClick(e) {
+            if (currentMode !== 'click' || !clickModeEnabled) {
+                return;
+            }
+            
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            const point = {
+                lat: lat,
+                lng: lng,
+                id: inputPoints.length
+            };
+            
+            inputPoints.push(point);
+            displayClickedPoint(point);
+            updatePointsList();
+            updatePointsCount();
+            
+            debugLog(`Point ajouté : lat=${lat.toFixed(6)}, lng=${lng.toFixed(6)}`, 'success');
+            showStatus(`✓ Point ${inputPoints.length} ajouté`, 'success');
+        }
+        
+        function displayClickedPoint(point) {
+            const marker = L.marker([point.lat, point.lng], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: #FF8C00; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${point.id + 1}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            });
+            
+            marker.bindPopup(`
+                <strong>Point ${point.id + 1}</strong><br>
+                Lat: ${point.lat.toFixed(6)}<br>
+                Lng: ${point.lng.toFixed(6)}<br>
+                <button onclick="removeClickedPoint(${point.id})" style="margin-top: 5px; padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">Supprimer</button>
+            `);
+            
+            marker.addTo(pointsLayer);
+            point.marker = marker;
+        }
+        
+        function updatePointsList() {
+            const listContainer = document.getElementById('pointsList');
+            
+            if (inputPoints.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: #999;">Aucun point placé</div>';
+                return;
+            }
+            
+            listContainer.innerHTML = inputPoints.map(point => `
+                <div class="point-item">
+                    <span>
+                        <strong>Point ${point.id + 1}</strong><br>
+                        <small>${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}</small>
+                    </span>
+                    <button onclick="removeClickedPoint(${point.id})">✗</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeClickedPoint(pointId) {
+            const pointIndex = inputPoints.findIndex(p => p.id === pointId);
+            
+            if (pointIndex === -1) {
+                return;
+            }
+            
+            const point = inputPoints[pointIndex];
+            
+            if (point.marker) {
+                pointsLayer.removeLayer(point.marker);
+            }
+            
+            inputPoints.splice(pointIndex, 1);
+            updatePointsList();
+            updatePointsCount();
+            
+            debugLog(`Point ${pointId + 1} supprimé`, 'info');
+            showStatus(`Point ${pointId + 1} supprimé`, 'info');
+        }
+        
+        function clearClickedPoints() {
+            inputPoints = [];
+            pointsLayer.clearLayers();
+            updatePointsList();
+            updatePointsCount();
+            showStatus('Tous les points ont été effacés', 'info');
+            debugLog('Tous les points cliqués effacés', 'info');
+        }
+        
+        function updatePointsCount() {
+            const count = inputPoints.length;
+            document.getElementById('pointsCount').textContent = count;
+            document.getElementById('clickedPointsCount').textContent = count;
+        }
+        
+        // ========================================
+        // MODE FICHIER GEOJSON
+        // ========================================
+        
+        function loadFile() {
+            const file = document.getElementById('fileInput').files[0];
+            
+            if (!file) {
+                showStatus('Aucun fichier sélectionné', 'error');
+                return;
+            }
+            
+            debugLog(`Chargement du fichier: ${file.name}`, 'info');
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const geojson = JSON.parse(e.target.result);
+                    processGeoJSON(geojson);
+                } catch (error) {
+                    debugLog(`Erreur de parsing JSON: ${error.message}`, 'error');
+                    showStatus('❌ Fichier JSON invalide', 'error');
+                }
+            };
+            
+            reader.onerror = function() {
+                debugLog('Erreur de lecture du fichier', 'error');
+                showStatus('❌ Erreur de lecture du fichier', 'error');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function loadFromText() {
+            const text = document.getElementById('geojsonInput').value.trim();
+            
+            if (!text) {
+                showStatus('Le champ est vide', 'error');
+                return;
+            }
+            
+            try {
+                const geojson = JSON.parse(text);
+                processGeoJSON(geojson);
+            } catch (error) {
+                debugLog(`Erreur de parsing JSON: ${error.message}`, 'error');
+                showStatus('❌ JSON invalide', 'error');
+            }
+        }
+        
+        function processGeoJSON(geojson) {
+            debugLog('Traitement du GeoJSON...', 'info');
+            
+            inputPoints = [];
+            pointsLayer.clearLayers();
+            
+            let pointsAdded = 0;
+            
+            if (geojson.type === 'FeatureCollection' && geojson.features) {
+                geojson.features.forEach((feature, index) => {
+                    if (feature.geometry && feature.geometry.type === 'Point') {
+                        const coords = feature.geometry.coordinates;
+                        const point = {
+                            lat: coords[1],
+                            lng: coords[0],
+                            id: index,
+                            properties: feature.properties || {}
+                        };
+                        
+                        inputPoints.push(point);
+                        
+                        const marker = L.marker([point.lat, point.lng], {
+                            icon: L.divIcon({
+                                className: 'custom-marker',
+                                html: `<div style="background: #2196F3; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${index + 1}</div>`,
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            })
+                        });
+                        
+                        marker.bindPopup(`
+                            <strong>Point ${index + 1}</strong><br>
+                            Lat: ${point.lat.toFixed(6)}<br>
+                            Lng: ${point.lng.toFixed(6)}
+                        `);
+                        
+                        marker.addTo(pointsLayer);
+                        pointsAdded++;
+                    }
+                });
+            }
+            
+            if (pointsAdded === 0) {
+                showStatus('❌ Aucun point trouvé dans le GeoJSON', 'error');
+                debugLog('Aucun point de type Point trouvé', 'error');
+                return;
+            }
+            
+            if (inputPoints.length > 0) {
+                const bounds = L.latLngBounds(inputPoints.map(p => [p.lat, p.lng]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+            
+            updatePointsCount();
+            showStatus(`✅ ${pointsAdded} point(s) chargé(s)`, 'success');
+            debugLog(`${pointsAdded} point(s) chargé(s) avec succès`, 'success');
+        }
+        
+        // ========================================
+        // GÉNÉRATION DES ISOCHRONES
+        // ========================================
+        
+        async function generateIsochrones() {
+            // Vérifications
+            const apiKey = currentService === 'ors' 
+                ? document.getElementById('orsApiKey').value.trim()
+                : document.getElementById('heremapsApiKey').value.trim();
+            
+            if (!apiKey) {
+                showStatus('❌ Clé API manquante', 'error');
+                return;
+            }
+            
+            if (inputPoints.length === 0) {
+                showStatus('❌ Aucun point chargé', 'error');
+                return;
+            }
+            
+            const intervals = getIntervals();
+            
+            if (intervals.length === 0) {
+                showStatus('❌ Aucun intervalle défini', 'error');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            
+            isochronesLayer.clearLayers();
+            requestsCount = 0;
+            
+            const analysisType = document.getElementById('analysisType').value;
+            const profile = document.getElementById('profile').value;
+            
+            debugLog('=== DÉBUT DE LA GÉNÉRATION ===', 'info');
+            debugLog(`Service: ${currentService}`, 'info');
+            debugLog(`Points: ${inputPoints.length}, Intervalles: ${intervals.length}`, 'info');
+            debugLog(`Type: ${analysisType}, Profil: ${profile}`, 'info');
+            
+            showStatus('🚀 Génération en cours...', 'info');
+            
+            const allFeatures = [];
+            
+            try {
+                for (let i = 0; i < inputPoints.length; i++) {
+                    const point = inputPoints[i];
+                    const progress = ((i + 1) / inputPoints.length) * 100;
+                    
+                    showProgress(progress);
+                    showStatus(`⏳ Traitement du point ${i + 1}/${inputPoints.length}...`, 'info');
+                    
+                    debugLog(`--- Point ${i + 1} ---`, 'info');
+                    debugLog(`Coordonnées: lat=${point.lat}, lng=${point.lng}`, 'info');
+                    
+                    let result;
+                    if (currentService === 'ors') {
+                        result = await fetchIsochronesORS(apiKey, point, intervals, analysisType, profile);
+                    } else {
+                        result = await fetchIsochronesHereMaps(apiKey, point, intervals, analysisType, profile);
+                    }
+                    
+                    requestsCount++;
+                    document.getElementById('requestsCount').textContent = requestsCount;
+                    
+                    if (result && result.features) {
+                        result.features.forEach(feature => {
+                            feature.properties.point_id = i;
+                            allFeatures.push(feature);
+                        });
+                        
+                        debugLog(`✓ ${result.features.length} isochrone(s) généré(s) pour ce point`, 'success');
+                    } else {
+                        debugLog(`✗ Échec pour le point ${i + 1}`, 'error');
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                generatedIsochrones = {
+                    type: 'FeatureCollection',
+                    features: allFeatures
+                };
+                
+                displayIsochrones(generatedIsochrones);
+                
+                document.getElementById('downloadBtn').disabled = false;
+                
+                showStatus(`✅ ${allFeatures.length} isochrone(s) généré(s) avec succès !`, 'success');
+                debugLog('=== GÉNÉRATION TERMINÉE AVEC SUCCÈS ===', 'success');
+                
+            } catch (error) {
+                debugLog(`Erreur: ${error.message}`, 'error');
+                debugLog(`Stack: ${error.stack}`, 'error');
+                showStatus('❌ Erreur : ' + error.message, 'error');
+                hideProgress();
+            } finally {
+                generateBtn.disabled = false;
+                debugLog('=== FIN DE LA GÉNÉRATION ===', 'info');
+            }
+        }
+        
+        // ========================================
+        // APPEL API OPENROUTESERVICE
+        // ========================================
+        
+        async function fetchIsochronesORS(apiKey, point, intervals, analysisType, profile) {
+            const url = `https://api.openrouteservice.org/v2/isochrones/${profile}`;
+            
+            const requestBody = {
+                locations: [[point.lng, point.lat]], // ORS utilise lng,lat
+                range_type: analysisType,
+                range: intervals.map(i => i.value)
+            };
+            
+            debugLog(`URL ORS: ${url}`, 'info');
+            debugLog(`Corps: ${JSON.stringify(requestBody)}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, application/geo+json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                debugLog(`Statut HTTP: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debugLog(`Erreur API: ${errorText}`, 'error');
+                    throw new Error(`API Error ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                debugLog(`Données reçues: ${JSON.stringify(data).substring(0, 300)}...`, 'info');
+                
+                // Ajouter les couleurs aux features
+                if (data.features && Array.isArray(data.features)) {
+                    data.features.forEach((feature, idx) => {
+                        const value = feature.properties.value;
+                        const intervalConfig = intervals.find(i => i.value === value);
+                        if (intervalConfig) {
+                            feature.properties.color = intervalConfig.color;
+                            feature.properties.range_type = analysisType;
+                        }
+                    });
+                }
+                
+                return data;
+                
+            } catch (error) {
+                debugLog(`Exception ORS: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // ========================================
+        // APPEL API HEREMAPS
+        // ========================================
+        
+        async function fetchIsochronesHereMaps(apiKey, point, intervals, analysisType, profile) {
+            // HereMaps utilise "time" ou "distance" pour range[type]
+            const rangeType = analysisType; // time ou distance
+            
+            // Construire l'URL avec les paramètres
+            let url = `https://isoline.router.hereapi.com/v8/isolines?`;
+            url += `apiKey=${apiKey}`;
+            url += `&transportMode=${profile}`;
+            url += `&origin=${point.lat},${point.lng}`; // HereMaps utilise lat,lng
+            url += `&range[type]=${rangeType}`;
+            url += `&range[values]=${intervals.map(i => i.value).join(',')}`;
+            
+            debugLog(`URL HereMaps: ${url}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                debugLog(`Statut HTTP: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debugLog(`Erreur API: ${errorText}`, 'error');
+                    throw new Error(`API Error ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                debugLog(`Données reçues HereMaps: ${JSON.stringify(data).substring(0, 300)}...`, 'info');
+                
+                // Convertir le format HereMaps en GeoJSON
+                return convertHereMapsToGeoJSON(data, intervals, analysisType);
+                
+            } catch (error) {
+                debugLog(`Exception HereMaps: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        /**
+         * Convertir la réponse HereMaps en GeoJSON standard
+         */
+        function convertHereMapsToGeoJSON(hereMapsData, intervals, analysisType) {
+            const features = [];
+            
+            if (!hereMapsData.isolines || !Array.isArray(hereMapsData.isolines)) {
+                debugLog('Pas d\'isolines dans la réponse HereMaps', 'warning');
+                return { type: 'FeatureCollection', features: [] };
+            }
+            
+            hereMapsData.isolines.forEach(isoline => {
+                const rangeValue = isoline.range.value;
+                const intervalConfig = intervals.find(i => i.value === rangeValue);
+                
+                // Chaque isoline peut avoir plusieurs polygones
+                if (isoline.polygons && Array.isArray(isoline.polygons)) {
+                    isoline.polygons.forEach(polygon => {
+                        // Décoder la polyline
+                        const coordinates = decodeFlexiblePolyline(polygon.outer);
+                        
+                        // Créer un Feature GeoJSON
+                        const feature = {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Polygon',
+                                coordinates: [coordinates.map(coord => [coord[1], coord[0]])] // Inverser lat,lng -> lng,lat
+                            },
+                            properties: {
+                                value: rangeValue,
+                                range_type: analysisType,
+                                color: intervalConfig ? intervalConfig.color : '#FF8C00'
+                            }
+                        };
+                        
+                        features.push(feature);
+                    });
+                }
+            });
+            
+            debugLog(`${features.length} features créées depuis HereMaps`, 'info');
+            
+            return {
+                type: 'FeatureCollection',
+                features: features
+            };
+        }
+        
+        // ========================================
+        // AFFICHAGE DES ISOCHRONES
+        // ========================================
+        
+        function displayIsochrones(geojson) {
+            debugLog('Affichage des isochrones sur la carte...', 'info');
+            isochronesLayer.clearLayers();
+            
+            if (!geojson || !geojson.features || geojson.features.length === 0) {
+                debugLog('Aucune feature à afficher', 'warning');
+                return;
+            }
+            
+            debugLog(`Affichage de ${geojson.features.length} feature(s)`, 'info');
+            
+            const sortedFeatures = [...geojson.features].sort((a, b) => {
+                return (b.properties.value || 0) - (a.properties.value || 0);
+            });
+            
+            sortedFeatures.forEach((feature, idx) => {
+                const color = feature.properties.color || '#FF8C00';
+                const value = feature.properties.value;
+                const rangeType = feature.properties.range_type || 'time';
+                
+                debugLog(`Feature ${idx}: type=${feature.geometry.type}, valeur=${value}`, 'info');
+                
+                let displayValue = value;
+                let displayUnit = rangeType === 'time' ? 's' : 'm';
+                
+                if (rangeType === 'time') {
+                    displayValue = Math.round(value / 60);
+                    displayUnit = 'min';
+                } else {
+                    displayValue = Math.round(value / 1000);
+                    displayUnit = 'km';
+                }
+                
+                try {
+                    const layer = L.geoJSON(feature, {
+                        style: {
+                            fillColor: color,
+                            fillOpacity: 0.3,
+                            color: color,
+                            weight: 2,
+                            opacity: 0.8
+                        }
+                    });
+                    
+                    layer.bindPopup(`
+                        <strong>Isochrone</strong><br>
+                        Valeur: ${displayValue} ${displayUnit}<br>
+                        ${feature.properties.point_id !== undefined ? `Point: ${feature.properties.point_id + 1}` : ''}
+                    `);
+                    
+                    layer.addTo(isochronesLayer);
+                    debugLog(`Feature ${idx} ajoutée à la carte`, 'success');
+                } catch (error) {
+                    debugLog(`Erreur lors de l'ajout de la feature ${idx}: ${error.message}`, 'error');
+                }
+            });
+            
+            debugLog('Affichage terminé', 'success');
+        }
+        
+        // ========================================
+        // UTILITAIRES
+        // ========================================
+        
+        function downloadGeoJSON() {
+            if (!generatedIsochrones || generatedIsochrones.features.length === 0) {
+                showStatus('Aucun isochrone à télécharger', 'error');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(generatedIsochrones, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.download = `isochrones_${currentService}_${timestamp}.geojson`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showStatus('✅ Fichier téléchargé avec succès', 'success');
+            debugLog('GeoJSON téléchargé', 'success');
+        }
+        
+        function clearMap() {
+            pointsLayer.clearLayers();
+            isochronesLayer.clearLayers();
+            inputPoints = [];
+            generatedIsochrones = null;
+            requestsCount = 0;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('geojsonInput').value = '';
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('pointsCount').textContent = '0';
+            document.getElementById('clickedPointsCount').textContent = '0';
+            document.getElementById('requestsCount').textContent = '0';
+            updatePointsList();
+            showStatus('Carte effacée', 'info');
+            debugLog('Carte effacée', 'info');
+        }
+        
+        function getIntervals() {
+            const items = document.querySelectorAll('.interval-item');
+            const intervals = [];
+            
+            items.forEach(item => {
+                const value = parseInt(item.querySelector('.interval-value').value);
+                const color = item.querySelector('.interval-color').value;
+                intervals.push({ value, color });
+            });
+            
+            return intervals.sort((a, b) => a.value - b.value);
+        }
+        
+        function addInterval() {
+            const container = document.getElementById('intervalsContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'interval-item';
+            newItem.innerHTML = `
+                <input type="number" class="interval-value" value="1200" min="1">
+                <input type="color" class="interval-color" value="#00ff88">
+                <button onclick="removeInterval(this)">×</button>
+            `;
+            container.appendChild(newItem);
+        }
+        
+        function removeInterval(button) {
+            const items = document.querySelectorAll('.interval-item');
+            if (items.length > 1) {
+                button.parentElement.remove();
+            } else {
+                showStatus('Au moins un intervalle est requis', 'error');
+            }
+        }
+        
+        function updateIntervalLabel() {
+            const analysisType = document.getElementById('analysisType').value;
+            const label = document.getElementById('intervalLabel');
+            label.textContent = analysisType === 'time' ? 'Intervalles (secondes)' : 'Intervalles (mètres)';
+            updateProfileOptions();
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
+        
+        function showProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressBarInner = document.getElementById('progressBarInner');
+            progressBar.style.display = 'block';
+            progressBarInner.style.width = percent + '%';
+            progressBarInner.textContent = Math.round(percent) + '%';
+        }
+        
+        function hideProgress() {
+            setTimeout(() => {
+                document.getElementById('progressBar').style.display = 'none';
+            }, 1000);
+        }
+        
+        // ========================================
+        // CONSOLE DE DÉBOGAGE
+        // ========================================
+        
+        function debugLog(message, type = 'info') {
+            const console = document.getElementById('debugConsole');
+            const line = document.createElement('div');
+            line.className = `debug-line ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            line.textContent = `[${timestamp}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function toggleDebug() {
+            const console = document.getElementById('debugConsole');
+            console.style.display = console.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function clearDebug() {
+            document.getElementById('debugConsole').innerHTML = '';
+            debugLog('Console effacée', 'info');
+        }
+        
+        // ========================================
+        // INITIALISATION
+        // ========================================
+        
+        initMap();
+        updateIntervalLabel();
+        debugLog('Application initialisée', 'success');
+        debugLog(`Service par défaut: ${currentService}`, 'info');
+    </script>
+</body>
+</html>

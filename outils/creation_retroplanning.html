@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créateur de Rétroplanning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Panneau gauche - Édition */
+        .panel-left {
+            width: 380px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        .panel-left h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d68910;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Liste des phases */
+        .phases-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .phase-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .phase-item:hover {
+            border-color: #3498db;
+        }
+
+        .phase-item.critical {
+            border-left: 4px solid #e74c3c;
+            background: #fef5f5;
+        }
+
+        .phase-item.dragging {
+            opacity: 0.5;
+        }
+
+        .phase-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .phase-item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .phase-item-period {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .phase-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .phase-item-actions button {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        /* Panneau droit - Aperçu */
+        .panel-right {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            background: #f5f7fa;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 400px;
+            overflow: visible;
+        }
+
+        /* Frise chronologique */
+        #timeline-wrapper {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        #timeline {
+            position: relative;
+            padding: 50px 70px 50px 70px;
+            background: white;
+            display: inline-block;
+            min-width: 100%;
+        }
+
+        .timeline-title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .timeline-title h1 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .timeline-title .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        /* Conteneur principal de la frise */
+        .timeline-content {
+            position: relative;
+        }
+
+        /* Conteneur de l'axe avec les marques */
+        .timeline-axis-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-labels {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .timeline-label {
+            font-size: 0.85rem;
+            color: #555;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .timeline-axis {
+            position: relative;
+            height: 28px;
+            background: linear-gradient(to right, #4a9fd4, #2980b9);
+            border-radius: 14px;
+            display: flex;
+        }
+
+        /* Marques verticales sur l'axe */
+        .timeline-marker {
+            flex: 1;
+            position: relative;
+        }
+
+        .timeline-marker::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .timeline-marker:last-child::after {
+            display: none;
+        }
+
+        /* Zone des phases */
+        .timeline-phases-container {
+            position: relative;
+        }
+
+        /* Lignes de grille verticales */
+        .timeline-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .timeline-grid-line {
+            flex: 1;
+            border-right: 1px dashed rgba(100, 100, 100, 0.15);
+        }
+
+        .timeline-grid-line:last-child {
+            border-right: none;
+        }
+
+        .timeline-phases {
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-row {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .phase-block {
+            position: absolute;
+            background: #fff;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-width: 150px;
+        }
+
+        .phase-block.critical {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+        }
+
+        .phase-block .phase-period {
+            font-size: 0.72rem;
+            color: #888;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .phase-block .phase-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .phase-block.critical .phase-title::after {
+            content: " ⚠️";
+        }
+
+        .phase-block .phase-content {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .phase-block .phase-content ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .phase-block .phase-content li {
+            margin-bottom: 4px;
+        }
+
+        .timeline-legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .legend-color.standard {
+            border-color: #3498db;
+            background: #fff;
+        }
+
+        .legend-color.critical {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+        }
+
+        /* Couleur picker */
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .color-input input[type="color"] {
+            width: 40px;
+            height: 35px;
+            padding: 2px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Row selector */
+        .row-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .row-selector input[type="number"] {
+            width: 70px;
+        }
+
+        /* Export quality */
+        .export-options {
+            margin-bottom: 10px;
+        }
+
+        /* Sauvegarde */
+        .save-section {
+            background: #f0f7ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .save-section .section-title {
+            color: #004085;
+        }
+
+        .save-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .autosave-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #27ae60;
+            margin-left: 10px;
+        }
+
+        .autosave-indicator.saving {
+            color: #f39c12;
+        }
+
+        /* Input file caché */
+        #importFile {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .panel-left {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        /* Message de chargement */
+        .export-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .export-loading-content {
+            background: white;
+            padding: 30px 50px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .export-loading-content p {
+            margin-top: 15px;
+            color: #555;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Panneau gauche -->
+        <div class="panel-left">
+            <h2>📅 Créateur de Rétroplanning <span id="autosaveIndicator" class="autosave-indicator" style="display: none;">✓ Sauvegardé</span></h2>
+
+            <!-- Sauvegarde / Chargement -->
+            <div class="section save-section">
+                <div class="section-title">💾 Projet</div>
+                <div class="btn-group">
+                    <button class="btn-warning" onclick="exportProject()">📤 Exporter</button>
+                    <button class="btn-primary" onclick="document.getElementById('importFile').click()">📥 Importer</button>
+                    <button class="btn-secondary" onclick="newProject()">🆕 Nouveau</button>
+                </div>
+                <input type="file" id="importFile" accept=".json" onchange="importProject(event)">
+                <p class="save-info">💡 Sauvegarde automatique activée dans le navigateur</p>
+            </div>
+
+            <!-- Paramètres généraux -->
+            <div class="section">
+                <div class="section-title">Paramètres généraux</div>
+                
+                <label for="projectTitle">Titre du projet</label>
+                <input type="text" id="projectTitle" value="Rétroplanning - Projet" placeholder="Titre du projet">
+                
+                <label for="projectSubtitle">Sous-titre (optionnel)</label>
+                <input type="text" id="projectSubtitle" placeholder="Ex: Durée totale : 12 mois">
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showTitle" checked>
+                    <label for="showTitle">Afficher le titre</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showLegend" checked>
+                    <label for="showLegend">Afficher la légende</label>
+                </div>
+
+                <label for="dateMode">Mode de dates</label>
+                <select id="dateMode">
+                    <option value="relative">Mois relatifs (Mois 1, Mois 2...)</option>
+                    <option value="absolute">Dates réelles</option>
+                </select>
+
+                <div id="startDateContainer" style="display: none;">
+                    <label for="startDate">Date de début du projet</label>
+                    <input type="date" id="startDate">
+                </div>
+
+                <label for="fontFamily">Police</label>
+                <select id="fontFamily">
+                    <option value="Segoe UI, Tahoma, sans-serif">Segoe UI</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Times New Roman, serif">Times New Roman</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="Courier New, monospace">Courier New</option>
+                </select>
+
+                <label for="monthWidth">Largeur par mois (px)</label>
+                <input type="number" id="monthWidth" value="110" min="80" max="200" step="10">
+
+                <div class="color-input">
+                    <label>Couleur standard</label>
+                    <input type="color" id="colorStandard" value="#3498db">
+                </div>
+
+                <div class="color-input">
+                    <label>Couleur critique</label>
+                    <input type="color" id="colorCritical" value="#e74c3c">
+                </div>
+            </div>
+
+            <!-- Ajouter une phase -->
+            <div class="section">
+                <div class="section-title">Ajouter une phase</div>
+                
+                <label for="phaseName">Nom de la phase</label>
+                <input type="text" id="phaseName" placeholder="Ex: Phase 1 : Études préalables">
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label for="phaseStart">Début (mois)</label>
+                        <input type="number" id="phaseStart" min="1" value="1" placeholder="1">
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="phaseEnd">Fin (mois)</label>
+                        <input type="number" id="phaseEnd" min="1" value="3" placeholder="3">
+                    </div>
+                </div>
+
+                <label for="phaseContent">Contenu (une tâche par ligne)</label>
+                <textarea id="phaseContent" placeholder="• Tâche 1&#10;• Tâche 2&#10;• Tâche 3"></textarea>
+
+                <div class="row-selector">
+                    <label for="phaseRow">Ligne</label>
+                    <input type="number" id="phaseRow" min="1" value="1">
+                    <span style="font-size: 0.8rem; color: #888;">(pour superposer)</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="phaseCritical">
+                    <label for="phaseCritical">Phase critique</label>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-success" onclick="addPhase()">➕ Ajouter</button>
+                    <button class="btn-secondary" onclick="clearForm()">Effacer</button>
+                </div>
+            </div>
+
+            <!-- Liste des phases -->
+            <div class="section">
+                <div class="section-title">Phases (<span id="phaseCount">0</span>)</div>
+                <div class="phases-list" id="phasesList"></div>
+            </div>
+
+            <!-- Export Image -->
+            <div class="section">
+                <div class="section-title">Export Image</div>
+                
+                <div class="export-options">
+                    <label for="exportScale">Qualité d'export</label>
+                    <select id="exportScale">
+                        <option value="2">Standard (x2)</option>
+                        <option value="3" selected>Haute qualité (x3)</option>
+                        <option value="4">Très haute qualité (x4)</option>
+                    </select>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="exportPNG()">📷 PNG</button>
+                    <button class="btn-primary" onclick="exportSVG()">📄 SVG</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panneau droit - Aperçu -->
+        <div class="panel-right">
+            <div class="preview-container">
+                <div id="timeline-wrapper">
+                    <div id="timeline">
+                        <!-- Frise générée ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader pour export -->
+    <div id="exportLoader" class="export-loading" style="display: none;">
+        <div class="export-loading-content">
+            <div class="spinner"></div>
+            <p>Export en cours...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // ============================================
+        // DONNÉES
+        // ============================================
+        
+        let phases = [];
+        let editingIndex = -1;
+        let autoSaveTimeout = null;
+
+        // Clé pour le localStorage
+        const STORAGE_KEY = 'retroplanning_project';
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Écouteurs pour mise à jour en temps réel + sauvegarde auto
+            const inputs = [
+                'projectTitle', 'projectSubtitle', 'showTitle', 'showLegend',
+                'dateMode', 'startDate', 'fontFamily', 'monthWidth',
+                'colorStandard', 'colorCritical'
+            ];
+            
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        renderTimeline();
+                        scheduleAutoSave();
+                    });
+                    el.addEventListener('change', () => {
+                        if (id === 'dateMode') handleDateModeChange();
+                        renderTimeline();
+                        scheduleAutoSave();
+                    });
+                }
+            });
+
+            // Charger depuis localStorage ou données d'exemple
+            if (!loadFromStorage()) {
+                loadExample();
+            }
+        });
+
+        function handleDateModeChange() {
+            const mode = document.getElementById('dateMode').value;
+            document.getElementById('startDateContainer').style.display = 
+                mode === 'absolute' ? 'block' : 'none';
+        }
+
+        // ============================================
+        // SAUVEGARDE AUTOMATIQUE (localStorage)
+        // ============================================
+
+        function scheduleAutoSave() {
+            // Annuler le timeout précédent
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+            }
+            
+            // Programmer une sauvegarde dans 1 seconde
+            autoSaveTimeout = setTimeout(() => {
+                saveToStorage();
+            }, 1000);
+        }
+
+        function saveToStorage() {
+            const project = getCurrentProjectData();
+            
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+                showAutosaveIndicator();
+            } catch (e) {
+                console.error('Erreur sauvegarde localStorage:', e);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const project = JSON.parse(saved);
+                    applyProjectData(project);
+                    showToast('Projet précédent restauré', 'success');
+                    return true;
+                }
+            } catch (e) {
+                console.error('Erreur chargement localStorage:', e);
+            }
+            return false;
+        }
+
+        function showAutosaveIndicator() {
+            const indicator = document.getElementById('autosaveIndicator');
+            indicator.style.display = 'inline-flex';
+            indicator.textContent = '✓ Sauvegardé';
+            indicator.classList.remove('saving');
+            
+            // Masquer après 2 secondes
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+
+        // ============================================
+        // EXPORT / IMPORT PROJET (fichier JSON)
+        // ============================================
+
+        function getCurrentProjectData() {
+            return {
+                version: 1,
+                exportDate: new Date().toISOString(),
+                settings: {
+                    title: document.getElementById('projectTitle').value,
+                    subtitle: document.getElementById('projectSubtitle').value,
+                    showTitle: document.getElementById('showTitle').checked,
+                    showLegend: document.getElementById('showLegend').checked,
+                    dateMode: document.getElementById('dateMode').value,
+                    startDate: document.getElementById('startDate').value,
+                    fontFamily: document.getElementById('fontFamily').value,
+                    monthWidth: document.getElementById('monthWidth').value,
+                    colorStandard: document.getElementById('colorStandard').value,
+                    colorCritical: document.getElementById('colorCritical').value
+                },
+                phases: phases
+            };
+        }
+
+        function applyProjectData(project) {
+            // Appliquer les paramètres
+            const s = project.settings || {};
+            
+            if (s.title !== undefined) document.getElementById('projectTitle').value = s.title;
+            if (s.subtitle !== undefined) document.getElementById('projectSubtitle').value = s.subtitle;
+            if (s.showTitle !== undefined) document.getElementById('showTitle').checked = s.showTitle;
+            if (s.showLegend !== undefined) document.getElementById('showLegend').checked = s.showLegend;
+            if (s.dateMode !== undefined) {
+                document.getElementById('dateMode').value = s.dateMode;
+                document.getElementById('startDateContainer').style.display = 
+                    s.dateMode === 'absolute' ? 'block' : 'none';
+            }
+            if (s.startDate !== undefined) document.getElementById('startDate').value = s.startDate;
+            if (s.fontFamily !== undefined) document.getElementById('fontFamily').value = s.fontFamily;
+            if (s.monthWidth !== undefined) document.getElementById('monthWidth').value = s.monthWidth;
+            if (s.colorStandard !== undefined) document.getElementById('colorStandard').value = s.colorStandard;
+            if (s.colorCritical !== undefined) document.getElementById('colorCritical').value = s.colorCritical;
+            
+            // Appliquer les phases
+            phases = project.phases || [];
+            
+            renderPhasesList();
+            renderTimeline();
+        }
+
+        function exportProject() {
+            const project = getCurrentProjectData();
+            const json = JSON.stringify(project, null, 2);
+            
+            // Créer un nom de fichier basé sur le titre
+            const title = project.settings.title || 'retroplanning';
+            const safeName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const date = new Date().toISOString().slice(0, 10);
+            
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `${safeName}_${date}.json`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('Projet exporté !', 'success');
+        }
+
+        function importProject(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const project = JSON.parse(e.target.result);
+                    
+                    // Vérifier que c'est un fichier valide
+                    if (!project.phases || !Array.isArray(project.phases)) {
+                        throw new Error('Format de fichier invalide');
+                    }
+                    
+                    applyProjectData(project);
+                    saveToStorage(); // Sauvegarder immédiatement
+                    showToast('Projet importé avec succès !', 'success');
+                    
+                } catch (error) {
+                    console.error('Erreur import:', error);
+                    showToast('Erreur : fichier invalide', 'error');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Réinitialiser l'input pour permettre de recharger le même fichier
+            event.target.value = '';
+        }
+
+        function newProject() {
+            if (phases.length > 0) {
+                if (!confirm('Créer un nouveau projet ? Le projet actuel sera effacé (pensez à l\'exporter d\'abord).')) {
+                    return;
+                }
+            }
+            
+            // Réinitialiser
+            phases = [];
+            document.getElementById('projectTitle').value = 'Nouveau Rétroplanning';
+            document.getElementById('projectSubtitle').value = '';
+            document.getElementById('showTitle').checked = true;
+            document.getElementById('showLegend').checked = true;
+            document.getElementById('dateMode').value = 'relative';
+            document.getElementById('startDateContainer').style.display = 'none';
+            document.getElementById('startDate').value = '';
+            document.getElementById('fontFamily').value = 'Segoe UI, Tahoma, sans-serif';
+            document.getElementById('monthWidth').value = '110';
+            document.getElementById('colorStandard').value = '#3498db';
+            document.getElementById('colorCritical').value = '#e74c3c';
+            
+            renderPhasesList();
+            renderTimeline();
+            saveToStorage();
+            
+            showToast('Nouveau projet créé', 'success');
+        }
+
+        // ============================================
+        // TOAST NOTIFICATIONS
+        // ============================================
+
+        function showToast(message, type = '') {
+            // Supprimer un toast existant
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Supprimer après 3 secondes
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // ============================================
+        // GESTION DES PHASES
+        // ============================================
+
+        function addPhase() {
+            const name = document.getElementById('phaseName').value.trim();
+            const start = parseInt(document.getElementById('phaseStart').value) || 1;
+            const end = parseInt(document.getElementById('phaseEnd').value) || start;
+            const content = document.getElementById('phaseContent').value.trim();
+            const row = parseInt(document.getElementById('phaseRow').value) || 1;
+            const critical = document.getElementById('phaseCritical').checked;
+
+            if (!name) {
+                alert('Veuillez entrer un nom de phase');
+                return;
+            }
+
+            const phase = {
+                name,
+                start,
+                end: Math.max(start, end),
+                content,
+                row,
+                critical
+            };
+
+            if (editingIndex >= 0) {
+                phases[editingIndex] = phase;
+                editingIndex = -1;
+            } else {
+                phases.push(phase);
+            }
+
+            clearForm();
+            renderPhasesList();
+            renderTimeline();
+            scheduleAutoSave();
+        }
+
+        function editPhase(index) {
+            const phase = phases[index];
+            document.getElementById('phaseName').value = phase.name;
+            document.getElementById('phaseStart').value = phase.start;
+            document.getElementById('phaseEnd').value = phase.end;
+            document.getElementById('phaseContent').value = phase.content;
+            document.getElementById('phaseRow').value = phase.row;
+            document.getElementById('phaseCritical').checked = phase.critical;
+            editingIndex = index;
+            
+            // Scroll vers le formulaire
+            document.getElementById('phaseName').focus();
+        }
+
+        function deletePhase(index) {
+            if (confirm('Supprimer cette phase ?')) {
+                phases.splice(index, 1);
+                renderPhasesList();
+                renderTimeline();
+                scheduleAutoSave();
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('phaseName').value = '';
+            document.getElementById('phaseStart').value = '1';
+            document.getElementById('phaseEnd').value = '3';
+            document.getElementById('phaseContent').value = '';
+            document.getElementById('phaseRow').value = '1';
+            document.getElementById('phaseCritical').checked = false;
+            editingIndex = -1;
+        }
+
+        // ============================================
+        // RENDU DE LA LISTE DES PHASES
+        // ============================================
+
+        function renderPhasesList() {
+            const container = document.getElementById('phasesList');
+            document.getElementById('phaseCount').textContent = phases.length;
+
+            if (phases.length === 0) {
+                container.innerHTML = '<p style="color: #888; font-size: 0.85rem;">Aucune phase ajoutée</p>';
+                return;
+            }
+
+            container.innerHTML = phases.map((phase, index) => `
+                <div class="phase-item ${phase.critical ? 'critical' : ''}" 
+                     draggable="true" 
+                     ondragstart="dragStart(event, ${index})"
+                     ondragover="dragOver(event)"
+                     ondrop="drop(event, ${index})">
+                    <div class="phase-item-header">
+                        <span class="phase-item-title">${phase.name}</span>
+                        <div class="phase-item-actions">
+                            <button class="btn-primary" onclick="editPhase(${index})">✏️</button>
+                            <button class="btn-danger" onclick="deletePhase(${index})">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="phase-item-period">Mois ${phase.start}-${phase.end} | Ligne ${phase.row}</div>
+                </div>
+            `).join('');
+        }
+
+        // Drag and Drop
+        let draggedIndex = null;
+
+        function dragStart(e, index) {
+            draggedIndex = index;
+            e.target.classList.add('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e, targetIndex) {
+            e.preventDefault();
+            if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                const draggedPhase = phases[draggedIndex];
+                phases.splice(draggedIndex, 1);
+                phases.splice(targetIndex, 0, draggedPhase);
+                renderPhasesList();
+                renderTimeline();
+                scheduleAutoSave();
+            }
+            document.querySelectorAll('.phase-item').forEach(el => el.classList.remove('dragging'));
+            draggedIndex = null;
+        }
+
+        // ============================================
+        // RENDU DE LA FRISE
+        // ============================================
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline');
+            const showTitle = document.getElementById('showTitle').checked;
+            const showLegend = document.getElementById('showLegend').checked;
+            const title = document.getElementById('projectTitle').value;
+            const subtitle = document.getElementById('projectSubtitle').value;
+            const fontFamily = document.getElementById('fontFamily').value;
+            const monthWidth = parseInt(document.getElementById('monthWidth').value) || 110;
+            const colorStandard = document.getElementById('colorStandard').value;
+            const colorCritical = document.getElementById('colorCritical').value;
+            const dateMode = document.getElementById('dateMode').value;
+
+            // Appliquer la police
+            container.style.fontFamily = fontFamily;
+
+            if (phases.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: #888;">
+                        <p style="font-size: 1.2rem;">📊 Aperçu de la frise</p>
+                        <p>Ajoutez des phases pour voir le rétroplanning</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculer les limites
+            const minMonth = Math.min(...phases.map(p => p.start));
+            const maxMonth = Math.max(...phases.map(p => p.end));
+            const maxRow = Math.max(...phases.map(p => p.row));
+            const totalMonths = maxMonth - minMonth + 1;
+
+            // Dimensions
+            const timelineWidth = totalMonths * monthWidth;
+            const rowHeight = 145;
+            const totalPhasesHeight = maxRow * rowHeight;
+
+            // Générer les labels de mois
+            let labelsHTML = '';
+            for (let m = minMonth; m <= maxMonth; m++) {
+                const label = formatMonth(m, dateMode);
+                labelsHTML += `<div class="timeline-label" style="width: ${monthWidth}px;">${label}</div>`;
+            }
+
+            // Générer les marqueurs sur l'axe
+            let markersHTML = '';
+            for (let m = minMonth; m <= maxMonth; m++) {
+                markersHTML += `<div class="timeline-marker"></div>`;
+            }
+
+            // Générer les lignes de grille verticales
+            let gridHTML = '';
+            for (let m = minMonth; m <= maxMonth; m++) {
+                gridHTML += `<div class="timeline-grid-line"></div>`;
+            }
+
+            // Générer les phases par ligne
+            let phasesHTML = '';
+
+            for (let row = 1; row <= maxRow; row++) {
+                const rowPhases = phases.filter(p => p.row === row);
+                let rowContent = '';
+                
+                rowPhases.forEach(phase => {
+                    const leftPx = (phase.start - minMonth) * monthWidth;
+                    const widthPx = (phase.end - phase.start + 1) * monthWidth - 12;
+                    const borderColor = phase.critical ? colorCritical : colorStandard;
+                    const bgColor = phase.critical ? `linear-gradient(135deg, ${colorCritical}08 0%, #fff 100%)` : '#ffffff';
+                    
+                    // Formater le contenu
+                    let contentHTML = '';
+                    if (phase.content) {
+                        const lines = phase.content.split('\n').filter(l => l.trim());
+                        if (lines.length > 0) {
+                            contentHTML = '<ul>' + lines.map(l => 
+                                `<li>${l.replace(/^[•\-\*]\s*/, '')}</li>`
+                            ).join('') + '</ul>';
+                        }
+                    }
+
+                    const periodLabel = formatPeriod(phase.start, phase.end, dateMode);
+
+                    rowContent += `
+                        <div class="phase-block ${phase.critical ? 'critical' : ''}" 
+                             style="left: ${leftPx}px; width: ${widthPx}px; border-color: ${borderColor}; background: ${bgColor};">
+                            <div class="phase-period">${periodLabel}</div>
+                            <div class="phase-title">${phase.name}</div>
+                            <div class="phase-content">${contentHTML}</div>
+                        </div>
+                    `;
+                });
+
+                phasesHTML += `<div class="timeline-row" style="height: ${rowHeight}px;">${rowContent}</div>`;
+            }
+
+            // Assembler le HTML
+            container.innerHTML = `
+                ${showTitle ? `
+                    <div class="timeline-title">
+                        <h1>${title}</h1>
+                        ${subtitle ? `<div class="subtitle">${subtitle}</div>` : ''}
+                    </div>
+                ` : ''}
+                
+                <div class="timeline-content" style="width: ${timelineWidth}px;">
+                    <!-- Axe avec labels et marques -->
+                    <div class="timeline-axis-container">
+                        <div class="timeline-labels">
+                            ${labelsHTML}
+                        </div>
+                        <div class="timeline-axis">
+                            ${markersHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- Phases avec grille en arrière-plan -->
+                    <div class="timeline-phases-container" style="height: ${totalPhasesHeight}px;">
+                        <div class="timeline-grid">
+                            ${gridHTML}
+                        </div>
+                        <div class="timeline-phases">
+                            ${phasesHTML}
+                        </div>
+                    </div>
+                </div>
+                
+                ${showLegend ? `
+                    <div class="timeline-legend" style="width: ${timelineWidth}px;">
+                        <div class="legend-item">
+                            <div class="legend-color standard" style="border-color: ${colorStandard};"></div>
+                            <span>Phase standard</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color critical" style="border-color: ${colorCritical};"></div>
+                            <span>Phase critique (chemin critique)</span>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function formatMonth(month, mode) {
+            if (mode === 'relative') {
+                return `Mois ${month}`;
+            } else {
+                const startDate = document.getElementById('startDate').value;
+                if (!startDate) return `Mois ${month}`;
+                
+                const date = new Date(startDate);
+                date.setMonth(date.getMonth() + month - 1);
+                
+                const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
+                               'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+                return `${months[date.getMonth()]} ${date.getFullYear()}`;
+            }
+        }
+
+        function formatPeriod(start, end, mode) {
+            if (mode === 'relative') {
+                return start === end ? `MOIS ${start}` : `MOIS ${start}-${end}`;
+            } else {
+                const startDate = document.getElementById('startDate').value;
+                if (!startDate) return start === end ? `MOIS ${start}` : `MOIS ${start}-${end}`;
+                
+                const months = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 
+                               'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
+                
+                const d1 = new Date(startDate);
+                d1.setMonth(d1.getMonth() + start - 1);
+                
+                const d2 = new Date(startDate);
+                d2.setMonth(d2.getMonth() + end - 1);
+                
+                if (start === end) {
+                    return `${months[d1.getMonth()]} ${d1.getFullYear()}`;
+                }
+                return `${months[d1.getMonth()]} - ${months[d2.getMonth()]} ${d2.getFullYear()}`;
+            }
+        }
+
+        // ============================================
+        // EXPORT PNG - HAUTE QUALITÉ
+        // ============================================
+
+        async function exportPNG() {
+            const timeline = document.getElementById('timeline');
+            const loader = document.getElementById('exportLoader');
+            const scale = parseInt(document.getElementById('exportScale').value) || 3;
+            
+            loader.style.display = 'flex';
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            try {
+                const originalStyle = timeline.style.cssText;
+                timeline.style.display = 'inline-block';
+                timeline.style.width = 'auto';
+                timeline.style.minWidth = 'auto';
+                timeline.offsetHeight;
+                
+                const canvas = await html2canvas(timeline, {
+                    backgroundColor: '#ffffff',
+                    scale: scale,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true,
+                    removeContainer: false,
+                    imageTimeout: 0,
+                    width: timeline.scrollWidth,
+                    height: timeline.scrollHeight,
+                    windowWidth: timeline.scrollWidth + 200,
+                    windowHeight: timeline.scrollHeight + 200,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+                
+                timeline.style.cssText = originalStyle;
+                
+                const link = document.createElement('a');
+                const title = document.getElementById('projectTitle').value || 'retroplanning';
+                const safeName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const timestamp = new Date().toISOString().slice(0, 10);
+                link.download = `${safeName}_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                
+                showToast('Image PNG exportée !', 'success');
+                
+            } catch (error) {
+                console.error('Erreur export PNG:', error);
+                showToast('Erreur lors de l\'export PNG', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // EXPORT SVG
+        // ============================================
+
+        function exportSVG() {
+            const timeline = document.getElementById('timeline');
+            const loader = document.getElementById('exportLoader');
+            
+            loader.style.display = 'flex';
+            
+            setTimeout(() => {
+                try {
+                    const width = timeline.scrollWidth;
+                    const height = timeline.scrollHeight;
+                    const fontFamily = document.getElementById('fontFamily').value;
+                    
+                    const clonedContent = timeline.cloneNode(true);
+                    inlineStyles(clonedContent);
+                    
+                    const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="${width + 40}" 
+     height="${height + 40}"
+     viewBox="0 0 ${width + 40} ${height + 40}">
+    <rect width="100%" height="100%" fill="white"/>
+    <foreignObject x="20" y="20" width="${width}" height="${height}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: ${fontFamily}; background: white;">
+            ${clonedContent.innerHTML}
+        </div>
+    </foreignObject>
+</svg>`;
+                    
+                    const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const title = document.getElementById('projectTitle').value || 'retroplanning';
+                    const safeName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    const timestamp = new Date().toISOString().slice(0, 10);
+                    link.download = `${safeName}_${timestamp}.svg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    
+                    showToast('Image SVG exportée !', 'success');
+                    
+                } catch (error) {
+                    console.error('Erreur export SVG:', error);
+                    showToast('Erreur lors de l\'export SVG', 'error');
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }, 100);
+        }
+
+        function inlineStyles(element) {
+            const computed = window.getComputedStyle(element);
+            const importantStyles = [
+                'font-family', 'font-size', 'font-weight', 'color', 
+                'background', 'background-color', 'border', 'border-color',
+                'border-radius', 'padding', 'margin', 'text-align',
+                'display', 'position', 'left', 'top', 'width', 'height',
+                'box-shadow', 'line-height', 'letter-spacing'
+            ];
+            
+            let styleString = '';
+            importantStyles.forEach(prop => {
+                const value = computed.getPropertyValue(prop);
+                if (value) {
+                    styleString += `${prop}: ${value}; `;
+                }
+            });
+            
+            if (styleString) {
+                element.setAttribute('style', (element.getAttribute('style') || '') + styleString);
+            }
+            
+            Array.from(element.children).forEach(child => inlineStyles(child));
+        }
+
+        // ============================================
+        // DONNÉES D'EXEMPLE
+        // ============================================
+
+        function loadExample() {
+            document.getElementById('projectTitle').value = 'Rétroplanning - Colonnes PAV avec Compaction';
+            document.getElementById('projectSubtitle').value = 'D400 Périers-en-Auge | Durée totale : 12-14 mois';
+            document.getElementById('dateMode').value = 'absolute';
+            document.getElementById('startDate').value = '2025-01-01';
+            document.getElementById('startDateContainer').style.display = 'block';
+            
+            phases = [
+                {
+                    name: 'Phase 1 : Études préalables',
+                    start: 1,
+                    end: 2,
+                    content: '• Sondage géotechnique\n• Autorisations administratives (CD 14)',
+                    row: 1,
+                    critical: false
+                },
+                {
+                    name: 'Phase 3 : Marchés publics',
+                    start: 3,
+                    end: 4,
+                    content: '• Rédaction DCE\n• Publication et analyse offres\n• Notification marchés',
+                    row: 1,
+                    critical: false
+                },
+                {
+                    name: 'Phase 4 : Travaux',
+                    start: 5,
+                    end: 7,
+                    content: '• Terrassement et fouilles (3,5m)\n• Installation colonnes SIDCON\n• Aménagements et signalétique',
+                    row: 1,
+                    critical: false
+                },
+                {
+                    name: 'Installation des colonnes',
+                    start: 9,
+                    end: 10,
+                    content: '• Réception des colonnes\n• Installation dans les cuves béton',
+                    row: 1,
+                    critical: true
+                }
+            ];
+
+            renderPhasesList();
+            renderTimeline();
+            saveToStorage();
+        }
+    </script>
+</body>
+</html>
