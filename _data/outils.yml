@@ -28,6 +28,11 @@
       lien: outils/extracteurosm.html
       actif: true
 
+    - nom: Suivi Collecte Déchets
+      description: Suivez et gérez vos collectes de déchets sur une carte interactive.
+      lien: outils/suivi/index.html
+      actif: true
+
 - categorie: Analyse de Données
   outils:
     - nom: Outil d'analyse statistique
