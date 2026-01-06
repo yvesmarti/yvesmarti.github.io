@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c5f2d">
+    <title>Suivi Collecte Déchets</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2c5f2d 0%, #3d8b40 100%);
+            color: white;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            font-size: 13px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: #4CAF50;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Container */
+        .container {
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Carte */
+        #map {
+            height: 250px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Info GPS */
+        .gps-info {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .gps-info h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .gps-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .gps-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gps-detail label {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .gps-detail span {
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Boutons principaux */
+        .main-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+            color: white;
+        }
+
+        .btn-anomaly {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            font-size: 18px;
+        }
+
+        .btn-anomaly:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-export {
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-test-gps {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        /* Alert box pour les permissions */
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert-box.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .alert-box.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .alert-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Liste des anomalies */
+        .anomalies-section {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .anomalies-section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .anomaly-item {
+            background: #fff8f0;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .anomaly-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .anomaly-time {
+            font-weight: 600;
+            color: #ff9800;
+            margin-bottom: 4px;
+        }
+
+        .anomaly-coords {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .anomaly-note {
+            color: #333;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* Modal pour ajouter une note */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-confirm {
+            background: #ff9800;
+            color: white;
+        }
+
+        /* Stats */
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c5f2d;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #323232;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 3000;
+            transition: transform 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🚛 Suivi Collecte Déchets</h1>
+        <div class="status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">En attente</span>
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="container">
+        <!-- Alerte GPS -->
+        <div id="gpsAlert" class="alert-box hidden">
+            <strong id="alertTitle">ℹ️ Information</strong>
+            <span id="alertMessage">Message</span>
+        </div>
+
+        <!-- Carte -->
+        <div id="map"></div>
+
+        <!-- Info GPS -->
+        <div class="gps-info">
+            <h3>📍 Position GPS</h3>
+            <div class="gps-details">
+                <div class="gps-detail">
+                    <label>Latitude</label>
+                    <span id="lat">--</span>
+                </div>
+                <div class="gps-detail">
+                    <label>Longitude</label>
+                    <span id="lon">--</span>
+                </div>
+                <div class="gps-detail">
+                    <label>Précision</label>
+                    <span id="accuracy">--</span>
+                </div>
+                <div class="gps-detail">
+                    <label>Points</label>
+                    <span id="pointCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="statDistance">0.0</div>
+                <div class="stat-label">km</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="statDuration">00:00</div>
+                <div class="stat-label">durée</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="statAnomalies">0</div>
+                <div class="stat-label">anomalies</div>
+            </div>
+        </div>
+
+        <!-- Boutons principaux -->
+        <div class="main-buttons">
+            <button class="btn btn-test-gps" id="btnTestGPS">
+                📍 Tester le GPS
+            </button>
+            <button class="btn btn-start" id="btnStart">
+                ▶️ Démarrer la tournée
+            </button>
+            <button class="btn btn-stop hidden" id="btnStop">
+                ⏹️ Arrêter la tournée
+            </button>
+            <button class="btn btn-anomaly" id="btnAnomaly" disabled>
+                ⚠️ Signaler une anomalie
+            </button>
+        </div>
+
+        <!-- Liste des anomalies -->
+        <div class="anomalies-section">
+            <h3>📋 Anomalies signalées (<span id="anomalyCount">0</span>)</h3>
+            <div id="anomaliesList">
+                <div class="empty-state">Aucune anomalie signalée pour le moment</div>
+            </div>
+        </div>
+
+        <!-- Boutons d'export -->
+        <div class="main-buttons">
+            <button class="btn btn-export" id="btnExportGPX">
+                💾 Exporter en GPX
+            </button>
+            <button class="btn btn-export" id="btnExportJSON">
+                💾 Exporter en GeoJSON
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter une note -->
+    <div class="modal" id="anomalyModal">
+        <div class="modal-content">
+            <h3>⚠️ Détails de l'anomalie</h3>
+            <textarea id="anomalyNote" placeholder="Décrivez le problème constaté...&#10;&#10;Exemples :&#10;- Bac renversé&#10;- Débordement&#10;- Accès bloqué&#10;- Bac détérioré"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="btnCancelAnomaly">Annuler</button>
+                <button class="btn-confirm" id="btnConfirmAnomaly">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== VARIABLES GLOBALES =====
+        let map, currentMarker, trackingLine;
+        let isTracking = false;
+        let watchId = null;
+        let trackPoints = []; // Tous les points GPS
+        let anomalies = []; // Points d'anomalie avec détails
+        let startTime = null;
+        let totalDistance = 0;
+
+        // ===== INITIALISATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadSavedData();
+            setupEventListeners();
+            registerServiceWorker();
+            checkGPSAvailability();
+        });
+
+        function checkGPSAvailability() {
+            if (!navigator.geolocation) {
+                showAlert('error', '❌ GPS non supporté', 
+                    'Votre appareil ne supporte pas la géolocalisation. Cette application nécessite un GPS.');
+            } else {
+                showAlert('', 'ℹ️ Première utilisation ?', 
+                    'Commencez par tester le GPS avec le bouton bleu ci-dessous. Cela demandera l\'autorisation d\'utiliser votre position.');
+                
+                // Masquer après 10 secondes
+                setTimeout(() => {
+                    document.getElementById('gpsAlert').classList.add('hidden');
+                }, 10000);
+            }
+        }
+
+        // ===== CARTE LEAFLET =====
+        function initMap() {
+            // Centre sur la France par défaut
+            map = L.map('map').setView([49.2859, -0.3406], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Ligne de suivi
+            trackingLine = L.polyline([], {
+                color: '#2c5f2d',
+                weight: 4,
+                opacity: 0.7
+            }).addTo(map);
+        }
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            document.getElementById('btnTestGPS').addEventListener('click', testGPS);
+            document.getElementById('btnStart').addEventListener('click', startTracking);
+            document.getElementById('btnStop').addEventListener('click', stopTracking);
+            document.getElementById('btnAnomaly').addEventListener('click', openAnomalyModal);
+            document.getElementById('btnExportGPX').addEventListener('click', exportGPX);
+            document.getElementById('btnExportJSON').addEventListener('click', exportGeoJSON);
+            document.getElementById('btnCancelAnomaly').addEventListener('click', closeAnomalyModal);
+            document.getElementById('btnConfirmAnomaly').addEventListener('click', confirmAnomaly);
+        }
+
+        // ===== TEST GPS =====
+        function testGPS() {
+            if (!navigator.geolocation) {
+                showAlert('error', '❌ GPS non disponible', 'Votre appareil ne supporte pas la géolocalisation.');
+                return;
+            }
+
+            showAlert('', 'ℹ️ Test GPS en cours...', 'Vérification de la position GPS...');
+            document.getElementById('btnTestGPS').disabled = true;
+            document.getElementById('btnTestGPS').textContent = '⏳ Test en cours...';
+
+            // Demander une position unique pour tester
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Succès !
+                    const { latitude, longitude, accuracy } = position.coords;
+                    showAlert('success', '✅ GPS fonctionne !', 
+                        `Position détectée avec une précision de ±${Math.round(accuracy)}m. Vous pouvez démarrer la tournée.`);
+                    
+                    // Mettre à jour la carte
+                    updateMap(latitude, longitude);
+                    updateGPSDisplay(latitude, longitude, accuracy);
+                    
+                    document.getElementById('btnTestGPS').disabled = false;
+                    document.getElementById('btnTestGPS').textContent = '✅ GPS OK - Retester';
+                },
+                (error) => {
+                    // Erreur
+                    document.getElementById('btnTestGPS').disabled = false;
+                    document.getElementById('btnTestGPS').textContent = '📍 Tester le GPS';
+                    
+                    handleGPSError(error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function handleGPSError(error) {
+            let title = '❌ Erreur GPS';
+            let message = '';
+
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = `<strong>Permission refusée</strong><br><br>
+                        1. Ouvrez les <strong>Paramètres</strong> de votre téléphone<br>
+                        2. Allez dans <strong>Applications</strong> → <strong>Chrome</strong><br>
+                        3. Puis <strong>Autorisations</strong> → <strong>Position</strong><br>
+                        4. Sélectionnez <strong>"Autoriser"</strong><br>
+                        5. Revenez ici et retestez`;
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = `<strong>Position GPS indisponible</strong><br><br>
+                        • Vérifiez que le GPS est activé dans les paramètres<br>
+                        • Assurez-vous d'être à l'extérieur ou près d'une fenêtre<br>
+                        • Le signal GPS peut mettre 30 secondes à 1 minute pour se fixer`;
+                    break;
+                case error.TIMEOUT:
+                    message = `<strong>Délai d'attente dépassé</strong><br><br>
+                        • Le GPS ne répond pas assez vite<br>
+                        • Sortez à l'extérieur si vous êtes en intérieur<br>
+                        • Attendez quelques instants et réessayez`;
+                    break;
+                default:
+                    message = 'Erreur inconnue lors de l\'accès au GPS';
+            }
+
+            showAlert('error', title, message);
+        }
+
+        function showAlert(type, title, message) {
+            const alert = document.getElementById('gpsAlert');
+            const alertTitle = document.getElementById('alertTitle');
+            const alertMessage = document.getElementById('alertMessage');
+
+            alertTitle.textContent = title;
+            alertMessage.innerHTML = message;
+
+            alert.className = 'alert-box';
+            if (type === 'success') alert.classList.add('success');
+            if (type === 'error') alert.classList.add('error');
+            if (type === '') alert.className = 'alert-box'; // neutre
+
+            alert.classList.remove('hidden');
+
+            // Auto-masquer après 30 secondes sauf pour les erreurs
+            if (type !== 'error') {
+                setTimeout(() => {
+                    alert.classList.add('hidden');
+                }, 30000);
+            }
+        }
+
+        // ===== SUIVI GPS =====
+        function startTracking() {
+            if (!navigator.geolocation) {
+                showToast('❌ GPS non disponible sur cet appareil');
+                return;
+            }
+
+            // Réinitialiser les données
+            trackPoints = [];
+            anomalies = [];
+            totalDistance = 0;
+            startTime = Date.now();
+            
+            // Vider la carte
+            trackingLine.setLatLngs([]);
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            // Démarrer le suivi
+            isTracking = true;
+            watchId = navigator.geolocation.watchPosition(
+                handlePositionUpdate,
+                handlePositionError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+
+            // Mise à jour UI
+            updateStatus(true);
+            document.getElementById('btnStart').classList.add('hidden');
+            document.getElementById('btnStop').classList.remove('hidden');
+            document.getElementById('btnAnomaly').disabled = false;
+
+            showToast('✅ Tournée démarrée');
+        }
+
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            isTracking = false;
+
+            // Mise à jour UI
+            updateStatus(false);
+            document.getElementById('btnStart').classList.remove('hidden');
+            document.getElementById('btnStop').classList.add('hidden');
+            document.getElementById('btnAnomaly').disabled = true;
+
+            // Sauvegarder
+            saveData();
+
+            showToast('⏹️ Tournée arrêtée - Données sauvegardées');
+        }
+
+        function handlePositionUpdate(position) {
+            const { latitude, longitude, accuracy } = position.coords;
+            
+            // Ajouter le point
+            const point = {
+                lat: latitude,
+                lon: longitude,
+                timestamp: Date.now(),
+                accuracy: accuracy
+            };
+            trackPoints.push(point);
+
+            // Calculer la distance si ce n'est pas le premier point
+            if (trackPoints.length > 1) {
+                const prev = trackPoints[trackPoints.length - 2];
+                totalDistance += calculateDistance(prev.lat, prev.lon, latitude, longitude);
+            }
+
+            // Mettre à jour la carte
+            updateMap(latitude, longitude);
+
+            // Mettre à jour l'affichage
+            updateGPSDisplay(latitude, longitude, accuracy);
+            updateStats();
+
+            // Sauvegarder automatiquement
+            saveData();
+        }
+
+        function handlePositionError(error) {
+            console.error('Erreur GPS:', error);
+            handleGPSError(error);
+            
+            // Arrêter le suivi en cas d'erreur de permission
+            if (error.code === error.PERMISSION_DENIED && isTracking) {
+                stopTracking();
+                showToast('⚠️ Tournée arrêtée - Permission GPS révoquée');
+            }
+        }
+
+        // ===== CARTE =====
+        function updateMap(lat, lon) {
+            // Déplacer/créer le marqueur de position actuelle
+            if (currentMarker) {
+                currentMarker.setLatLng([lat, lon]);
+            } else {
+                currentMarker = L.circleMarker([lat, lon], {
+                    color: '#4CAF50',
+                    fillColor: '#4CAF50',
+                    fillOpacity: 0.8,
+                    radius: 8
+                }).addTo(map);
+            }
+
+            // Mettre à jour la ligne de suivi
+            const trackLatLngs = trackPoints.map(p => [p.lat, p.lon]);
+            trackingLine.setLatLngs(trackLatLngs);
+
+            // Centrer la carte
+            map.setView([lat, lon], map.getZoom());
+        }
+
+        // ===== ANOMALIES =====
+        function openAnomalyModal() {
+            document.getElementById('anomalyModal').classList.add('active');
+            document.getElementById('anomalyNote').value = '';
+            document.getElementById('anomalyNote').focus();
+        }
+
+        function closeAnomalyModal() {
+            document.getElementById('anomalyModal').classList.remove('active');
+        }
+
+        function confirmAnomaly() {
+            const note = document.getElementById('anomalyNote').value.trim();
+            
+            if (trackPoints.length === 0) {
+                showToast('❌ Aucune position GPS disponible');
+                return;
+            }
+
+            // Prendre la dernière position GPS
+            const lastPoint = trackPoints[trackPoints.length - 1];
+            
+            const anomaly = {
+                lat: lastPoint.lat,
+                lon: lastPoint.lon,
+                timestamp: Date.now(),
+                note: note || 'Anomalie signalée'
+            };
+
+            anomalies.push(anomaly);
+
+            // Ajouter un marqueur sur la carte
+            L.marker([anomaly.lat, anomaly.lon], {
+                icon: L.divIcon({
+                    className: 'anomaly-marker',
+                    html: '⚠️',
+                    iconSize: [30, 30]
+                })
+            }).bindPopup(`<b>Anomalie</b><br>${anomaly.note}<br><small>${new Date(anomaly.timestamp).toLocaleTimeString('fr-FR')}</small>`)
+              .addTo(map);
+
+            // Mettre à jour l'affichage
+            updateAnomaliesList();
+            updateStats();
+
+            closeAnomalyModal();
+            saveData();
+
+            showToast('✅ Anomalie enregistrée');
+        }
+
+        function updateAnomaliesList() {
+            const list = document.getElementById('anomaliesList');
+            const count = document.getElementById('anomalyCount');
+            
+            count.textContent = anomalies.length;
+
+            if (anomalies.length === 0) {
+                list.innerHTML = '<div class="empty-state">Aucune anomalie signalée pour le moment</div>';
+                return;
+            }
+
+            list.innerHTML = anomalies.map((a, index) => `
+                <div class="anomaly-item">
+                    <div class="anomaly-time">⚠️ Anomalie #${index + 1} - ${new Date(a.timestamp).toLocaleTimeString('fr-FR')}</div>
+                    <div class="anomaly-coords">📍 ${a.lat.toFixed(6)}, ${a.lon.toFixed(6)}</div>
+                    ${a.note ? `<div class="anomaly-note">"${a.note}"</div>` : ''}
+                </div>
+            `).reverse().join('');
+        }
+
+        // ===== AFFICHAGE =====
+        function updateGPSDisplay(lat, lon, accuracy) {
+            document.getElementById('lat').textContent = lat.toFixed(6);
+            document.getElementById('lon').textContent = lon.toFixed(6);
+            document.getElementById('accuracy').textContent = accuracy ? `±${Math.round(accuracy)}m` : '--';
+            document.getElementById('pointCount').textContent = trackPoints.length;
+        }
+
+        function updateStats() {
+            // Distance
+            document.getElementById('statDistance').textContent = (totalDistance / 1000).toFixed(1);
+            
+            // Durée
+            if (startTime && isTracking) {
+                const duration = Math.floor((Date.now() - startTime) / 1000);
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
+                document.getElementById('statDuration').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            }
+            
+            // Anomalies
+            document.getElementById('statAnomalies').textContent = anomalies.length;
+        }
+
+        function updateStatus(active) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (active) {
+                dot.classList.add('active');
+                text.textContent = 'Tournée en cours';
+            } else {
+                dot.classList.remove('active');
+                text.textContent = 'En attente';
+            }
+        }
+
+        // ===== CALCULS =====
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // Formule de Haversine
+            const R = 6371000; // Rayon de la Terre en mètres
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // ===== EXPORT =====
+        function exportGPX() {
+            if (trackPoints.length === 0) {
+                showToast('❌ Aucune donnée à exporter');
+                return;
+            }
+
+            const date = new Date().toISOString();
+            const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Suivi Collecte NCPA" xmlns="http://www.topografix.com/GPX/1/1">
+    <metadata>
+        <name>Tournée collecte - ${new Date().toLocaleDateString('fr-FR')}</name>
+        <time>${date}</time>
+    </metadata>
+    <trk>
+        <name>Trace GPS</name>
+        <trkseg>
+${trackPoints.map(p => `            <trkpt lat="${p.lat}" lon="${p.lon}">
+                <time>${new Date(p.timestamp).toISOString()}</time>
+            </trkpt>`).join('\n')}
+        </trkseg>
+    </trk>
+${anomalies.map(a => `    <wpt lat="${a.lat}" lon="${a.lon}">
+        <time>${new Date(a.timestamp).toISOString()}</time>
+        <name>Anomalie</name>
+        <desc>${escapeXml(a.note)}</desc>
+        <sym>Flag, Red</sym>
+    </wpt>`).join('\n')}
+</gpx>`;
+
+            downloadFile(gpx, `tournee_${formatDateForFilename()}.gpx`, 'application/gpx+xml');
+            showToast('✅ GPX exporté');
+        }
+
+        function exportGeoJSON() {
+            if (trackPoints.length === 0) {
+                showToast('❌ Aucune donnée à exporter');
+                return;
+            }
+
+            const geojson = {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: trackPoints.map(p => [p.lon, p.lat])
+                        },
+                        properties: {
+                            name: 'Trace GPS',
+                            date: new Date().toISOString(),
+                            distance_km: (totalDistance / 1000).toFixed(2),
+                            points: trackPoints.length
+                        }
+                    },
+                    ...anomalies.map((a, i) => ({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [a.lon, a.lat]
+                        },
+                        properties: {
+                            type: 'anomalie',
+                            numero: i + 1,
+                            note: a.note,
+                            timestamp: new Date(a.timestamp).toISOString()
+                        }
+                    }))
+                ]
+            };
+
+            downloadFile(JSON.stringify(geojson, null, 2), `tournee_${formatDateForFilename()}.geojson`, 'application/json');
+            showToast('✅ GeoJSON exporté');
+        }
+
+        // ===== UTILITAIRES =====
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function formatDateForFilename() {
+            const now = new Date();
+            return `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+
+        function escapeXml(text) {
+            return text.replace(/[<>&'"]/g, c => {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case "'": return '&apos;';
+                    case '"': return '&quot;';
+                }
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ===== SAUVEGARDE =====
+        function saveData() {
+            const data = {
+                trackPoints,
+                anomalies,
+                startTime,
+                totalDistance,
+                savedAt: Date.now()
+            };
+            localStorage.setItem('suivi_collecte', JSON.stringify(data));
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('suivi_collecte');
+            if (!saved) return;
+
+            try {
+                const data = JSON.parse(saved);
+                trackPoints = data.trackPoints || [];
+                anomalies = data.anomalies || [];
+                startTime = data.startTime;
+                totalDistance = data.totalDistance || 0;
+
+                // Restaurer la carte
+                if (trackPoints.length > 0) {
+                    const trackLatLngs = trackPoints.map(p => [p.lat, p.lon]);
+                    trackingLine.setLatLngs(trackLatLngs);
+                    
+                    const lastPoint = trackPoints[trackPoints.length - 1];
+                    map.setView([lastPoint.lat, lastPoint.lon], 15);
+                    
+                    updateGPSDisplay(lastPoint.lat, lastPoint.lon, lastPoint.accuracy);
+                }
+
+                // Restaurer les marqueurs d'anomalie
+                anomalies.forEach(a => {
+                    L.marker([a.lat, a.lon], {
+                        icon: L.divIcon({
+                            className: 'anomaly-marker',
+                            html: '⚠️',
+                            iconSize: [30, 30]
+                        })
+                    }).bindPopup(`<b>Anomalie</b><br>${a.note}<br><small>${new Date(a.timestamp).toLocaleTimeString('fr-FR')}</small>`)
+                      .addTo(map);
+                });
+
+                updateAnomaliesList();
+                updateStats();
+
+            } catch (e) {
+                console.error('Erreur lors du chargement des données:', e);
+            }
+        }
+
+        // ===== SERVICE WORKER =====
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(() => console.log('Service Worker enregistré'))
+                    .catch(err => console.error('Erreur Service Worker:', err));
+            }
+        }
+    </script>
+</body>
+</html>
