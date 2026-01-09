@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outil de Géocodage - Base Adresse Nationale - YM - 08-2025</title>
+    <title>Géocodage BAN - Amélioré</title>
     
-    <!-- Leaflet CSS pour la carte -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- Leaflet pour la carte -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- PapaParse pour lire les CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- SheetJS pour lire les Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
         * {
@@ -17,1233 +24,1076 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
             padding: 20px;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
         }
-
+        
+        /* En-tête */
         .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .upload-section {
-            padding: 30px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .upload-area {
-            border: 3px dashed #007bff;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            background: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .upload-area:hover {
-            border-color: #0056b3;
-            background: #f8f9ff;
-            transform: translateY(-2px);
-        }
-
-        .upload-area.dragover {
-            border-color: #28a745;
-            background: #f0fff4;
-        }
-
-        .upload-icon {
-            font-size: 3em;
-            color: #007bff;
-            margin-bottom: 20px;
-        }
-
-        .upload-text {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            color: #495057;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,123,255,0.4);
-        }
-
-        .btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-        }
-
-        .column-mapping {
-            margin-top: 30px;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
-        }
-
-        .column-mapping h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .column-mapping p {
-            color: #6c757d;
-            margin-bottom: 25px;
-        }
-
-        .mapping-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .mapping-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .mapping-item label {
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 8px;
-        }
-
-        .column-select {
-            padding: 10px 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-            background: white;
-        }
-
-        .column-select:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
-        }
-
-        .mapping-preview {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-
-        .mapping-preview h4 {
-            color: #495057;
-            margin-bottom: 10px;
-        }
-
-        .preview-address {
-            font-size: 1.1em;
-            color: #007bff;
-            font-weight: bold;
-            font-style: italic;
-        }
-
-        .mapping-actions {
-            text-align: center;
-        }
-
-        .progress-container {
-            margin: 20px 0;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .main-content {
-            display: flex;
-            height: 70vh;
-        }
-
-        .map-container {
-            flex: 1;
-            position: relative;
-        }
-
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-
-        .table-container {
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #dee2e6;
-        }
-
-        .table-header {
-            padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 10px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
-        }
-
-        .table-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0;
-        }
-
-        .address-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-
-        .address-table th {
             background: #2c3e50;
             color: white;
-            padding: 12px 15px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        /* Zone principale */
+        .main-content {
+            padding: 30px;
+        }
+        
+        /* Section upload */
+        .upload-section {
+            background: #f8f9fa;
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .upload-section:hover {
+            border-color: #2980b9;
+            background: #f0f0f5;
+        }
+        
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        
+        .upload-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+        
+        .upload-label:hover {
+            transform: scale(1.05);
+            background: #34495e;
+        }
+        
+        /* Tableau de prévisualisation */
+        .preview-section {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .preview-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .preview-header h3 {
+            font-size: 1.3em;
+        }
+        
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            background: #f0f0f5;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 12px 25px;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-success:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px;
             text-align: left;
             position: sticky;
             top: 0;
             z-index: 10;
+            border-bottom: 2px solid #2c3e50;
         }
-
-        .address-table td {
-            padding: 10px 15px;
-            border-bottom: 1px solid #dee2e6;
-            transition: background-color 0.3s ease;
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
         }
-
-        .address-table tbody tr:hover {
-            background: #f8f9ff;
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .checkbox-cell {
+            text-align: center;
+            width: 50px;
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
         }
-
-        .address-table tbody tr.selected {
-            background: #e3f2fd;
-            font-weight: bold;
+        
+        /* Section actions */
+        .actions-section {
+            display: none;
+            text-align: center;
+            margin-bottom: 30px;
         }
-
-        .status-success {
-            color: #28a745;
-            font-weight: bold;
+        
+        /* Barre de progression */
+        .progress-section {
+            display: none;
+            margin-bottom: 30px;
         }
-
-        .status-error {
-            color: #dc3545;
-            font-weight: bold;
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
         }
-
-        .stats {
-            padding: 20px;
-            background: #f8f9fa;
+        
+        .progress-fill {
+            height: 100%;
+            background: #2c3e50;
+            width: 0%;
+            transition: width 0.3s;
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Section carte */
+        .map-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .map-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .basemap-selector {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        .column-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .column-select:focus {
+            outline: none;
+            border-color: #2c3e50;
+        }
+        
+        #map {
+            height: 500px;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        /* Statistiques */
+        .stats {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
         }
-
-        .stat-item {
-            flex: 1;
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
         }
-
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
         .stat-number {
             font-size: 2em;
             font-weight: bold;
-            color: #007bff;
+            color: #2c3e50;
         }
-
+        
         .stat-label {
-            color: #6c757d;
+            color: #7f8c8d;
             margin-top: 5px;
         }
-
+        
+        /* Export */
         .export-section {
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
+            display: none;
             text-align: center;
+            margin-top: 20px;
         }
-
-        .export-section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .export-section p {
-            color: #6c757d;
-            margin-bottom: 20px;
-        }
-
-        .export-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .export-info {
-            color: #6c757d;
-            font-size: 0.9em;
-            background: white;
+        
+        /* Messages */
+        .message {
             padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-            text-align: left;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-                height: auto;
-            }
-            
-            .map-container, .table-container {
-                min-height: 400px;
-            }
-            
-            .table-container {
-                border-left: none;
-                border-top: 1px solid #dee2e6;
-            }
-        }
-
-        // Affichage de l'interface de mapping des colonnes
-        function showColumnMapping() {
-            document.getElementById('columnMapping').style.display = 'block';
-            populateColumnSelects();
-        }
-
-        // Remplissage des sélecteurs de colonnes
-        function populateColumnSelects() {
-            const selectors = ['numeroColumn', 'rueColumn', 'codePostalColumn', 'communeColumn'];
-            
-            selectors.forEach(selectorId => {
-                const select = document.getElementById(selectorId);
-                // Conserver la première option (-- Optionnel -- ou -- Sélectionner --)
-                const firstOption = select.children[0].outerHTML;
-                select.innerHTML = firstOption;
-                
-                csvHeaders.forEach(header => {
-                    const option = document.createElement('option');
-                    option.value = header;
-                    option.textContent = header;
-                    select.appendChild(option);
-                });
-            });
-
-            // Essayer de détecter automatiquement certaines colonnes
-            autoDetectColumns();
-        }
-
-        // Détection automatique des colonnes probables
-        function autoDetectColumns() {
-            const detectionRules = {
-                numeroColumn: ['numero', 'num', 'n°', 'number'],
-                rueColumn: ['rue', 'voie', 'street', 'adresse', 'address'],
-                codePostalColumn: ['code', 'postal', 'cp', 'zip', 'postcode'],
-                communeColumn: ['commune', 'ville', 'city', 'town', 'localite']
-            };
-
-            Object.keys(detectionRules).forEach(selectId => {
-                const select = document.getElementById(selectId);
-                const keywords = detectionRules[selectId];
-                
-                const matchedHeader = csvHeaders.find(header => 
-                    keywords.some(keyword => 
-                        header.toLowerCase().includes(keyword.toLowerCase())
-                    )
-                );
-
-                if (matchedHeader) {
-                    select.value = matchedHeader;
-                }
-            });
-
-            updatePreview();
-        }
-
-        // Mise à jour de l'aperçu de l'adresse
-        function updatePreview() {
-            const numero = document.getElementById('numeroColumn').value;
-            const rue = document.getElementById('rueColumn').value;
-            const codePostal = document.getElementById('codePostalColumn').value;
-            const commune = document.getElementById('communeColumn').value;
-
-            if (!rue) {
-                document.getElementById('previewAddress').textContent = 
-                    'Veuillez au minimum sélectionner une colonne pour le nom de la rue';
-                return;
-            }
-
-            // Construire un exemple d'adresse avec la première ligne de données
-            const firstRow = csvData[0] || {};
-            const parts = [];
-
-            if (numero && firstRow[numero]) parts.push(firstRow[numero]);
-            if (rue && firstRow[rue]) parts.push(firstRow[rue]);
-            if (codePostal && firstRow[codePostal]) parts.push(firstRow[codePostal]);
-            if (commune && firstRow[commune]) parts.push(firstRow[commune]);
-
-            const exampleAddress = parts.join(' ').trim() || 'Exemple d\'adresse';
-            document.getElementById('previewAddress').textContent = `Exemple: ${exampleAddress}`;
-        }
-
-        // Démarrage du géocodage avec mapping personnalisé
-        function startGeocodingWithMapping() {
-            const rue = document.getElementById('rueColumn').value;
-            
-            if (!rue) {
-                alert('Veuillez sélectionner au minimum une colonne pour le nom de la rue.');
-                return;
-            }
-
-            const numero = document.getElementById('numeroColumn').value;
-            const codePostal = document.getElementById('codePostalColumn').value;
-            const commune = document.getElementById('communeColumn').value;
-
-            // Construire les adresses à partir des colonnes sélectionnées
-            const addressData = csvData.map(row => {
-                const parts = [];
-                
-                if (numero && row[numero]) parts.push(row[numero]);
-                if (rue && row[rue]) parts.push(row[rue]);
-                if (codePostal && row[codePostal]) parts.push(row[codePostal]);
-                if (commune && row[commune]) parts.push(row[commune]);
-
-                return {
-                    adresse: parts.join(' ').trim(),
-                    originalRow: row
-                };
-            }).filter(item => item.adresse); // Filtrer les lignes vides
-
-            console.log('Adresses construites:', addressData);
-
-            // Masquer le mapping et démarrer le géocodage
-            document.getElementById('columnMapping').style.display = 'none';
-            startGeocoding(addressData);
-        }
-
-        // Réinitialisation pour choisir un autre fichier
-        function resetUpload() {
-            document.getElementById('columnMapping').style.display = 'none';
-            document.getElementById('fileInput').value = '';
-            csvData = [];
-            csvHeaders = [];
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            border-radius: 10px;
+            margin-bottom: 20px;
             display: none;
         }
-
-        .loading-spinner {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- En-tête -->
         <div class="header">
-            <h1><i class="fas fa-map-marked-alt"></i> Outil de Géocodage</h1>
-            <p>Base d'Adresse Nationale - Géocodage d'adresses françaises - YM - 08-2025</p>
+            <h1><i class="fas fa-map-marker-alt"></i> Outil de géocodage BAN</h1>
+            <p>Importez, sélectionnez et géocodez vos adresses avec la Base Adresse Nationale</p>
         </div>
-
-        <div class="upload-section">
-            <div class="upload-area" id="uploadArea">
-                <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                <div class="upload-text">Glissez votre fichier CSV ici ou cliquez pour sélectionner</div>
-                <p>L'outil détectera automatiquement vos colonnes d'adresses</p>
-                <input type="file" id="fileInput" class="file-input" accept=".csv">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-file-csv"></i> Choisir un fichier CSV
-                </button>
+        
+        <div class="main-content">
+            <!-- Messages -->
+            <div id="messageSuccess" class="message success"></div>
+            <div id="messageError" class="message error"></div>
+            
+            <!-- Section upload -->
+            <div class="upload-section">
+                <i class="fas fa-file-csv" style="font-size: 3em; color: #2c3e50; margin-bottom: 15px;"></i>
+                <h2 style="margin-bottom: 15px;">Charger un fichier CSV ou Excel</h2>
+                <p style="color: #7f8c8d; margin-bottom: 20px;">
+                    Formats acceptés : .csv et .xlsx<br>
+                    Vous pourrez ensuite sélectionner les colonnes contenant les informations d'adresse
+                </p>
+                <input type="file" id="fileInput" accept=".csv,.xlsx" />
+                <label for="fileInput" class="upload-label">
+                    <i class="fas fa-upload"></i> Choisir un fichier
+                </label>
             </div>
-
-            <!-- Section de mapping des colonnes -->
-            <div class="column-mapping" id="columnMapping" style="display: none;">
-                <h3><i class="fas fa-columns"></i> Configuration des colonnes</h3>
-                <p>Sélectionnez les colonnes correspondant à chaque élément de l'adresse :</p>
-                
-                <div class="mapping-grid">
-                    <div class="mapping-item">
-                        <label>Numéro de rue :</label>
-                        <select id="numeroColumn" class="column-select">
-                            <option value="">-- Optionnel --</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mapping-item">
-                        <label>Nom de la rue :</label>
-                        <select id="rueColumn" class="column-select">
-                            <option value="">-- Sélectionner --</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mapping-item">
-                        <label>Code postal :</label>
-                        <select id="codePostalColumn" class="column-select">
-                            <option value="">-- Optionnel --</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mapping-item">
-                        <label>Commune/Ville :</label>
-                        <select id="communeColumn" class="column-select">
-                            <option value="">-- Optionnel --</option>
-                        </select>
-                    </div>
+            
+            <!-- Section mapping des colonnes -->
+            <div id="mappingSection" class="preview-section">
+                <div class="preview-header">
+                    <h3><i class="fas fa-columns"></i> Configuration des colonnes</h3>
                 </div>
-
-                <div class="mapping-preview">
-                    <h4>Aperçu de l'adresse construite :</h4>
-                    <div class="preview-address" id="previewAddress">Sélectionnez vos colonnes pour voir l'aperçu</div>
-                </div>
-
-                <div class="mapping-actions">
-                    <button class="btn" id="startGeocodingBtn">
-                        <i class="fas fa-play"></i> Commencer le géocodage
-                    </button>
-                    <button class="btn btn-secondary" id="resetBtn">
-                        <i class="fas fa-undo"></i> Choisir un autre fichier
-                    </button>
+                <div style="padding: 20px; background: white;">
+                    <p style="color: #7f8c8d; margin-bottom: 20px;">
+                        Sélectionnez les colonnes de votre fichier pour construire l'adresse à géocoder.
+                        Vous pouvez soit utiliser une colonne "adresse complète", soit composer l'adresse à partir de plusieurs colonnes.
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                        <!-- Option 1 : Adresse complète -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
+                                <i class="fas fa-map-marker-alt"></i> Adresse complète
+                            </label>
+                            <select id="colAdresseComplete" class="column-select">
+                                <option value="">-- Ne pas utiliser --</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                                Ex: "15 Rue de la Paix 75002 Paris"
+                            </small>
+                        </div>
+                        
+                        <!-- Option 2 : Numéro -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
+                                <i class="fas fa-hashtag"></i> Numéro de voie
+                            </label>
+                            <select id="colNumero" class="column-select">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                                Ex: "15" ou "15 bis"
+                            </small>
+                        </div>
+                        
+                        <!-- Nom de voie -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
+                                <i class="fas fa-road"></i> Nom de la voie
+                            </label>
+                            <select id="colVoie" class="column-select">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                                Ex: "Rue de la Paix" ou "Avenue Victor Hugo"
+                            </small>
+                        </div>
+                        
+                        <!-- Code postal -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
+                                <i class="fas fa-mail-bulk"></i> Code postal
+                            </label>
+                            <select id="colCodePostal" class="column-select">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                                Ex: "75002"
+                            </small>
+                        </div>
+                        
+                        <!-- Commune -->
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
+                                <i class="fas fa-city"></i> Commune
+                            </label>
+                            <select id="colCommune" class="column-select">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
+                                Ex: "Paris" ou "Lyon"
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" onclick="validateMapping()" style="font-size: 1.1em; padding: 12px 30px;">
+                            <i class="fas fa-check"></i> Valider et continuer
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+            <!-- Section carte (maintenant en premier) -->
+            <div id="mapSection" class="map-section">
+                <div class="map-header">
+                    <h3><i class="fas fa-map"></i> Carte des résultats</h3>
+                    <select class="basemap-selector" id="basemapSelector" onchange="changeBasemap()">
+                        <option value="osm">OpenStreetMap</option>
+                        <option value="satellite">Vue Satellite + Labels</option>
+                    </select>
                 </div>
-                <div class="progress-text" id="progressText">Traitement en cours...</div>
-            </div>
-        </div>
-
-        <div class="stats" id="stats" style="display: none;">
-            <div class="stat-item">
-                <div class="stat-number" id="totalAddresses">0</div>
-                <div class="stat-label">Adresses totales</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="successAddresses">0</div>
-                <div class="stat-label">Géocodées</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="errorAddresses">0</div>
-                <div class="stat-label">Erreurs</div>
-            </div>
-        </div>
-
-        <div class="main-content" id="mainContent" style="display: none;">
-            <div class="map-container">
                 <div id="map"></div>
             </div>
-            <div class="table-container">
-                <div class="table-header">
-                    <input type="text" class="search-box" id="searchBox" placeholder="Rechercher une adresse...">
+            
+            <!-- Section prévisualisation -->
+            <div id="previewSection" class="preview-section">
+                <div class="preview-header">
+                    <h3><i class="fas fa-table"></i> Prévisualisation des données</h3>
+                    <div class="selection-controls">
+                        <button class="btn btn-primary" onclick="toggleSelectAll()">
+                            <i class="fas fa-check-square"></i> Tout sélectionner
+                        </button>
+                        <button class="btn btn-primary" onclick="deselectAll()">
+                            <i class="fas fa-square"></i> Tout désélectionner
+                        </button>
+                    </div>
                 </div>
-                <div class="table-wrapper">
-                    <table class="address-table">
-                        <thead>
-                            <tr>
-                                <th>Adresse</th>
-                                <th>Ville</th>
-                                <th>Code Postal</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody id="addressTableBody">
-                        </tbody>
+                <div class="table-container">
+                    <table id="previewTable">
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
                     </table>
                 </div>
             </div>
-        </div>
-
-        <div class="export-section" id="exportSection" style="display: none;">
-            <h3><i class="fas fa-download"></i> Exporter les résultats</h3>
-            <p>Téléchargez vos données géocodées dans différents formats :</p>
-            <div class="export-buttons">
-                <button class="btn" id="exportCsvBtn">
-                    <i class="fas fa-file-csv"></i> CSV (Excel)
+            
+            <!-- Section actions -->
+            <div id="actionsSection" class="actions-section">
+                <button class="btn btn-success" onclick="startGeocoding()">
+                    <i class="fas fa-location-arrow"></i> Géocoder les lignes sélectionnées
                 </button>
-                <button class="btn" id="exportGeoJsonBtn">
-                    <i class="fas fa-map-marked"></i> GeoJSON (QGIS)
-                </button>
-                <button class="btn" id="exportKmlBtn">
-                    <i class="fas fa-globe"></i> KML (Google Earth)
-                </button>
+                <p style="color: #7f8c8d; margin-top: 10px;" id="selectedCount"></p>
             </div>
-            <div class="export-info">
-                <small>
-                    <strong>CSV :</strong> Pour Excel, LibreOffice<br>
-                    <strong>GeoJSON :</strong> Pour QGIS, ArcGIS, Leaflet<br>
-                    <strong>KML :</strong> Pour Google Earth, Google Maps
-                </small>
+            
+            <!-- Barre de progression -->
+            <div id="progressSection" class="progress-section">
+                <h3 style="margin-bottom: 10px;">Géocodage en cours...</h3>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill">0%</div>
+                </div>
+            </div>
+            
+            <!-- Statistiques -->
+            <div id="statsSection" class="stats">
+                <h3><i class="fas fa-chart-bar"></i> Résultats du géocodage</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statTotal">0</div>
+                        <div class="stat-label">Adresses traitées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statSuccess" style="color: #27ae60;">0</div>
+                        <div class="stat-label">Géocodées avec succès</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statFailed" style="color: #e74c3c;">0</div>
+                        <div class="stat-label">Échecs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statRate">0%</div>
+                        <div class="stat-label">Taux de réussite</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section export -->
+            <div id="exportSection" class="export-section">
+                <button class="btn btn-success" onclick="exportCSV()">
+                    <i class="fas fa-download"></i> Télécharger le CSV avec coordonnées
+                </button>
             </div>
         </div>
     </div>
-
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <div>Géocodage en cours...</div>
-        </div>
-    </div>
-
-    <!-- Leaflet JS pour la carte -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    
-    <!-- Papa Parse pour lire les CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // Variables globales pour stocker les données
-        let addressesData = [];
-        let csvData = []; // Données brutes du CSV
-        let csvHeaders = []; // En-têtes du CSV
-        let map = null;
-        let markersLayer = null;
-        let currentSelectedRow = null;
-
-        // Initialisation quand la page est chargée
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-        });
-
-        // Configuration des écouteurs d'événements
-        function setupEventListeners() {
-            const fileInput = document.getElementById('fileInput');
-            const uploadArea = document.getElementById('uploadArea');
-            const searchBox = document.getElementById('searchBox');
-            const exportCsvBtn = document.getElementById('exportCsvBtn');
-            const exportGeoJsonBtn = document.getElementById('exportGeoJsonBtn');
-            const exportKmlBtn = document.getElementById('exportKmlBtn');
-            const startGeocodingBtn = document.getElementById('startGeocodingBtn');
-            const resetBtn = document.getElementById('resetBtn');
-
-            // Gestion du fichier CSV
-            fileInput.addEventListener('change', handleFileSelect);
-            
-            // Gestion du drag and drop
-            uploadArea.addEventListener('dragover', handleDragOver);
-            uploadArea.addEventListener('dragleave', handleDragLeave);
-            uploadArea.addEventListener('drop', handleFileDrop);
-            uploadArea.addEventListener('click', () => fileInput.click());
-
-            // Recherche dans le tableau
-            searchBox.addEventListener('input', filterAddresses);
-
-            // Export des résultats
-            exportCsvBtn.addEventListener('click', () => exportResults('csv'));
-            exportGeoJsonBtn.addEventListener('click', () => exportResults('geojson'));
-            exportKmlBtn.addEventListener('click', () => exportResults('kml'));
-
-            // Boutons de mapping
-            startGeocodingBtn.addEventListener('click', startGeocodingWithMapping);
-            resetBtn.addEventListener('click', resetUpload);
-
-            // Écouteurs pour la prévisualisation
-            ['numeroColumn', 'rueColumn', 'codePostalColumn', 'communeColumn'].forEach(id => {
-                document.getElementById(id).addEventListener('change', updatePreview);
-            });
-        }
-
-        // Gestion du drag and drop
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('dragover');
-        }
-
-        function handleFileDrop(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processFile(files[0]);
-            }
-        }
-
-        // Gestion de la sélection de fichier
-        function handleFileSelect(e) {
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        
+        let csvData = [];           // Données brutes du CSV
+        let selectedRows = [];      // Indices des lignes sélectionnées
+        let geocodedData = [];      // Données avec coordonnées
+        let map = null;             // Carte Leaflet
+        let markersLayer = null;    // Couche pour les marqueurs
+        let baseLayers = {};        // Fonds de carte disponibles
+        let columnMapping = {       // Mapping des colonnes
+            adresseComplete: '',
+            numero: '',
+            voie: '',
+            codePostal: '',
+            commune: ''
+        };
+        
+        // ========================================
+        // CHARGEMENT DU FICHIER CSV OU EXCEL
+        // ========================================
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (file) {
-                processFile(file);
-            }
-        }
-
-        // Traitement du fichier CSV
-        function processFile(file) {
-            if (!file.name.toLowerCase().endsWith('.csv')) {
-                alert('Veuillez sélectionner un fichier CSV.');
+            if (!file) return;
+            
+            // Détecter le type de fichier par son extension
+            const fileName = file.name.toLowerCase();
+            const isCSV = fileName.endsWith('.csv');
+            const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+            
+            if (!isCSV && !isExcel) {
+                showMessage('error', '✗ Format non supporté. Utilisez .csv ou .xlsx');
                 return;
             }
-
-            // Parse le fichier CSV avec Papa Parse
-            Papa.parse(file, {
-                header: true, // Première ligne = noms des colonnes
-                skipEmptyLines: true,
-                complete: function(results) {
-                    csvData = results.data;
-                    csvHeaders = results.meta.fields || Object.keys(csvData[0] || {});
-                    
-                    console.log('Données CSV chargées:', csvData);
-                    console.log('En-têtes détectées:', csvHeaders);
-                    
-                    if (csvHeaders.length === 0) {
-                        alert('Impossible de détecter les colonnes du fichier CSV.');
-                        return;
+            
+            if (isCSV) {
+                // Lecture du CSV avec PapaParse
+                Papa.parse(file, {
+                    header: true,           // Première ligne = en-têtes
+                    skipEmptyLines: true,   // Ignorer les lignes vides
+                    complete: function(results) {
+                        csvData = results.data;
+                        showColumnMapping(results.meta.fields);
+                        showMessage('success', `✓ ${csvData.length} lignes chargées depuis le CSV !`);
+                    },
+                    error: function(error) {
+                        showMessage('error', '✗ Erreur lors de la lecture du CSV : ' + error.message);
                     }
-
-                    // Vérifier s'il y a une colonne "adresse" directe
-                    const addressColumn = csvHeaders.find(header => 
-                        header.toLowerCase().includes('adresse') || 
-                        header.toLowerCase() === 'adresse'
-                    );
-
-                    if (addressColumn && csvData[0][addressColumn]) {
-                        // Utilisation directe si une colonne adresse existe
-                        const confirmDirect = confirm(
-                            `Une colonne "${addressColumn}" a été détectée. Voulez-vous l'utiliser directement ?\n\n` +
-                            `Cliquez sur "OK" pour utiliser cette colonne.\n` +
-                            `Cliquez sur "Annuler" pour configurer manuellement les colonnes.`
-                        );
+                });
+            } else {
+                // Lecture du fichier Excel avec SheetJS
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        // Lire le fichier Excel
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
                         
-                        if (confirmDirect) {
-                            const directData = csvData.map(row => ({ adresse: row[addressColumn] }));
-                            startGeocoding(directData);
+                        // Prendre la première feuille
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // Convertir en JSON (tableau d'objets)
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+                        
+                        if (jsonData.length === 0) {
+                            showMessage('error', '✗ Le fichier Excel est vide ou mal formaté');
                             return;
                         }
+                        
+                        csvData = jsonData;
+                        const columns = Object.keys(jsonData[0]);
+                        showColumnMapping(columns);
+                        showMessage('success', `✓ ${csvData.length} lignes chargées depuis Excel !`);
+                        
+                    } catch (error) {
+                        showMessage('error', '✗ Erreur lors de la lecture du fichier Excel : ' + error.message);
                     }
-
-                    // Afficher l'interface de mapping
-                    showColumnMapping();
-                },
-                error: function(error) {
-                    console.error('Erreur lors de la lecture du CSV:', error);
-                    alert('Erreur lors de la lecture du fichier CSV.');
+                };
+                
+                reader.onerror = function() {
+                    showMessage('error', '✗ Erreur lors de la lecture du fichier');
+                };
+                
+                // Lire le fichier comme un ArrayBuffer
+                reader.readAsArrayBuffer(file);
+            }
+        });
+        
+        // ========================================
+        // AFFICHAGE DU MAPPING DES COLONNES
+        // ========================================
+        
+        function showColumnMapping(columns) {
+            const mappingSection = document.getElementById('mappingSection');
+            
+            // Remplir tous les sélecteurs avec les noms de colonnes
+            const selects = [
+                'colAdresseComplete',
+                'colNumero',
+                'colVoie',
+                'colCodePostal',
+                'colCommune'
+            ];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                // Vider les options existantes sauf la première
+                select.innerHTML = select.options[0].outerHTML;
+                
+                // Ajouter les colonnes
+                columns.forEach(col => {
+                    const option = document.createElement('option');
+                    option.value = col;
+                    option.textContent = col;
+                    select.appendChild(option);
+                });
+            });
+            
+            // Pré-sélection intelligente basée sur les noms de colonnes
+            autoDetectColumns(columns);
+            
+            // Afficher la section
+            mappingSection.style.display = 'block';
+        }
+        
+        // ========================================
+        // DÉTECTION AUTOMATIQUE DES COLONNES
+        // ========================================
+        
+        function autoDetectColumns(columns) {
+            columns.forEach(col => {
+                const colLower = col.toLowerCase();
+                
+                // Adresse complète
+                if (colLower.includes('adresse') && (colLower.includes('complet') || colLower.includes('complete') || !colLower.includes('complement'))) {
+                    document.getElementById('colAdresseComplete').value = col;
+                }
+                // Numéro
+                else if (colLower.includes('numero') || colLower.includes('numéro') || colLower === 'n°' || colLower === 'num') {
+                    document.getElementById('colNumero').value = col;
+                }
+                // Voie
+                else if (colLower.includes('voie') || colLower.includes('rue') || colLower.includes('avenue') || colLower.includes('libelle')) {
+                    document.getElementById('colVoie').value = col;
+                }
+                // Code postal
+                else if (colLower.includes('postal') || colLower === 'cp' || colLower === 'code_postal') {
+                    document.getElementById('colCodePostal').value = col;
+                }
+                // Commune
+                else if (colLower.includes('commune') || colLower.includes('ville') || colLower.includes('city')) {
+                    document.getElementById('colCommune').value = col;
                 }
             });
         }
-
-        // Démarrage du processus de géocodage
-        async function startGeocoding(data) {
-            addressesData = []; // Réinitialiser les données
+        
+        // ========================================
+        // VALIDATION DU MAPPING
+        // ========================================
+        
+        function validateMapping() {
+            // Récupérer les valeurs sélectionnées
+            columnMapping.adresseComplete = document.getElementById('colAdresseComplete').value;
+            columnMapping.numero = document.getElementById('colNumero').value;
+            columnMapping.voie = document.getElementById('colVoie').value;
+            columnMapping.codePostal = document.getElementById('colCodePostal').value;
+            columnMapping.commune = document.getElementById('colCommune').value;
+            
+            // Vérifier qu'au moins une option est sélectionnée
+            const hasAdresseComplete = columnMapping.adresseComplete !== '';
+            const hasComponents = columnMapping.voie !== '' || columnMapping.commune !== '' || columnMapping.codePostal !== '';
+            
+            if (!hasAdresseComplete && !hasComponents) {
+                showMessage('error', '✗ Veuillez sélectionner au moins une colonne "adresse complète" OU des colonnes pour composer l\'adresse');
+                return;
+            }
+            
+            // Masquer la section mapping
+            document.getElementById('mappingSection').style.display = 'none';
+            
+            // Afficher le tableau de prévisualisation
+            const allColumns = Object.keys(csvData[0]);
+            displayPreview(csvData, allColumns);
+        }
+        
+        // ========================================
+        // AFFICHAGE DU TABLEAU DE PRÉVISUALISATION
+        // ========================================
+        
+        function displayPreview(data, columns) {
+            const previewSection = document.getElementById('previewSection');
+            const tableHeader = document.getElementById('tableHeader');
+            const tableBody = document.getElementById('tableBody');
+            const actionsSection = document.getElementById('actionsSection');
+            
+            // Vider le tableau
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+            
+            // Créer l'en-tête avec case à cocher pour tout sélectionner
+            let headerRow = '<tr>';
+            headerRow += '<th class="checkbox-cell"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" /></th>';
+            headerRow += '<th>N°</th>';  // Colonne de numéro de ligne
+            columns.forEach(col => {
+                headerRow += `<th>${col}</th>`;
+            });
+            headerRow += '</tr>';
+            tableHeader.innerHTML = headerRow;
+            
+            // Remplir le tableau avec les données
+            data.forEach((row, index) => {
+                let dataRow = '<tr>';
+                dataRow += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectedCount()" /></td>`;
+                dataRow += `<td>${index + 1}</td>`;  // Numéro de ligne
+                columns.forEach(col => {
+                    dataRow += `<td>${row[col] || ''}</td>`;
+                });
+                dataRow += '</tr>';
+                tableBody.innerHTML += dataRow;
+            });
+            
+            // Afficher les sections
+            previewSection.style.display = 'block';
+            actionsSection.style.display = 'block';
+            
+            // Tout sélectionner par défaut
+            toggleSelectAll();
+        }
+        
+        // ========================================
+        // GESTION DE LA SÉLECTION
+        // ========================================
+        
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllCheckbox.checked;
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function deselectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            
+            selectAllCheckbox.checked = false;
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            const count = checkboxes.length;
+            
+            document.getElementById('selectedCount').textContent = 
+                count > 0 ? `${count} ligne(s) sélectionnée(s)` : 'Aucune ligne sélectionnée';
+            
+            // Désactiver le bouton si aucune ligne sélectionnée
+            const geocodeBtn = document.querySelector('.actions-section .btn-success');
+            if (geocodeBtn) {
+                geocodeBtn.disabled = count === 0;
+            }
+        }
+        
+        // ========================================
+        // GÉOCODAGE
+        // ========================================
+        
+        async function startGeocoding() {
+            // Récupérer les indices des lignes sélectionnées
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            selectedRows = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
+            
+            if (selectedRows.length === 0) {
+                showMessage('error', '✗ Veuillez sélectionner au moins une ligne à géocoder');
+                return;
+            }
             
             // Afficher la barre de progression
-            document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('loadingOverlay').style.display = 'flex';
-
-            const totalAddresses = data.length;
-            let processedCount = 0;
-
-            // Traiter chaque adresse
-            for (let i = 0; i < data.length; i++) {
-                const row = data[i];
-                const address = row.adresse;
-
-                if (address && address.trim()) {
-                    try {
-                        const geocodeResult = await geocodeAddress(address.trim());
-                        addressesData.push({
-                            originalAddress: address,
-                            ...geocodeResult,
-                            originalRow: row
-                        });
-                    } catch (error) {
-                        addressesData.push({
-                            originalAddress: address,
-                            status: 'error',
-                            error: error.message,
-                            originalRow: row
-                        });
-                    }
-                }
-
-                processedCount++;
-                updateProgress(processedCount, totalAddresses);
-
-                // Pause pour éviter de surcharger l'API
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-
-            // Finaliser le traitement
-            document.getElementById('loadingOverlay').style.display = 'none';
-            displayResults();
-        }
-
-        // Fonction de géocodage utilisant l'API de la Base d'Adresse Nationale
-        async function geocodeAddress(address) {
-            try {
-                const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.features && data.features.length > 0) {
-                    const feature = data.features[0];
-                    const props = feature.properties;
-                    const coords = feature.geometry.coordinates;
-
-                    return {
-                        status: 'success',
-                        latitude: coords[1],
-                        longitude: coords[0],
-                        formattedAddress: props.label,
-                        city: props.city,
-                        postcode: props.postcode,
-                        score: props.score
-                    };
-                } else {
-                    return {
-                        status: 'not_found',
-                        error: 'Adresse non trouvée'
-                    };
-                }
-            } catch (error) {
-                return {
-                    status: 'error',
-                    error: error.message
-                };
-            }
-        }
-
-        // Mise à jour de la barre de progression
-        function updateProgress(processed, total) {
-            const percentage = (processed / total) * 100;
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = 
-                `Traitement: ${processed}/${total} adresses (${Math.round(percentage)}%)`;
-        }
-
-        // Affichage des résultats
-        function displayResults() {
-            // Masquer la section upload et afficher les résultats
-            document.getElementById('progressContainer').style.display = 'none';
-            document.getElementById('stats').style.display = 'flex';
-            document.getElementById('mainContent').style.display = 'flex';
-            document.getElementById('exportSection').style.display = 'block';
-
-            // Calculer les statistiques
-            const total = addressesData.length;
-            const success = addressesData.filter(addr => addr.status === 'success').length;
-            const errors = total - success;
-
-            document.getElementById('totalAddresses').textContent = total;
-            document.getElementById('successAddresses').textContent = success;
-            document.getElementById('errorAddresses').textContent = errors;
-
-            // Initialiser la carte
-            initializeMap();
-
-            // Remplir le tableau
-            populateTable();
-        }
-
-        // Initialisation de la carte Leaflet
-        function initializeMap() {
-            // Créer la carte centrée sur la France
-            map = L.map('map').setView([46.603354, 1.888334], 6);
-
-            // Ajouter le fond de carte OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Créer un groupe de marqueurs
-            markersLayer = L.layerGroup().addTo(map);
-
-            // Ajouter les marqueurs pour les adresses géocodées avec succès
-            const successAddresses = addressesData.filter(addr => addr.status === 'success');
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('actionsSection').style.display = 'none';
             
-            if (successAddresses.length > 0) {
-                const group = new L.featureGroup();
+            // Réinitialiser les résultats
+            geocodedData = [];
+            let successCount = 0;
+            let failCount = 0;
+            
+            // Géocoder chaque ligne sélectionnée
+            for (let i = 0; i < selectedRows.length; i++) {
+                const rowIndex = selectedRows[i];
+                const row = csvData[rowIndex];
                 
-                successAddresses.forEach((addr, index) => {
-                    const marker = L.marker([addr.latitude, addr.longitude])
-                        .bindPopup(`
-                            <strong>${addr.formattedAddress}</strong><br>
-                            ${addr.city || ''} ${addr.postcode || ''}<br>
-                            <em>Adresse originale:</em> ${addr.originalAddress}
-                        `)
-                        .on('click', function() {
-                            selectAddressInTable(index);
-                        });
+                // Construire l'adresse à partir du mapping
+                let address = '';
+                
+                // Option 1 : Utiliser l'adresse complète si disponible
+                if (columnMapping.adresseComplete && row[columnMapping.adresseComplete]) {
+                    address = row[columnMapping.adresseComplete];
+                }
+                // Option 2 : Composer l'adresse à partir des composants
+                else {
+                    const parts = [];
+                    if (columnMapping.numero && row[columnMapping.numero]) {
+                        parts.push(row[columnMapping.numero]);
+                    }
+                    if (columnMapping.voie && row[columnMapping.voie]) {
+                        parts.push(row[columnMapping.voie]);
+                    }
+                    if (columnMapping.codePostal && row[columnMapping.codePostal]) {
+                        parts.push(row[columnMapping.codePostal]);
+                    }
+                    if (columnMapping.commune && row[columnMapping.commune]) {
+                        parts.push(row[columnMapping.commune]);
+                    }
+                    address = parts.join(' ');
+                }
+                
+                // Vérifier qu'on a bien une adresse
+                if (!address || address.trim() === '') {
+                    failCount++;
+                    geocodedData.push({
+                        ...row,
+                        latitude: '',
+                        longitude: '',
+                        geocodage_status: 'Échec - Pas d\'adresse'
+                    });
+                    continue;
+                }
+                
+                try {
+                    // Appel à l'API BAN (Base Adresse Nationale)
+                    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`);
+                    const data = await response.json();
                     
-                    markersLayer.addLayer(marker);
-                    group.addLayer(marker);
-                });
-
-                // Ajuster la vue pour afficher tous les marqueurs
-                map.fitBounds(group.getBounds(), { padding: [20, 20] });
-            }
-        }
-
-        // Remplissage du tableau
-        function populateTable() {
-            const tableBody = document.getElementById('addressTableBody');
-            tableBody.innerHTML = '';
-
-            addressesData.forEach((addr, index) => {
-                const row = document.createElement('tr');
-                row.dataset.index = index;
+                    if (data.features && data.features.length > 0) {
+                        const coords = data.features[0].geometry.coordinates;
+                        geocodedData.push({
+                            ...row,
+                            adresse_geocodee: address,  // Conserver l'adresse utilisée
+                            longitude: coords[0],
+                            latitude: coords[1],
+                            geocodage_score: data.features[0].properties.score,
+                            geocodage_status: 'Succès'
+                        });
+                        successCount++;
+                    } else {
+                        geocodedData.push({
+                            ...row,
+                            adresse_geocodee: address,
+                            latitude: '',
+                            longitude: '',
+                            geocodage_status: 'Échec - Adresse non trouvée'
+                        });
+                        failCount++;
+                    }
+                } catch (error) {
+                    geocodedData.push({
+                        ...row,
+                        adresse_geocodee: address,
+                        latitude: '',
+                        longitude: '',
+                        geocodage_status: 'Échec - Erreur API'
+                    });
+                    failCount++;
+                }
                 
-                const statusClass = addr.status === 'success' ? 'status-success' : 'status-error';
-                const statusText = addr.status === 'success' ? '✓ Trouvée' : '✗ ' + (addr.error || 'Non trouvée');
-
-                row.innerHTML = `
-                    <td>${addr.originalAddress}</td>
-                    <td>${addr.city || '-'}</td>
-                    <td>${addr.postcode || '-'}</td>
-                    <td class="${statusClass}">${statusText}</td>
-                `;
-
-                row.addEventListener('click', function() {
-                    selectAddress(index);
-                });
-
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Sélection d'une adresse dans le tableau
-        function selectAddress(index) {
-            // Retirer la sélection précédente
-            if (currentSelectedRow) {
-                currentSelectedRow.classList.remove('selected');
-            }
-
-            // Sélectionner la nouvelle ligne
-            const row = document.querySelector(`tr[data-index="${index}"]`);
-            row.classList.add('selected');
-            currentSelectedRow = row;
-
-            const addr = addressesData[index];
-
-            // Si l'adresse a été géocodée avec succès, centrer la carte
-            if (addr.status === 'success') {
-                map.setView([addr.latitude, addr.longitude], 15);
+                // Mettre à jour la progression
+                const progress = Math.round(((i + 1) / selectedRows.length) * 100);
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressFill').textContent = progress + '%';
                 
-                // Ouvrir le popup du marqueur correspondant
-                markersLayer.eachLayer(function(marker) {
-                    const pos = marker.getLatLng();
-                    if (Math.abs(pos.lat - addr.latitude) < 0.0001 && 
-                        Math.abs(pos.lng - addr.longitude) < 0.0001) {
-                        marker.openPopup();
-                    }
+                // Pause de 200ms entre chaque requête (limite API BAN)
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            // Masquer la barre de progression
+            document.getElementById('progressSection').style.display = 'none';
+            
+            // Afficher les statistiques
+            displayStats(selectedRows.length, successCount, failCount);
+            
+            // Afficher la carte si au moins un succès
+            if (successCount > 0) {
+                displayMap();
+            }
+            
+            // Afficher le bouton d'export
+            document.getElementById('exportSection').style.display = 'block';
+            
+            showMessage('success', `✓ Géocodage terminé : ${successCount} succès, ${failCount} échecs`);
+        }
+        
+        // ========================================
+        // AFFICHAGE DES STATISTIQUES
+        // ========================================
+        
+        function displayStats(total, success, failed) {
+            const statsSection = document.getElementById('statsSection');
+            const rate = total > 0 ? Math.round((success / total) * 100) : 0;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statSuccess').textContent = success;
+            document.getElementById('statFailed').textContent = failed;
+            document.getElementById('statRate').textContent = rate + '%';
+            
+            statsSection.style.display = 'block';
+        }
+        
+        // ========================================
+        // AFFICHAGE DE LA CARTE
+        // ========================================
+        
+        function displayMap() {
+            const mapSection = document.getElementById('mapSection');
+            mapSection.style.display = 'block';
+            
+            // Initialiser la carte si elle n'existe pas
+            if (!map) {
+                map = L.map('map').setView([46.603354, 1.888334], 6);  // Centre de la France
+                
+                // Fond OpenStreetMap
+                baseLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                // Fond Satellite Esri + Labels
+                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri',
+                    maxZoom: 19
                 });
+                
+                const labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri',
+                    maxZoom: 19
+                });
+                
+                baseLayers.satellite = L.layerGroup([satelliteLayer, labelsLayer]);
+                
+                // Créer une couche pour les marqueurs
+                markersLayer = L.layerGroup().addTo(map);
+            } else {
+                // Vider les marqueurs existants
+                markersLayer.clearLayers();
             }
-        }
-
-        // Sélection depuis la carte
-        function selectAddressInTable(index) {
-            selectAddress(index);
             
-            // Faire défiler jusqu'à la ligne dans le tableau
-            const row = document.querySelector(`tr[data-index="${index}"]`);
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        // Filtrage des adresses dans le tableau
-        function filterAddresses() {
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const rows = document.querySelectorAll('#addressTableBody tr');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const shouldShow = text.includes(searchTerm);
-                row.style.display = shouldShow ? '' : 'none';
-            });
-        }
-
-        // Export des résultats dans différents formats
-        function exportResults(format) {
-            const timestamp = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+            // Ajouter les marqueurs
+            const validPoints = geocodedData.filter(row => row.latitude && row.longitude);
             
-            switch(format) {
-                case 'csv':
-                    exportCSV(timestamp);
-                    break;
-                case 'geojson':
-                    exportGeoJSON(timestamp);
-                    break;
-                case 'kml':
-                    exportKML(timestamp);
-                    break;
-                default:
-                    exportCSV(timestamp);
-            }
-        }
-
-        // Export au format CSV
-        function exportCSV(timestamp) {
-            const csvData = addressesData.map(addr => ({
-                'Adresse originale': addr.originalAddress,
-                'Adresse formatée': addr.formattedAddress || '',
-                'Ville': addr.city || '',
-                'Code postal': addr.postcode || '',
-                'Latitude': addr.latitude || '',
-                'Longitude': addr.longitude || '',
-                'Statut': addr.status,
-                'Score de confiance': addr.score || '',
-                'Erreur': addr.error || ''
-            }));
-
-            const csv = Papa.unparse(csvData);
-            downloadFile(csv, `geocodage_resultats_${timestamp}.csv`, 'text/csv');
-        }
-
-        // Export au format GeoJSON (parfait pour QGIS)
-        function exportGeoJSON(timestamp) {
-            const successAddresses = addressesData.filter(addr => addr.status === 'success');
+            if (validPoints.length === 0) return;
             
-            const geojson = {
-                type: "FeatureCollection",
-                crs: {
-                    type: "name",
-                    properties: {
-                        name: "EPSG:4326" // Système de coordonnées WGS84
-                    }
-                },
-                features: successAddresses.map((addr, index) => ({
-                    type: "Feature",
-                    properties: {
-                        id: index + 1,
-                        adresse_originale: addr.originalAddress,
-                        adresse_formatee: addr.formattedAddress || '',
-                        ville: addr.city || '',
-                        code_postal: addr.postcode || '',
-                        score_confiance: addr.score || 0,
-                        statut: addr.status
-                    },
-                    geometry: {
-                        type: "Point",
-                        coordinates: [addr.longitude, addr.latitude] // GeoJSON utilise [lon, lat]
-                    }
-                }))
-            };
-
-            const geojsonString = JSON.stringify(geojson, null, 2);
-            downloadFile(geojsonString, `geocodage_points_${timestamp}.geojson`, 'application/geo+json');
-        }
-
-        // Export au format KML (Google Earth, etc.)
-        function exportKML(timestamp) {
-            const successAddresses = addressesData.filter(addr => addr.status === 'success');
+            const bounds = [];
             
-            let kml = `<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-  <Document>
-    <name>Géocodage - Résultats</name>
-    <description>Points géocodés avec l'API Base d'Adresse Nationale</description>
-    
-    <Style id="addressPoint">
-      <IconStyle>
-        <Icon>
-          <href>https://maps.google.com/mapfiles/kml/paddle/red-circle.png</href>
-        </Icon>
-        <scale>1.0</scale>
-      </IconStyle>
-      <LabelStyle>
-        <color>ff0000ff</color>
-        <scale>0.8</scale>
-      </LabelStyle>
-    </Style>
-`;
-
-            successAddresses.forEach((addr, index) => {
-                kml += `
-    <Placemark>
-      <name>${escapeXml(addr.city || 'Adresse ' + (index + 1))}</name>
-      <description><![CDATA[
-        <b>Adresse originale:</b> ${escapeXml(addr.originalAddress)}<br/>
-        <b>Adresse formatée:</b> ${escapeXml(addr.formattedAddress || '')}<br/>
-        <b>Ville:</b> ${escapeXml(addr.city || '')}<br/>
-        <b>Code postal:</b> ${escapeXml(addr.postcode || '')}<br/>
-        <b>Score de confiance:</b> ${addr.score || 0}
-      ]]></description>
-      <styleUrl>#addressPoint</styleUrl>
-      <Point>
-        <coordinates>${addr.longitude},${addr.latitude},0</coordinates>
-      </Point>
-    </Placemark>`;
-            });
-
-            kml += `
-  </Document>
-</kml>`;
-
-            downloadFile(kml, `geocodage_points_${timestamp}.kml`, 'application/vnd.google-earth.kml+xml');
-        }
-
-        // Fonction utilitaire pour échapper les caractères XML
-        function escapeXml(unsafe) {
-            return unsafe.replace(/[<>&'"]/g, function (c) {
-                switch (c) {
-                    case '<': return '&lt;';
-                    case '>': return '&gt;';
-                    case '&': return '&amp;';
-                    case '\'': return '&apos;';
-                    case '"': return '&quot;';
+            validPoints.forEach(row => {
+                const lat = parseFloat(row.latitude);
+                const lon = parseFloat(row.longitude);
+                
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    // Créer le marqueur
+                    const marker = L.marker([lat, lon]).addTo(markersLayer);
+                    
+                    // Créer le popup avec les infos
+                    let popupContent = '<div style="min-width: 200px;">';
+                    Object.keys(row).forEach(key => {
+                        if (row[key] && key !== 'geocodage_status') {
+                            popupContent += `<b>${key}:</b> ${row[key]}<br>`;
+                        }
+                    });
+                    popupContent += '</div>';
+                    marker.bindPopup(popupContent);
+                    
+                    bounds.push([lat, lon]);
                 }
             });
-        }
-
-        // Fonction utilitaire pour télécharger un fichier
-        function downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
-            const link = document.createElement('a');
             
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                // Fallback pour les navigateurs plus anciens
-                window.open('data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(content));
+            // Ajuster la vue pour afficher tous les points
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
             }
+        }
+        
+        // ========================================
+        // CHANGEMENT DE FOND DE CARTE
+        // ========================================
+        
+        function changeBasemap() {
+            const selector = document.getElementById('basemapSelector');
+            const selected = selector.value;
+            
+            // Retirer tous les fonds de carte
+            Object.values(baseLayers).forEach(layer => {
+                map.removeLayer(layer);
+            });
+            
+            // Ajouter le fond sélectionné
+            if (baseLayers[selected]) {
+                baseLayers[selected].addTo(map);
+            }
+        }
+        
+        // ========================================
+        // EXPORT CSV
+        // ========================================
+        
+        function exportCSV() {
+            if (geocodedData.length === 0) {
+                showMessage('error', '✗ Aucune donnée à exporter');
+                return;
+            }
+            
+            // Convertir en CSV
+            const csv = Papa.unparse(geocodedData);
+            
+            // Créer un blob et déclencher le téléchargement
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'geocodage_resultat.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showMessage('success', '✓ Fichier CSV téléchargé avec succès !');
+        }
+        
+        // ========================================
+        // AFFICHAGE DES MESSAGES
+        // ========================================
+        
+        function showMessage(type, text) {
+            const messageEl = type === 'success' ? 
+                document.getElementById('messageSuccess') : 
+                document.getElementById('messageError');
+            
+            messageEl.textContent = text;
+            messageEl.style.display = 'block';
+            
+            // Masquer automatiquement après 5 secondes
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
         }
     </script>
-    <!-- Bouton de retour vers la page des outils -->
-<div style="text-align: center; margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd;">
-    <a href="../outils.html" 
-       style="display: inline-block; 
-              padding: 12px 24px; 
-              background-color: #007bff; 
-              color: white; 
-              text-decoration: none; 
-              border-radius: 5px; 
-              font-weight: bold;
-              transition: background-color 0.3s;">
-        ← Retour aux outils
-    </a>
-</div>
 </body>
 </html>
