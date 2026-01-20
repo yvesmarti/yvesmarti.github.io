@@ -47,10 +47,10 @@
 
 - categorie: Environnement & Déchets
   outils:
-    - nom: Outil gestion déchets
-      description: Emplacement disponible pour un outil lié à la gestion des déchets.
-      lien: "#"
-      actif: false
+    - nom: Générateur de Calendrier de Collecte
+      description: Créez un calendrier personnalisé pour vos collectes de déchets (ordures ménagères, recyclage, etc.).
+      lien: outils/generateur_calendrier_collecte.html
+      actif: true
 
     - nom: Outil environnemental
       description: Emplacement disponible pour un outil environnemental.
