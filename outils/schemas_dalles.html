@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurateur de Dalle - Bacs & Claustra v3</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .panel-scroll {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .panel h2 {
+            margin-top: 0;
+            color: #34495e;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        
+        input[type="color"] {
+            width: 45px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 2px;
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .input-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .input-row-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .btn-warning {
+            background: #8b4513;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #6b3410;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-rotate {
+            background: #9b59b6;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        .btn-rotate:hover {
+            background: #8e44ad;
+        }
+        
+        .bac-list, .poteau-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .bac-item, .poteau-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .poteau-item {
+            background: #fdf2e9;
+            border-left: 4px solid #8b4513;
+        }
+
+        .recap-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        .recap-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .recap-box td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .recap-box td:first-child {
+            color: #666;
+        }
+
+        .recap-box td:last-child {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .recap-box tr:last-child td {
+            border-bottom: none;
+        }
+
+        .recap-devis {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .recap-devis h4 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+        }
+
+        .recap-warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .item-btns {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            overflow: auto;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #canvas {
+            border: 1px solid #ddd;
+            background: white;
+            cursor: move;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            border: 1px solid #999;
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 11px;
+        }
+        
+        .presets {
+            margin-bottom: 15px;
+        }
+        
+        .preset-btn {
+            padding: 6px 10px;
+            margin: 2px;
+            font-size: 11px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: 1px solid #bdc3c7;
+        }
+        
+        .preset-btn:hover {
+            background: #d5dbdb;
+        }
+
+        .dimensions-info {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .export-btns {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .grid-settings {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            flex-wrap: wrap;
+        }
+
+        .grid-settings label {
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .claustra-sides {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .claustra-sides label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            font-size: 12px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible::after {
+            content: ' ▼';
+            font-size: 10px;
+        }
+
+        .collapsible.collapsed::after {
+            content: ' ▶';
+        }
+
+        .collapse-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapse-content.collapsed {
+            max-height: 0 !important;
+            padding: 0;
+            margin: 0;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1> Configurateur de dalle avec claustra - YM </h1>
+    
+    <div class="container">
+        <div class="panel panel-scroll">
+            <!-- TABS -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('tabDalle')">📐 Dalle</button>
+                <button class="tab" onclick="showTab('tabBacs')">🗑️ Bacs</button>
+                <button class="tab" onclick="showTab('tabClaustra')">🪵 Claustra</button>
+                <button class="tab" onclick="showTab('tabRecap')">📊 Récap</button>
+                <button class="tab" onclick="showTab('tabOptions')">⚙️ Options</button>
+            </div>
+
+            <!-- TAB DALLE -->
+            <div id="tabDalle" class="tab-content active">
+                <h2>📐 Dimensions de la dalle</h2>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Longueur (cm)</label>
+                        <input type="number" id="dalleLongueur" value="300" min="50" max="1500">
+                    </div>
+                    <div class="form-group">
+                        <label>Largeur (cm)</label>
+                        <input type="number" id="dalleLargeur" value="200" min="50" max="800">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="updateDalle()">Mettre à jour</button>
+
+                <div class="info-box" style="margin-top: 15px;">
+                    <strong>Orientation :</strong> La longueur est horizontale, la largeur est verticale. Le côté "bas" est généralement l'accès.
+                </div>
+            </div>
+
+            <!-- TAB BACS -->
+            <div id="tabBacs" class="tab-content">
+                <h2>🗑️ Ajouter un bac</h2>
+                
+                <div class="presets">
+                    <label>Préréglages :</label><br>
+                    <button class="preset-btn" onclick="setPreset(49, 55, 'OMr', '120L')">OMr 120L</button>
+                    <button class="preset-btn" onclick="setPreset(59, 73, 'OMr', '240L')">OMr 240L</button>
+                    <button class="preset-btn" onclick="setPreset(66, 87, 'OMr', '340L')">OMr 340L</button>
+                    <button class="preset-btn" onclick="setPreset(124, 66, 'OMr', '500L')">OMr 500L</button>
+                    <button class="preset-btn" onclick="setPreset(136, 77, 'OMr', '660L')">OMr 660L</button>
+                    <button class="preset-btn" onclick="setPreset(137, 77, 'OMr', '770L')">OMr 770L</button>
+                    <br>
+                    <button class="preset-btn" onclick="setPreset(49, 55, 'Emballages', '120L')">Emb. 120L</button>
+                    <button class="preset-btn" onclick="setPreset(59, 73, 'Emballages', '240L')">Emb. 240L</button>
+                    <button class="preset-btn" onclick="setPreset(66, 87, 'Emballages', '340L')">Emb. 340L</button>
+                    <button class="preset-btn" onclick="setPreset(124, 66, 'Emballages', '500L')">Emb. 500L</button>
+                    <button class="preset-btn" onclick="setPreset(136, 77, 'Emballages', '660L')">Emb. 660L</button>
+                    <button class="preset-btn" onclick="setPreset(137, 77, 'Emballages', '770L')">Emb. 770L</button>
+                </div>
+                
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Type de bac</label>
+                        <select id="bacType">
+                            <option value="OMr">Ordures Ménagères résiduelles</option>
+                            <option value="Emballages">Emballages</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom/Volume</label>
+                        <input type="text" id="bacNom" placeholder="ex: 360L">
+                    </div>
+                </div>
+                
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Largeur (cm)</label>
+                        <input type="number" id="bacLargeur" value="66" min="30" max="200">
+                    </div>
+                    <div class="form-group">
+                        <label>Profondeur (cm)</label>
+                        <input type="number" id="bacProfondeur" value="87" min="30" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label>Rotation</label>
+                        <select id="bacRotation">
+                            <option value="0">0°</option>
+                            <option value="90">90°</option>
+                            <option value="180">180°</option>
+                            <option value="270">270°</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="dimensions-info">💡 Largeur = face avant (poignée)</p>
+                
+                <button class="btn-success" onclick="ajouterBac()">+ Ajouter ce bac</button>
+                
+                <h2 style="margin-top: 20px;">📋 Bacs placés (<span id="bacCount">0</span>)</h2>
+                <div class="bac-list" id="bacList"></div>
+            </div>
+
+            <!-- TAB CLAUSTRA -->
+            <div id="tabClaustra" class="tab-content">
+                <h2>🪵 Configuration du claustra</h2>
+                
+                <div class="form-group">
+                    <label>Côtés avec claustra :</label>
+                    <div class="claustra-sides">
+                        <label><input type="checkbox" id="claustraHaut" checked onchange="draw(); updateRecap()"> Haut</label>
+                        <label><input type="checkbox" id="claustraGauche" checked onchange="draw(); updateRecap()"> Gauche</label>
+                        <label><input type="checkbox" id="claustraDroite" checked onchange="draw(); updateRecap()"> Droite</label>
+                        <label><input type="checkbox" id="claustraBas" onchange="draw(); updateRecap()"> Bas (accès)</label>
+                    </div>
+                </div>
+
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Épaisseur (cm)</label>
+                        <input type="number" id="claustraEpaisseur" value="15" min="5" max="50" onchange="draw(); updateRecap()">
+                    </div>
+                    <div class="form-group">
+                        <label>Débord (cm)</label>
+                        <input type="number" id="claustraDebord" value="5" min="0" max="50" onchange="draw(); updateRecap()">
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur</label>
+                        <input type="color" id="claustraCouleur" value="#8b4513" onchange="draw()">
+                    </div>
+                </div>
+                <p class="dimensions-info">💡 Débord = dépassement du claustra par rapport à la dalle</p>
+
+                <h2 style="margin-top: 20px;">🪵 Poteaux</h2>
+                
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Section (cm)</label>
+                        <input type="number" id="poteauSection" value="10" min="5" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Position X</label>
+                        <input type="number" id="poteauX" value="0" min="-50">
+                    </div>
+                    <div class="form-group">
+                        <label>Position Y</label>
+                        <input type="number" id="poteauY" value="0" min="-50">
+                    </div>
+                </div>
+                
+                <button class="btn-warning" onclick="ajouterPoteau()">+ Ajouter un poteau</button>
+                <button class="btn-primary" onclick="ajouterPoteauxAuto()" style="margin-left: 5px;">⚡ Auto</button>
+                
+                <p class="dimensions-info">💡 "Auto" place les poteaux aux angles du claustra</p>
+                
+                <div class="poteau-list" id="poteauList"></div>
+            </div>
+
+            <!-- TAB RECAP -->
+            <div id="tabRecap" class="tab-content">
+                <h2>📊 Récapitulatif dalle</h2>
+                <div class="recap-box" id="recapDalle">
+                    <!-- Rempli dynamiquement -->
+                </div>
+
+                <h2 style="margin-top: 20px;">🪵 Récapitulatif claustra</h2>
+                <div class="recap-box" id="recapClaustra">
+                    <!-- Rempli dynamiquement -->
+                </div>
+
+                <h2 style="margin-top: 20px;">🪵 Calcul des planches</h2>
+                <div class="form-group">
+                    <label>Hauteur du claustra (cm)</label>
+                    <input type="number" id="claustraHauteur" value="120" min="50" max="250" onchange="updateRecap()">
+                </div>
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Largeur planche (cm)</label>
+                        <input type="number" id="plancheLargeur" value="15" min="5" max="50" onchange="updateRecap()">
+                    </div>
+                    <div class="form-group">
+                        <label>Épaisseur (cm)</label>
+                        <input type="number" id="plancheEpaisseur" value="2" min="1" max="10" step="0.5" onchange="updateRecap()">
+                    </div>
+                    <div class="form-group">
+                        <label>Espacement (cm)</label>
+                        <input type="number" id="plancheEspacement" value="2" min="0" max="10" step="0.5" onchange="updateRecap()">
+                    </div>
+                </div>
+                <p class="dimensions-info">💡 Espacement = espace entre chaque planche horizontale</p>
+
+                <div class="recap-box recap-devis" id="recapPlanches">
+                    <!-- Rempli dynamiquement -->
+                </div>
+
+                <button class="btn-primary" onclick="exportDevis()" style="margin-top: 15px;">📋 Exporter récap pour devis</button>
+            </div>
+
+            <!-- TAB OPTIONS -->
+            <div id="tabOptions" class="tab-content">
+                <h2>🔲 Grille d'alignement</h2>
+                <div class="grid-settings">
+                    <label>
+                        <input type="checkbox" id="showGrid" checked onchange="draw()">
+                        Afficher
+                    </label>
+                    <label>
+                        Pas :
+                        <input type="number" id="gridSize" value="10" min="5" max="50" style="width: 55px;" onchange="draw()">
+                        cm
+                    </label>
+                    <label>
+                        <input type="checkbox" id="snapToGrid" checked>
+                        Aimanter
+                    </label>
+                </div>
+
+                <h2 style="margin-top: 20px;">🎨 Couleurs des flux</h2>
+                <div class="color-settings">
+                    <div class="color-item">
+                        <input type="color" id="colorOMr" value="#e74c3c" onchange="updateColors()">
+                        <span>OMr</span>
+                    </div>
+                    <div class="color-item">
+                        <input type="color" id="colorEmballages" value="#f1c40f" onchange="updateColors()">
+                        <span>Emballages</span>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="resetColors()" style="font-size: 11px; padding: 5px 10px;">↺ Réinitialiser couleurs</button>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>💡 Interactions :</strong><br>
+                    • Glisser-déposer : déplacer bacs et poteaux<br>
+                    • Clic droit sur bac : rotation 90°<br>
+                    • Double-clic : supprimer l'élément
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 Visualisation</h2>
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="legend" id="legendContainer"></div>
+
+            <div class="export-btns">
+                <button class="btn-primary" onclick="exportImage()">📷 Exporter PNG</button>
+                <button class="btn-primary" onclick="exportConfig()">💾 Sauvegarder</button>
+                <button class="btn-primary" onclick="importConfig()">📂 Charger</button>
+                <button class="btn-danger" onclick="resetAll()">🔄 Tout effacer</button>
+            </div>
+            <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="loadConfig(event)">
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let echelle = 2;
+        let dalle = { longueur: 300, largeur: 200 };
+        let bacs = [];
+        let poteaux = [];
+        let selectedItem = null;
+        let selectedType = null; // 'bac' ou 'poteau'
+        let offsetX, offsetY;
+        let isDragging = false;
+        
+        let colors = {
+            'OMr': { base: '#e74c3c' },
+            'Emballages': { base: '#f1c40f' }
+        };
+
+        // Tabs
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Couleurs
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function lightenColor(hex, percent) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return hex;
+            const r = Math.min(255, rgb.r + (255 - rgb.r) * percent);
+            const g = Math.min(255, rgb.g + (255 - rgb.g) * percent);
+            const b = Math.min(255, rgb.b + (255 - rgb.b) * percent);
+            return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        }
+
+        function darkenColor(hex, percent) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return hex;
+            const r = Math.max(0, rgb.r * (1 - percent));
+            const g = Math.max(0, rgb.g * (1 - percent));
+            const b = Math.max(0, rgb.b * (1 - percent));
+            return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        }
+
+        function getColorSet(type) {
+            const base = colors[type]?.base || '#999999';
+            return {
+                fill: lightenColor(base, 0.7),
+                stroke: base,
+                text: darkenColor(base, 0.3)
+            };
+        }
+
+        function updateColors() {
+            colors.OMr.base = document.getElementById('colorOMr').value;
+            colors.Emballages.base = document.getElementById('colorEmballages').value;
+            updateLegend();
+            updateBacList();
+            draw();
+        }
+
+        function resetColors() {
+            document.getElementById('colorOMr').value = '#e74c3c';
+            document.getElementById('colorEmballages').value = '#f1c40f';
+            updateColors();
+        }
+
+        function updateLegend() {
+            const container = document.getElementById('legendContainer');
+            let html = Object.entries(colors).map(([type, color]) => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: ${color.base};"></div>
+                    <span>${type}</span>
+                </div>
+            `).join('');
+            
+            html += `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: ${document.getElementById('claustraCouleur').value};"></div>
+                    <span>Claustra</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #5d4e37;"></div>
+                    <span>Poteaux</span>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+        
+        function setPreset(largeur, profondeur, type, nom) {
+            document.getElementById('bacLargeur').value = largeur;
+            document.getElementById('bacProfondeur').value = profondeur;
+            document.getElementById('bacType').value = type;
+            document.getElementById('bacNom').value = nom;
+            document.getElementById('bacRotation').value = '0';
+        }
+        
+        function updateDalle() {
+            dalle.longueur = parseInt(document.getElementById('dalleLongueur').value) || 300;
+            dalle.largeur = parseInt(document.getElementById('dalleLargeur').value) || 200;
+            
+            const maxWidth = 800;
+            const maxHeight = 550;
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const totalWidth = dalle.longueur + (debord + epaisseur) * 2;
+            const totalHeight = dalle.largeur + (debord + epaisseur) * 2;
+            
+            const echelleX = maxWidth / totalWidth;
+            const echelleY = maxHeight / totalHeight;
+            echelle = Math.min(echelleX, echelleY, 3);
+            
+            draw();
+            updateRecap();
+        }
+        
+        // BACS
+        function ajouterBac() {
+            const type = document.getElementById('bacType').value;
+            const nom = document.getElementById('bacNom').value || type;
+            const largeur = parseInt(document.getElementById('bacLargeur').value) || 60;
+            const profondeur = parseInt(document.getElementById('bacProfondeur').value) || 80;
+            const rotation = parseInt(document.getElementById('bacRotation').value) || 0;
+            
+            const x = 10 + (bacs.length % 3) * 80;
+            const y = 10 + Math.floor(bacs.length / 3) * 90;
+            
+            bacs.push({
+                id: Date.now(),
+                type: type,
+                nom: nom,
+                largeur: largeur,
+                profondeur: profondeur,
+                rotation: rotation,
+                x: x,
+                y: y
+            });
+            
+            updateBacList();
+            draw();
+        }
+
+        function rotateBac(id) {
+            const bac = bacs.find(b => b.id === id);
+            if (bac) {
+                bac.rotation = (bac.rotation + 90) % 360;
+                updateBacList();
+                draw();
+            }
+        }
+        
+        function supprimerBac(id) {
+            bacs = bacs.filter(b => b.id !== id);
+            updateBacList();
+            draw();
+        }
+        
+        function updateBacList() {
+            document.getElementById('bacCount').textContent = bacs.length;
+            const list = document.getElementById('bacList');
+            list.innerHTML = bacs.map(bac => {
+                const colorSet = getColorSet(bac.type);
+                return `
+                <div class="bac-item" style="background: ${colorSet.fill}; border-left: 4px solid ${colorSet.stroke};">
+                    <span><strong>${bac.nom}</strong> ${bac.largeur}×${bac.profondeur} ${bac.rotation}°</span>
+                    <div class="item-btns">
+                        <button class="btn-rotate" onclick="rotateBac(${bac.id})">↻</button>
+                        <button class="btn-danger" onclick="supprimerBac(${bac.id})">✕</button>
+                    </div>
+                </div>
+            `}).join('');
+            updateRecap();
+        }
+
+        function getBacDimensions(bac) {
+            if (bac.rotation === 90 || bac.rotation === 270) {
+                return { w: bac.profondeur, h: bac.largeur };
+            }
+            return { w: bac.largeur, h: bac.profondeur };
+        }
+
+        // POTEAUX
+        function ajouterPoteau() {
+            const section = parseInt(document.getElementById('poteauSection').value) || 10;
+            const x = parseInt(document.getElementById('poteauX').value) || 0;
+            const y = parseInt(document.getElementById('poteauY').value) || 0;
+            
+            poteaux.push({
+                id: Date.now(),
+                section: section,
+                x: x,
+                y: y
+            });
+            
+            updatePoteauList();
+            draw();
+        }
+
+        function ajouterPoteauxAuto() {
+            const section = parseInt(document.getElementById('poteauSection').value) || 10;
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 5;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            
+            const haut = document.getElementById('claustraHaut').checked;
+            const bas = document.getElementById('claustraBas').checked;
+            const gauche = document.getElementById('claustraGauche').checked;
+            const droite = document.getElementById('claustraDroite').checked;
+            
+            // Calcul des positions des coins
+            const positions = [];
+            
+            // Coin haut-gauche
+            if (haut || gauche) {
+                positions.push({ x: -debord - epaisseur, y: -debord - epaisseur });
+            }
+            // Coin haut-droit
+            if (haut || droite) {
+                positions.push({ x: dalle.longueur + debord + epaisseur - section, y: -debord - epaisseur });
+            }
+            // Coin bas-gauche
+            if (bas || gauche) {
+                positions.push({ x: -debord - epaisseur, y: dalle.largeur + debord + epaisseur - section });
+            }
+            // Coin bas-droit
+            if (bas || droite) {
+                positions.push({ x: dalle.longueur + debord + epaisseur - section, y: dalle.largeur + debord + epaisseur - section });
+            }
+            
+            // Ajouter les poteaux s'ils n'existent pas déjà à ces positions
+            positions.forEach(pos => {
+                const exists = poteaux.some(p => 
+                    Math.abs(p.x - pos.x) < 5 && Math.abs(p.y - pos.y) < 5
+                );
+                if (!exists) {
+                    poteaux.push({
+                        id: Date.now() + Math.random(),
+                        section: section,
+                        x: pos.x,
+                        y: pos.y
+                    });
+                }
+            });
+            
+            updatePoteauList();
+            draw();
+        }
+
+        function supprimerPoteau(id) {
+            poteaux = poteaux.filter(p => p.id !== id);
+            updatePoteauList();
+            draw();
+        }
+
+        function updatePoteauList() {
+            const list = document.getElementById('poteauList');
+            list.innerHTML = poteaux.map((p, i) => `
+                <div class="poteau-item">
+                    <span>Poteau ${i+1} (${p.section}×${p.section}cm) @ ${p.x},${p.y}</span>
+                    <div class="item-btns">
+                        <button class="btn-danger" onclick="supprimerPoteau(${p.id})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+            updateRecap();
+        }
+        
+        function draw() {
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const claustraCouleur = document.getElementById('claustraCouleur').value;
+            
+            const padding = 80;
+            const offsetClaustra = (debord + epaisseur) * echelle;
+            
+            canvas.width = dalle.longueur * echelle + padding * 2 + offsetClaustra * 2;
+            canvas.height = dalle.largeur * echelle + padding * 2 + offsetClaustra * 2;
+            
+            const dalleX = padding + offsetClaustra;
+            const dalleY = padding + offsetClaustra;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // CLAUSTRA
+            const haut = document.getElementById('claustraHaut').checked;
+            const bas = document.getElementById('claustraBas').checked;
+            const gauche = document.getElementById('claustraGauche').checked;
+            const droite = document.getElementById('claustraDroite').checked;
+            
+            ctx.fillStyle = claustraCouleur;
+            ctx.strokeStyle = darkenColor(claustraCouleur, 0.3);
+            ctx.lineWidth = 1;
+            
+            const claustraWidth = dalle.longueur + (debord * 2) + (gauche ? epaisseur : 0) + (droite ? epaisseur : 0);
+            const claustraHeight = dalle.largeur + (debord * 2) + (haut ? epaisseur : 0) + (bas ? epaisseur : 0);
+            
+            // Claustra haut
+            if (haut) {
+                const x = dalleX - debord * echelle - (gauche ? epaisseur * echelle : 0);
+                const y = dalleY - debord * echelle - epaisseur * echelle;
+                const w = claustraWidth * echelle;
+                const h = epaisseur * echelle;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
+                drawWoodTexture(x, y, w, h);
+            }
+            
+            // Claustra bas
+            if (bas) {
+                const x = dalleX - debord * echelle - (gauche ? epaisseur * echelle : 0);
+                const y = dalleY + dalle.largeur * echelle + debord * echelle;
+                const w = claustraWidth * echelle;
+                const h = epaisseur * echelle;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
+                drawWoodTexture(x, y, w, h);
+            }
+            
+            // Claustra gauche
+            if (gauche) {
+                const x = dalleX - debord * echelle - epaisseur * echelle;
+                const y = dalleY - debord * echelle;
+                const w = epaisseur * echelle;
+                const h = (dalle.largeur + debord * 2) * echelle;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
+                drawWoodTexture(x, y, w, h, true);
+            }
+            
+            // Claustra droit
+            if (droite) {
+                const x = dalleX + dalle.longueur * echelle + debord * echelle;
+                const y = dalleY - debord * echelle;
+                const w = epaisseur * echelle;
+                const h = (dalle.largeur + debord * 2) * echelle;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
+                drawWoodTexture(x, y, w, h, true);
+            }
+
+            // POTEAUX
+            poteaux.forEach(p => {
+                const x = dalleX + p.x * echelle;
+                const y = dalleY + p.y * echelle;
+                const size = p.section * echelle;
+                
+                ctx.fillStyle = '#5d4e37';
+                ctx.fillRect(x, y, size, size);
+                ctx.strokeStyle = '#3d2e17';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, size, size);
+                
+                // Texture
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.2, y);
+                ctx.lineTo(x + size * 0.2, y + size);
+                ctx.moveTo(x + size * 0.8, y);
+                ctx.lineTo(x + size * 0.8, y + size);
+                ctx.stroke();
+            });
+            
+            // DALLE BÉTON
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillRect(dalleX, dalleY, dalle.longueur * echelle, dalle.largeur * echelle);
+            
+            ctx.strokeStyle = '#7f8c8d';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(dalleX, dalleY, dalle.longueur * echelle, dalle.largeur * echelle);
+            
+            // Texture béton
+            ctx.fillStyle = '#a6acaf';
+            for (let i = 0; i < 150; i++) {
+                const x = dalleX + Math.random() * dalle.longueur * echelle;
+                const y = dalleY + Math.random() * dalle.largeur * echelle;
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // GRILLE
+            const showGrid = document.getElementById('showGrid').checked;
+            const gridSize = parseInt(document.getElementById('gridSize').value) || 10;
+
+            if (showGrid) {
+                ctx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+                ctx.lineWidth = 1;
+                
+                for (let x = gridSize; x < dalle.longueur; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(dalleX + x * echelle, dalleY);
+                    ctx.lineTo(dalleX + x * echelle, dalleY + dalle.largeur * echelle);
+                    ctx.stroke();
+                }
+                
+                for (let y = gridSize; y < dalle.largeur; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(dalleX, dalleY + y * echelle);
+                    ctx.lineTo(dalleX + dalle.longueur * echelle, dalleY + y * echelle);
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = '#7f8c8d';
+                ctx.font = '9px Arial';
+                ctx.textAlign = 'center';
+                
+                for (let x = 0; x <= dalle.longueur; x += gridSize * 2) {
+                    ctx.fillText(x, dalleX + x * echelle, dalleY - 8);
+                }
+                
+                ctx.textAlign = 'right';
+                for (let y = 0; y <= dalle.largeur; y += gridSize * 2) {
+                    ctx.fillText(y, dalleX - 8, dalleY + y * echelle + 3);
+                }
+            }
+            
+            // Dimensions de la dalle
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${dalle.longueur} cm`, dalleX + dalle.longueur * echelle / 2, dalleY - 25);
+            
+            ctx.save();
+            ctx.translate(dalleX + dalle.longueur * echelle + 30, dalleY + dalle.largeur * echelle / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillText(`${dalle.largeur} cm`, 0, 0);
+            ctx.restore();
+
+            // Indication accès
+            if (!bas) {
+                ctx.fillStyle = '#27ae60';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('↓ ACCÈS ↓', dalleX + dalle.longueur * echelle / 2, dalleY + dalle.largeur * echelle + 20);
+            }
+            
+            // BACS
+            bacs.forEach((bac) => {
+                const colorSet = getColorSet(bac.type);
+                const dims = getBacDimensions(bac);
+                const x = dalleX + bac.x * echelle;
+                const y = dalleY + bac.y * echelle;
+                const w = dims.w * echelle;
+                const h = dims.h * echelle;
+                
+                ctx.fillStyle = colorSet.fill;
+                ctx.fillRect(x, y, w, h);
+                
+                ctx.strokeStyle = colorSet.stroke;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, w, h);
+                
+                // Poignée
+                ctx.strokeStyle = colorSet.stroke;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                
+                const handleMargin = 8;
+                const handleInset = 4;
+                
+                switch(bac.rotation) {
+                    case 0:
+                        ctx.moveTo(x + handleMargin, y + handleInset);
+                        ctx.lineTo(x + w - handleMargin, y + handleInset);
+                        break;
+                    case 90:
+                        ctx.moveTo(x + w - handleInset, y + handleMargin);
+                        ctx.lineTo(x + w - handleInset, y + h - handleMargin);
+                        break;
+                    case 180:
+                        ctx.moveTo(x + handleMargin, y + h - handleInset);
+                        ctx.lineTo(x + w - handleMargin, y + h - handleInset);
+                        break;
+                    case 270:
+                        ctx.moveTo(x + handleInset, y + handleMargin);
+                        ctx.lineTo(x + handleInset, y + h - handleMargin);
+                        break;
+                }
+                ctx.stroke();
+                
+                // Texte
+                ctx.fillStyle = colorSet.text;
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(bac.nom, x + w/2, y + h/2);
+                ctx.font = '9px Arial';
+                ctx.fillText(`${bac.largeur}×${bac.profondeur}`, x + w/2, y + h/2 + 12);
+            });
+            
+            // Infos
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Échelle: 1cm = ${echelle.toFixed(1)}px`, 10, canvas.height - 10);
+        }
+
+        function drawWoodTexture(x, y, w, h, vertical = false) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            
+            if (vertical) {
+                for (let i = 5; i < h; i += 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + i);
+                    ctx.lineTo(x + w, y + i);
+                    ctx.stroke();
+                }
+            } else {
+                for (let i = 5; i < w; i += 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + i, y);
+                    ctx.lineTo(x + i, y + h);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // INTERACTIONS
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const padding = 80;
+            const offsetClaustra = (debord + epaisseur) * echelle;
+            const dalleX = padding + offsetClaustra;
+            const dalleY = padding + offsetClaustra;
+            
+            // Vérifier les bacs (en dernier = au-dessus)
+            for (let i = bacs.length - 1; i >= 0; i--) {
+                const bac = bacs[i];
+                const dims = getBacDimensions(bac);
+                const x = dalleX + bac.x * echelle;
+                const y = dalleY + bac.y * echelle;
+                const w = dims.w * echelle;
+                const h = dims.h * echelle;
+                
+                if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    selectedItem = bac;
+                    selectedType = 'bac';
+                    offsetX = mouseX - x;
+                    offsetY = mouseY - y;
+                    isDragging = true;
+                    
+                    bacs.splice(i, 1);
+                    bacs.push(bac);
+                    return;
+                }
+            }
+            
+            // Vérifier les poteaux
+            for (let i = poteaux.length - 1; i >= 0; i--) {
+                const p = poteaux[i];
+                const x = dalleX + p.x * echelle;
+                const y = dalleY + p.y * echelle;
+                const size = p.section * echelle;
+                
+                if (mouseX >= x && mouseX <= x + size && mouseY >= y && mouseY <= y + size) {
+                    selectedItem = p;
+                    selectedType = 'poteau';
+                    offsetX = mouseX - x;
+                    offsetY = mouseY - y;
+                    isDragging = true;
+                    
+                    poteaux.splice(i, 1);
+                    poteaux.push(p);
+                    return;
+                }
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging || !selectedItem) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const padding = 80;
+            const offsetClaustra = (debord + epaisseur) * echelle;
+            const dalleX = padding + offsetClaustra;
+            const dalleY = padding + offsetClaustra;
+            
+            const gridSize = parseInt(document.getElementById('gridSize').value) || 10;
+            const snapToGrid = document.getElementById('snapToGrid').checked;
+            
+            let newX = (mouseX - dalleX - offsetX) / echelle;
+            let newY = (mouseY - dalleY - offsetY) / echelle;
+            
+            if (snapToGrid) {
+                newX = Math.round(newX / gridSize) * gridSize;
+                newY = Math.round(newY / gridSize) * gridSize;
+            }
+            
+            if (selectedType === 'bac') {
+                const dims = getBacDimensions(selectedItem);
+                newX = Math.max(0, Math.min(dalle.longueur - dims.w, newX));
+                newY = Math.max(0, Math.min(dalle.largeur - dims.h, newY));
+            }
+            
+            selectedItem.x = Math.round(newX);
+            selectedItem.y = Math.round(newY);
+            
+            draw();
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            if (selectedType === 'poteau') updatePoteauList();
+            isDragging = false;
+            selectedItem = null;
+            selectedType = null;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            selectedItem = null;
+            selectedType = null;
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const padding = 80;
+            const offsetClaustra = (debord + epaisseur) * echelle;
+            const dalleX = padding + offsetClaustra;
+            const dalleY = padding + offsetClaustra;
+            
+            for (let i = bacs.length - 1; i >= 0; i--) {
+                const bac = bacs[i];
+                const dims = getBacDimensions(bac);
+                const x = dalleX + bac.x * echelle;
+                const y = dalleY + bac.y * echelle;
+                const w = dims.w * echelle;
+                const h = dims.h * echelle;
+                
+                if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    rotateBac(bac.id);
+                    break;
+                }
+            }
+        });
+        
+        canvas.addEventListener('dblclick', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const padding = 80;
+            const offsetClaustra = (debord + epaisseur) * echelle;
+            const dalleX = padding + offsetClaustra;
+            const dalleY = padding + offsetClaustra;
+            
+            // Bacs
+            for (let i = bacs.length - 1; i >= 0; i--) {
+                const bac = bacs[i];
+                const dims = getBacDimensions(bac);
+                const x = dalleX + bac.x * echelle;
+                const y = dalleY + bac.y * echelle;
+                const w = dims.w * echelle;
+                const h = dims.h * echelle;
+                
+                if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
+                    if (confirm(`Supprimer "${bac.nom}" ?`)) {
+                        supprimerBac(bac.id);
+                    }
+                    return;
+                }
+            }
+            
+            // Poteaux
+            for (let i = poteaux.length - 1; i >= 0; i--) {
+                const p = poteaux[i];
+                const x = dalleX + p.x * echelle;
+                const y = dalleY + p.y * echelle;
+                const size = p.section * echelle;
+                
+                if (mouseX >= x && mouseX <= x + size && mouseY >= y && mouseY <= y + size) {
+                    if (confirm('Supprimer ce poteau ?')) {
+                        supprimerPoteau(p.id);
+                    }
+                    return;
+                }
+            }
+        });
+        
+        // EXPORT/IMPORT
+        function exportImage() {
+            const link = document.createElement('a');
+            link.download = `dalle-${dalle.longueur}x${dalle.largeur}-${bacs.length}bacs.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function exportConfig() {
+            const config = {
+                dalle: dalle,
+                bacs: bacs,
+                poteaux: poteaux,
+                colors: colors,
+                claustra: {
+                    haut: document.getElementById('claustraHaut').checked,
+                    bas: document.getElementById('claustraBas').checked,
+                    gauche: document.getElementById('claustraGauche').checked,
+                    droite: document.getElementById('claustraDroite').checked,
+                    epaisseur: parseInt(document.getElementById('claustraEpaisseur').value),
+                    debord: parseInt(document.getElementById('claustraDebord').value),
+                    couleur: document.getElementById('claustraCouleur').value,
+                    hauteur: parseInt(document.getElementById('claustraHauteur').value)
+                },
+                planches: {
+                    largeur: parseInt(document.getElementById('plancheLargeur').value),
+                    epaisseur: parseFloat(document.getElementById('plancheEpaisseur').value),
+                    espacement: parseFloat(document.getElementById('plancheEspacement').value)
+                },
+                grid: {
+                    show: document.getElementById('showGrid').checked,
+                    size: parseInt(document.getElementById('gridSize').value),
+                    snap: document.getElementById('snapToGrid').checked
+                }
+            };
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.download = `config-dalle-${Date.now()}.json`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        function importConfig() {
+            document.getElementById('fileInput').click();
+        }
+
+        function loadConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    
+                    dalle = config.dalle;
+                    bacs = config.bacs || [];
+                    poteaux = config.poteaux || [];
+                    colors = config.colors;
+                    
+                    document.getElementById('dalleLongueur').value = dalle.longueur;
+                    document.getElementById('dalleLargeur').value = dalle.largeur;
+                    document.getElementById('colorOMr').value = colors.OMr.base;
+                    document.getElementById('colorEmballages').value = colors.Emballages.base;
+                    
+                    if (config.claustra) {
+                        document.getElementById('claustraHaut').checked = config.claustra.haut;
+                        document.getElementById('claustraBas').checked = config.claustra.bas;
+                        document.getElementById('claustraGauche').checked = config.claustra.gauche;
+                        document.getElementById('claustraDroite').checked = config.claustra.droite;
+                        document.getElementById('claustraEpaisseur').value = config.claustra.epaisseur;
+                        document.getElementById('claustraDebord').value = config.claustra.debord;
+                        document.getElementById('claustraCouleur').value = config.claustra.couleur;
+                        if (config.claustra.hauteur) {
+                            document.getElementById('claustraHauteur').value = config.claustra.hauteur;
+                        }
+                    }
+                    
+                    if (config.planches) {
+                        document.getElementById('plancheLargeur').value = config.planches.largeur;
+                        document.getElementById('plancheEpaisseur').value = config.planches.epaisseur;
+                        document.getElementById('plancheEspacement').value = config.planches.espacement;
+                    }
+                    
+                    if (config.grid) {
+                        document.getElementById('showGrid').checked = config.grid.show;
+                        document.getElementById('gridSize').value = config.grid.size;
+                        document.getElementById('snapToGrid').checked = config.grid.snap;
+                    }
+                    
+                    updateDalle();
+                    updateLegend();
+                    updateBacList();
+                    updatePoteauList();
+                    updateRecap();
+                    
+                    alert('Configuration chargée !');
+                } catch (err) {
+                    alert('Erreur : ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        function resetAll() {
+            if (confirm('Tout effacer (bacs et poteaux) ?')) {
+                bacs = [];
+                poteaux = [];
+                updateBacList();
+                updatePoteauList();
+                draw();
+            }
+        }
+        
+        // Init
+        updateDalle();
+        updateLegend();
+        updateRecap();
+    
+        // RECAP
+        function updateRecap() {
+            updateRecapDalle();
+            updateRecapClaustra();
+            updateRecapPlanches();
+        }
+
+        function updateRecapDalle() {
+            const surfaceDalle = (dalle.longueur * dalle.largeur / 10000).toFixed(2); // m²
+            const nbOMr = bacs.filter(b => b.type === 'OMr').length;
+            const nbEmb = bacs.filter(b => b.type === 'Emballages').length;
+            
+            // Calcul surface occupée par les bacs
+            let surfaceBacs = 0;
+            bacs.forEach(b => {
+                surfaceBacs += (b.largeur * b.profondeur);
+            });
+            surfaceBacs = (surfaceBacs / 10000).toFixed(2); // m²
+            
+            const tauxOccupation = dalle.longueur > 0 && dalle.largeur > 0 
+                ? ((surfaceBacs / surfaceDalle) * 100).toFixed(1) 
+                : 0;
+
+            document.getElementById('recapDalle').innerHTML = `
+                <table>
+                    <tr><td>Dimensions dalle</td><td>${dalle.longueur} × ${dalle.largeur} cm</td></tr>
+                    <tr><td>Surface dalle</td><td>${surfaceDalle} m²</td></tr>
+                    <tr><td>Nombre de bacs OMr</td><td>${nbOMr}</td></tr>
+                    <tr><td>Nombre de bacs Emballages</td><td>${nbEmb}</td></tr>
+                    <tr><td>Total bacs</td><td>${bacs.length}</td></tr>
+                    <tr><td>Surface occupée par bacs</td><td>${surfaceBacs} m²</td></tr>
+                    <tr><td>Taux d'occupation</td><td>${tauxOccupation} %</td></tr>
+                </table>
+            `;
+        }
+
+        function updateRecapClaustra() {
+            const haut = document.getElementById('claustraHaut').checked;
+            const bas = document.getElementById('claustraBas').checked;
+            const gauche = document.getElementById('claustraGauche').checked;
+            const droite = document.getElementById('claustraDroite').checked;
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+
+            // Calcul des longueurs de chaque côté
+            let lineaireTotal = 0;
+            let details = [];
+
+            // Longueur des côtés horizontaux (haut/bas)
+            const longueurHorizontale = dalle.longueur + (debord * 2) + (gauche ? epaisseur : 0) + (droite ? epaisseur : 0);
+            // Longueur des côtés verticaux (gauche/droite)
+            const longueurVerticale = dalle.largeur + (debord * 2);
+
+            if (haut) {
+                lineaireTotal += longueurHorizontale;
+                details.push(`Haut: ${longueurHorizontale} cm`);
+            }
+            if (bas) {
+                lineaireTotal += longueurHorizontale;
+                details.push(`Bas: ${longueurHorizontale} cm`);
+            }
+            if (gauche) {
+                lineaireTotal += longueurVerticale;
+                details.push(`Gauche: ${longueurVerticale} cm`);
+            }
+            if (droite) {
+                lineaireTotal += longueurVerticale;
+                details.push(`Droite: ${longueurVerticale} cm`);
+            }
+
+            const nbCotes = (haut ? 1 : 0) + (bas ? 1 : 0) + (gauche ? 1 : 0) + (droite ? 1 : 0);
+
+            document.getElementById('recapClaustra').innerHTML = `
+                <table>
+                    <tr><td>Côtés avec claustra</td><td>${nbCotes} / 4</td></tr>
+                    <tr><td>Détail</td><td>${details.length > 0 ? details.join('<br>') : '-'}</td></tr>
+                    <tr><td>Linéaire total</td><td>${lineaireTotal} cm (${(lineaireTotal/100).toFixed(2)} m)</td></tr>
+                    <tr><td>Épaisseur claustra</td><td>${epaisseur} cm</td></tr>
+                    <tr><td>Débord</td><td>${debord} cm</td></tr>
+                    <tr><td>Nombre de poteaux</td><td>${poteaux.length}</td></tr>
+                </table>
+            `;
+        }
+
+        function updateRecapPlanches() {
+            const haut = document.getElementById('claustraHaut').checked;
+            const bas = document.getElementById('claustraBas').checked;
+            const gauche = document.getElementById('claustraGauche').checked;
+            const droite = document.getElementById('claustraDroite').checked;
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            
+            const hauteurClaustra = parseInt(document.getElementById('claustraHauteur').value) || 120;
+            const largeurPlanche = parseInt(document.getElementById('plancheLargeur').value) || 15;
+            const epaisseurPlanche = parseFloat(document.getElementById('plancheEpaisseur').value) || 2;
+            // Correction : accepter 0 comme valeur valide pour l'espacement
+            const espacementInput = document.getElementById('plancheEspacement').value;
+            const espacement = espacementInput === '' ? 2 : parseFloat(espacementInput);
+
+            // Calcul du nombre de rangées de planches
+            // Formule : n planches avec (n-1) espacements entre elles
+            // n × largeur + (n-1) × espacement = hauteur
+            // n × (largeur + espacement) - espacement = hauteur
+            // n = (hauteur + espacement) / (largeur + espacement)
+            let nbRangees;
+            if (espacement === 0) {
+                nbRangees = Math.floor(hauteurClaustra / largeurPlanche);
+            } else {
+                nbRangees = Math.floor((hauteurClaustra + espacement) / (largeurPlanche + espacement));
+            }
+            
+            // Calcul de la hauteur réellement occupée pour vérification
+            const hauteurOccupee = nbRangees * largeurPlanche + (nbRangees - 1) * espacement;
+
+            // Positions des bords du claustra (en coordonnées relatives à la dalle)
+            const claustraGaucheX = -debord - epaisseur;
+            const claustraDroiteX = dalle.longueur + debord + epaisseur;
+            const claustraHautY = -debord - epaisseur;
+            const claustraBasY = dalle.largeur + debord + epaisseur;
+
+            // Fonction pour trouver les poteaux sur un côté et calculer les segments
+            function getSegments(cote) {
+                let poteauxSurCote = [];
+                let debut, fin;
+                
+                if (cote === 'haut') {
+                    debut = gauche ? claustraGaucheX : -debord;
+                    fin = droite ? claustraDroiteX : dalle.longueur + debord;
+                    // Poteaux sur le bord haut (Y proche de claustraHautY)
+                    poteauxSurCote = poteaux.filter(p => {
+                        const pY = p.y;
+                        const pYEnd = p.y + p.section;
+                        return pY <= -debord && pYEnd >= claustraHautY;
+                    }).map(p => ({ x: p.x, section: p.section }));
+                    poteauxSurCote.sort((a, b) => a.x - b.x);
+                    
+                    // Construire les segments
+                    let segments = [];
+                    let currentX = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.x > currentX) {
+                            segments.push(Math.round(p.x - currentX));
+                        }
+                        currentX = p.x + p.section;
+                    });
+                    if (currentX < fin) {
+                        segments.push(Math.round(fin - currentX));
+                    }
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                
+                if (cote === 'bas') {
+                    debut = gauche ? claustraGaucheX : -debord;
+                    fin = droite ? claustraDroiteX : dalle.longueur + debord;
+                    poteauxSurCote = poteaux.filter(p => {
+                        const pYEnd = p.y + p.section;
+                        return pYEnd >= dalle.largeur + debord && p.y <= claustraBasY;
+                    }).map(p => ({ x: p.x, section: p.section }));
+                    poteauxSurCote.sort((a, b) => a.x - b.x);
+                    
+                    let segments = [];
+                    let currentX = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.x > currentX) {
+                            segments.push(Math.round(p.x - currentX));
+                        }
+                        currentX = p.x + p.section;
+                    });
+                    if (currentX < fin) {
+                        segments.push(Math.round(fin - currentX));
+                    }
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                
+                if (cote === 'gauche') {
+                    debut = haut ? claustraHautY : -debord;
+                    fin = bas ? claustraBasY : dalle.largeur + debord;
+                    poteauxSurCote = poteaux.filter(p => {
+                        const pXEnd = p.x + p.section;
+                        return p.x <= -debord && pXEnd >= claustraGaucheX;
+                    }).map(p => ({ y: p.y, section: p.section }));
+                    poteauxSurCote.sort((a, b) => a.y - b.y);
+                    
+                    let segments = [];
+                    let currentY = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.y > currentY) {
+                            segments.push(Math.round(p.y - currentY));
+                        }
+                        currentY = p.y + p.section;
+                    });
+                    if (currentY < fin) {
+                        segments.push(Math.round(fin - currentY));
+                    }
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                
+                if (cote === 'droite') {
+                    debut = haut ? claustraHautY : -debord;
+                    fin = bas ? claustraBasY : dalle.largeur + debord;
+                    poteauxSurCote = poteaux.filter(p => {
+                        const pX = p.x;
+                        return pX >= dalle.longueur + debord;
+                    }).map(p => ({ y: p.y, section: p.section }));
+                    poteauxSurCote.sort((a, b) => a.y - b.y);
+                    
+                    let segments = [];
+                    let currentY = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.y > currentY) {
+                            segments.push(Math.round(p.y - currentY));
+                        }
+                        currentY = p.y + p.section;
+                    });
+                    if (currentY < fin) {
+                        segments.push(Math.round(fin - currentY));
+                    }
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                
+                return [];
+            }
+
+            // Calcul pour chaque côté actif
+            let detailsParCote = [];
+            let totalPlanches = 0;
+            let lineaireTotal = 0;
+            let planchesParLongueur = {}; // Pour regrouper par longueur
+
+            if (haut) {
+                const segments = getSegments('haut');
+                segments.forEach((longueur, i) => {
+                    if (longueur > 0) {
+                        totalPlanches += nbRangees;
+                        lineaireTotal += longueur * nbRangees;
+                        planchesParLongueur[longueur] = (planchesParLongueur[longueur] || 0) + nbRangees;
+                    }
+                });
+                detailsParCote.push({ cote: 'Haut', segments: segments });
+            }
+
+            if (bas) {
+                const segments = getSegments('bas');
+                segments.forEach((longueur, i) => {
+                    if (longueur > 0) {
+                        totalPlanches += nbRangees;
+                        lineaireTotal += longueur * nbRangees;
+                        planchesParLongueur[longueur] = (planchesParLongueur[longueur] || 0) + nbRangees;
+                    }
+                });
+                detailsParCote.push({ cote: 'Bas', segments: segments });
+            }
+
+            if (gauche) {
+                const segments = getSegments('gauche');
+                segments.forEach((longueur, i) => {
+                    if (longueur > 0) {
+                        totalPlanches += nbRangees;
+                        lineaireTotal += longueur * nbRangees;
+                        planchesParLongueur[longueur] = (planchesParLongueur[longueur] || 0) + nbRangees;
+                    }
+                });
+                detailsParCote.push({ cote: 'Gauche', segments: segments });
+            }
+
+            if (droite) {
+                const segments = getSegments('droite');
+                segments.forEach((longueur, i) => {
+                    if (longueur > 0) {
+                        totalPlanches += nbRangees;
+                        lineaireTotal += longueur * nbRangees;
+                        planchesParLongueur[longueur] = (planchesParLongueur[longueur] || 0) + nbRangees;
+                    }
+                });
+                detailsParCote.push({ cote: 'Droite', segments: segments });
+            }
+
+            if (detailsParCote.length === 0) {
+                document.getElementById('recapPlanches').innerHTML = `
+                    <p style="color: #666; text-align: center;">Aucun claustra configuré</p>
+                `;
+                return;
+            }
+
+            // Construire le détail par côté
+            let detailHTML = detailsParCote.map(d => {
+                const segmentsStr = d.segments.map((s, i) => `${s} cm`).join(' + ');
+                const nbSegments = d.segments.length;
+                return `<tr><td>${d.cote}</td><td>${nbSegments} segment(s) : ${segmentsStr}</td></tr>`;
+            }).join('');
+
+            // Construire le récapitulatif par longueur de planche
+            let recapLongueurs = Object.entries(planchesParLongueur)
+                .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
+                .map(([longueur, nb]) => `${nb} planches de ${longueur} cm`)
+                .join('<br>');
+
+            document.getElementById('recapPlanches').innerHTML = `
+                <h4>📋 Estimation pour devis</h4>
+                <table>
+                    <tr><td>Hauteur claustra</td><td>${hauteurClaustra} cm</td></tr>
+                    <tr><td>Planche</td><td>${largeurPlanche} × ${epaisseurPlanche} cm</td></tr>
+                    <tr><td>Espacement entre planches</td><td>${espacement} cm</td></tr>
+                    <tr><td>Nombre de rangées</td><td>${nbRangees}</td></tr>
+                    <tr><td>Hauteur occupée</td><td>${hauteurOccupee} cm <small>(${nbRangees}×${largeurPlanche} + ${nbRangees-1}×${espacement})</small></td></tr>
+                </table>
+                
+                <h4 style="margin-top: 15px;">📐 Découpe par côté</h4>
+                <table>
+                    ${detailHTML}
+                </table>
+                
+                <h4 style="margin-top: 15px;">🪵 Planches à commander</h4>
+                <div style="background: #fff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                    ${recapLongueurs}
+                </div>
+                
+                <table style="margin-top: 10px; border-top: 2px solid #4caf50; padding-top: 10px;">
+                    <tr><td><strong>Total planches</strong></td><td><strong>${totalPlanches}</strong></td></tr>
+                    <tr><td>Linéaire total</td><td>${(lineaireTotal/100).toFixed(2)} m</td></tr>
+                    <tr><td>Poteaux</td><td>${poteaux.length} × section ${poteaux.length > 0 ? poteaux[0].section : '-'} cm</td></tr>
+                </table>
+                <div class="recap-warning">
+                    ⚠️ Estimation indicative. Prévoir 10-15% de marge pour les coupes et pertes.
+                </div>
+            `;
+        }
+
+        function exportDevis() {
+            const hauteurClaustra = document.getElementById('claustraHauteur').value;
+            const largeurPlanche = document.getElementById('plancheLargeur').value;
+            const epaisseurPlanche = document.getElementById('plancheEpaisseur').value;
+            
+            const haut = document.getElementById('claustraHaut').checked;
+            const bas = document.getElementById('claustraBas').checked;
+            const gauche = document.getElementById('claustraGauche').checked;
+            const droite = document.getElementById('claustraDroite').checked;
+            const debord = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const epaisseur = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+
+            const espacementInput = document.getElementById('plancheEspacement').value;
+            const espacementVal = espacementInput === '' ? 2 : parseFloat(espacementInput);
+
+            // Même formule corrigée que updateRecapPlanches
+            let nbRangees;
+            if (espacementVal === 0) {
+                nbRangees = Math.floor(parseInt(hauteurClaustra) / parseInt(largeurPlanche));
+            } else {
+                nbRangees = Math.floor((parseInt(hauteurClaustra) + espacementVal) / (parseInt(largeurPlanche) + espacementVal));
+            }
+
+            // Récupérer les infos du récap planches (simplification pour l'export)
+            const recapDiv = document.getElementById('recapPlanches');
+            
+            let texte = `RÉCAPITULATIF POUR DEVIS - Point d'Apport Volontaire\n`;
+            texte += `${'='.repeat(55)}\n\n`;
+            texte += `Date: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+            
+            texte += `DALLE BÉTON\n`;
+            texte += `-----------\n`;
+            texte += `Dimensions: ${dalle.longueur} × ${dalle.largeur} cm\n`;
+            texte += `Surface: ${(dalle.longueur * dalle.largeur / 10000).toFixed(2)} m²\n\n`;
+            
+            texte += `BACS\n`;
+            texte += `----\n`;
+            texte += `OMr: ${bacs.filter(b => b.type === 'OMr').length}\n`;
+            texte += `Emballages: ${bacs.filter(b => b.type === 'Emballages').length}\n`;
+            texte += `Total: ${bacs.length} bacs\n\n`;
+            
+            texte += `CLAUSTRA\n`;
+            texte += `--------\n`;
+            texte += `Hauteur: ${hauteurClaustra} cm\n`;
+            texte += `Côtés: ${[haut?'Haut':'', bas?'Bas':'', gauche?'Gauche':'', droite?'Droite':''].filter(x=>x).join(', ')}\n`;
+            texte += `Épaisseur claustra: ${epaisseur} cm\n`;
+            texte += `Débord: ${debord} cm\n\n`;
+            
+            texte += `POTEAUX\n`;
+            texte += `-------\n`;
+            texte += `Nombre: ${poteaux.length}\n`;
+            if (poteaux.length > 0) {
+                texte += `Section: ${poteaux[0].section} × ${poteaux[0].section} cm\n`;
+                texte += `Hauteur recommandée: ${parseInt(hauteurClaustra) + 20} cm (avec ancrage)\n`;
+                texte += `Positions:\n`;
+                poteaux.forEach((p, i) => {
+                    texte += `  - Poteau ${i+1}: X=${p.x} cm, Y=${p.y} cm\n`;
+                });
+            }
+            texte += `\n`;
+            
+            texte += `PLANCHES\n`;
+            texte += `--------\n`;
+            texte += `Section: ${largeurPlanche} × ${epaisseurPlanche} cm\n`;
+            texte += `Espacement: ${espacementVal} cm\n`;
+            texte += `Nombre de rangées: ${nbRangees}\n\n`;
+            
+            // Calcul des segments (même logique que updateRecapPlanches)
+            const claustraGaucheX = -debord - epaisseur;
+            const claustraDroiteX = dalle.longueur + debord + epaisseur;
+            const claustraHautY = -debord - epaisseur;
+            const claustraBasY = dalle.largeur + debord + epaisseur;
+
+            function getSegmentsExport(cote) {
+                let poteauxSurCote = [];
+                let debut, fin;
+                
+                if (cote === 'haut' || cote === 'bas') {
+                    debut = gauche ? claustraGaucheX : -debord;
+                    fin = droite ? claustraDroiteX : dalle.longueur + debord;
+                    
+                    if (cote === 'haut') {
+                        poteauxSurCote = poteaux.filter(p => p.y <= -debord).map(p => ({ x: p.x, section: p.section }));
+                    } else {
+                        poteauxSurCote = poteaux.filter(p => p.y + p.section >= dalle.largeur + debord).map(p => ({ x: p.x, section: p.section }));
+                    }
+                    poteauxSurCote.sort((a, b) => a.x - b.x);
+                    
+                    let segments = [];
+                    let currentX = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.x > currentX) segments.push(Math.round(p.x - currentX));
+                        currentX = p.x + p.section;
+                    });
+                    if (currentX < fin) segments.push(Math.round(fin - currentX));
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                
+                if (cote === 'gauche' || cote === 'droite') {
+                    debut = haut ? claustraHautY : -debord;
+                    fin = bas ? claustraBasY : dalle.largeur + debord;
+                    
+                    if (cote === 'gauche') {
+                        poteauxSurCote = poteaux.filter(p => p.x <= -debord).map(p => ({ y: p.y, section: p.section }));
+                    } else {
+                        poteauxSurCote = poteaux.filter(p => p.x >= dalle.longueur + debord).map(p => ({ y: p.y, section: p.section }));
+                    }
+                    poteauxSurCote.sort((a, b) => a.y - b.y);
+                    
+                    let segments = [];
+                    let currentY = debut;
+                    poteauxSurCote.forEach(p => {
+                        if (p.y > currentY) segments.push(Math.round(p.y - currentY));
+                        currentY = p.y + p.section;
+                    });
+                    if (currentY < fin) segments.push(Math.round(fin - currentY));
+                    return segments.length > 0 ? segments : [Math.round(fin - debut)];
+                }
+                return [];
+            }
+
+            let planchesParLongueur = {};
+            let totalPlanches = 0;
+            let lineaireTotal = 0;
+
+            texte += `Détail par côté:\n`;
+            
+            if (haut) {
+                const segments = getSegmentsExport('haut');
+                texte += `  HAUT: ${segments.length} segment(s)\n`;
+                segments.forEach((s, i) => {
+                    texte += `    - Segment ${i+1}: ${nbRangees} planches de ${s} cm\n`;
+                    planchesParLongueur[s] = (planchesParLongueur[s] || 0) + nbRangees;
+                    totalPlanches += nbRangees;
+                    lineaireTotal += s * nbRangees;
+                });
+            }
+            if (bas) {
+                const segments = getSegmentsExport('bas');
+                texte += `  BAS: ${segments.length} segment(s)\n`;
+                segments.forEach((s, i) => {
+                    texte += `    - Segment ${i+1}: ${nbRangees} planches de ${s} cm\n`;
+                    planchesParLongueur[s] = (planchesParLongueur[s] || 0) + nbRangees;
+                    totalPlanches += nbRangees;
+                    lineaireTotal += s * nbRangees;
+                });
+            }
+            if (gauche) {
+                const segments = getSegmentsExport('gauche');
+                texte += `  GAUCHE: ${segments.length} segment(s)\n`;
+                segments.forEach((s, i) => {
+                    texte += `    - Segment ${i+1}: ${nbRangees} planches de ${s} cm\n`;
+                    planchesParLongueur[s] = (planchesParLongueur[s] || 0) + nbRangees;
+                    totalPlanches += nbRangees;
+                    lineaireTotal += s * nbRangees;
+                });
+            }
+            if (droite) {
+                const segments = getSegmentsExport('droite');
+                texte += `  DROITE: ${segments.length} segment(s)\n`;
+                segments.forEach((s, i) => {
+                    texte += `    - Segment ${i+1}: ${nbRangees} planches de ${s} cm\n`;
+                    planchesParLongueur[s] = (planchesParLongueur[s] || 0) + nbRangees;
+                    totalPlanches += nbRangees;
+                    lineaireTotal += s * nbRangees;
+                });
+            }
+
+            texte += `\n${'='.repeat(55)}\n`;
+            texte += `RÉSUMÉ COMMANDE PLANCHES\n`;
+            texte += `${'='.repeat(55)}\n\n`;
+            
+            Object.entries(planchesParLongueur)
+                .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
+                .forEach(([longueur, nb]) => {
+                    texte += `  ${nb} planches de ${longueur} cm (${largeurPlanche}×${epaisseurPlanche} cm)\n`;
+                });
+            
+            texte += `\n  TOTAL: ${totalPlanches} planches\n`;
+            texte += `  Linéaire: ${(lineaireTotal/100).toFixed(2)} m\n`;
+            
+            texte += `\n${'='.repeat(55)}\n`;
+            texte += `⚠️ Estimation indicative - Prévoir 10-15% de marge\n`;
+
+            const blob = new Blob([texte], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.download = `devis-PAV-${dalle.longueur}x${dalle.largeur}-${Date.now()}.txt`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+    </script>
+</body>
+</html>
