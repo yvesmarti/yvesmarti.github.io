@@ -56,3 +56,10 @@
       description: Emplacement disponible pour un outil environnemental.
       lien: "#"
       actif: false
+
+- categorie: Autres outils pratiques
+  outils:
+    - nom: Dimensionnement de dalles
+      description: Configurez et dimensionnez vos dalles pour points d'apport volontaire avec bacs et claustra.
+      lien: outils/schemas_dalles.html
+      actif: true
