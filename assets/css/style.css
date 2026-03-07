@@ -628,106 +628,16 @@ body {
 
 .browser-content {
     background: #f7f9fc;
+    overflow: hidden;
 }
 
-/* Mockup hero */
-.mockup-hero {
-    background: linear-gradient(135deg, #1a2d4a 0%, #2d4e7a 100%);
-    padding: 2.5rem 2rem;
-    display: flex;
-    align-items: center;
-    min-height: 110px;
-}
-
-.mockup-hero-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.mockup-line {
-    height: 10px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 6px;
-    width: 200px;
-}
-
-.mockup-line--title {
-    height: 18px;
-    width: 260px;
-    background: rgba(255,255,255,0.6);
-}
-
-.mockup-line--sub {
-    width: 180px;
-}
-
-.mockup-line--short {
-    width: 120px;
-}
-
-.mockup-btn {
-    width: 90px;
-    height: 28px;
-    background: #4a6fa5;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-}
-
-/* Mockup body */
-.mockup-body {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.mockup-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-}
-
-.mockup-card {
-    height: 60px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid #e0e6f0;
-}
-
-.mockup-strip {
-    height: 40px;
-    background: #4a6fa5;
-    border-radius: 6px;
-    opacity: 0.15;
-}
-
-.mockup-two-col {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 1rem;
-    align-items: center;
-}
-
-.mockup-col-img {
-    height: 80px;
-    background: #dde6f2;
-    border-radius: 6px;
-}
-
-.mockup-col-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.mockup-btn-sm {
-    width: 70px;
-    height: 20px;
-    background: #4a6fa5;
-    border-radius: 4px;
-    margin-top: 0.25rem;
-    opacity: 0.7;
+.browser-screenshot {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top;
+    max-height: 320px;
 }
 
 /* --- Infos réalisation --- */
@@ -798,17 +708,7 @@ body {
         padding: 1.5rem;
     }
 
-    .mockup-cards {
-        grid-template-columns: 1fr;
-    }
 
-    .mockup-two-col {
-        grid-template-columns: 1fr;
-    }
-
-    .mockup-col-img {
-        display: none;
-    }
 }
 
 /* ===========================================
