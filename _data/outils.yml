@@ -23,6 +23,11 @@
       lien: outils/photomapviewer.html
       actif: true
 
+    - nom: Photo Geo Manager
+      description: Renommez vos photos automatiquement en fonction de leur géolocalisation GPS.
+      lien: outils/photogeomanager.html
+      actif: true
+
     - nom: Extraction de données OSM
       description: Récupérez des données OpenStreetMap pour une zone donnée.
       lien: outils/extracteurosm.html
