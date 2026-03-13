@@ -386,12 +386,19 @@ body {
    OUTILS (teaser sur accueil)
    =========================================== */
 
+.tools-teaser-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
 .tools-teaser {
     background: white;
     border-radius: 12px;
     padding: 2.5rem;
-    margin: 3rem 0;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-left: 4px solid transparent;
 }
 
 .tools-teaser h3 {
@@ -420,12 +427,22 @@ body {
     gap: 1rem;
 }
 
+.tools-teaser--outils {
+    border-left-color: var(--color-accent);
+}
+
 .tools-teaser--realisations {
-    border-left: 4px solid #4a6fa5;
+    border-left-color: #4a6fa5;
 }
 
 .tools-link--realisations {
     color: #4a6fa5;
+}
+
+@media (max-width: 768px) {
+    .tools-teaser-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ===========================================
