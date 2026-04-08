@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurateur de Dalle & Claustra v5</title>
+    <title>Configurateur de Dalle & Claustra v6</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { margin: 0; padding: 20px; background: #f5f5f5; }
@@ -88,7 +88,7 @@
     </style>
 </head>
 <body>
-    <h1>🧱 Configurateur de dalle avec claustra v5</h1>
+    <h1>🧱 Configurateur de dalle avec claustra v6</h1>
     
     <div class="container">
         <div class="panel panel-scroll">
@@ -232,8 +232,22 @@
                     </div>
                 </div>
                 <button class="btn-warning" onclick="ajouterPoteau()">+ Ajouter un poteau</button>
-                <button class="btn-primary" onclick="ajouterPoteauxAuto()" style="margin-left: 5px;">⚡ Auto</button>
-                <p class="dimensions-info">💡 "Auto" place les poteaux aux angles du claustra</p>
+
+                <div style="margin-top: 15px; padding: 12px; background: #fdf2e9; border-radius: 8px; border: 1px solid #e8c9a0;">
+                    <label style="color: #8b4513; margin-bottom: 8px;">⚡ Placement automatique des poteaux</label>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>Longueur max planche (cm)</label>
+                            <input type="number" id="maxPlancheLength" value="180" min="50" max="300" step="10">
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-end;">
+                            <button class="btn-primary" onclick="ajouterPoteauxAuto()" style="width:100%;background:#8b4513;">⚡ Placer poteaux auto</button>
+                        </div>
+                    </div>
+                    <p class="dimensions-info">💡 Place les poteaux aux angles + intermédiaires pour que chaque travée ≤ longueur max planche</p>
+                    <div id="autoEspacementInfo" style="margin-top: 8px;"></div>
+                </div>
+
                 <div class="poteau-list" id="poteauList"></div>
             </div>
 
@@ -441,16 +455,89 @@
         updatePoteauList(); draw(); drawElevation();
     }
     function ajouterPoteauxAuto(){
+        // Clear existing poteaux
+        poteaux = [];
+
         const s=parseInt(document.getElementById('poteauSection').value)||10;
         const d=parseInt(document.getElementById('claustraDebord').value)||5, e=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const h=document.getElementById('claustraHaut').checked, b=document.getElementById('claustraBas').checked;
         const g=document.getElementById('claustraGauche').checked, dr=document.getElementById('claustraDroite').checked;
-        const pos=[];
-        if(h||g) pos.push({x:-d-e, y:-d-e});
-        if(h||dr) pos.push({x:dalle.longueur+d+e-s, y:-d-e});
-        if(b||g) pos.push({x:-d-e, y:dalle.largeur+d+e-s});
-        if(b||dr) pos.push({x:dalle.longueur+d+e-s, y:dalle.largeur+d+e-s});
-        pos.forEach(p=>{ if(!poteaux.some(q=>Math.abs(q.x-p.x)<5&&Math.abs(q.y-p.y)<5)) poteaux.push({id:Date.now()+Math.random(),section:s,...p}); });
+        const maxPlanche=parseInt(document.getElementById('maxPlancheLength').value)||180;
+
+        // Helper: compute uniform post positions along a line segment
+        // Returns array of post positions (left edge of each post) along the axis
+        function computePostPositions(startCoord, endCoord, postSize, maxPlank) {
+            const totalLength = endCoord - startCoord;
+            // Number of spans needed so each plank fits within maxPlank
+            // totalLength = nPosts * postSize + nSpans * plankLength
+            // nPosts = nSpans + 1
+            // totalLength = (nSpans+1)*postSize + nSpans*plankLength
+            // We want plankLength <= maxPlank
+            // nSpans >= (totalLength - postSize) / (maxPlank + postSize)
+            let nSpans = Math.ceil((totalLength - postSize) / (maxPlank + postSize));
+            if (nSpans < 1) nSpans = 1;
+            const nPosts = nSpans + 1;
+            // Actual plank length (uniform)
+            const plankLength = (totalLength - nPosts * postSize) / nSpans;
+            // Centre-to-centre = plankLength + postSize
+            const c2c = plankLength + postSize;
+            // Generate post left-edge positions
+            const positions = [];
+            for (let i = 0; i < nPosts; i++) {
+                positions.push(startCoord + i * c2c);
+            }
+            return { positions, nSpans, nPosts, plankLength: Math.round(plankLength * 10) / 10, c2c: Math.round(c2c * 10) / 10 };
+        }
+
+        let infoHtml = '';
+
+        // Haut/Bas sides run along X axis
+        // Gauche/Droite sides run along Y axis
+        const xStart = (g ? -d - e : -d);
+        const xEnd   = (dr ? dalle.longueur + d + e : dalle.longueur + d);
+        const yStart = (h ? -d - e : -d);
+        const yEnd   = (b ? dalle.largeur + d + e : dalle.largeur + d);
+
+        // Y positions for H/B side posts (fixed Y, variable X)
+        const yHaut = -d - e;       // top edge of haut claustra
+        const yBas  = dalle.largeur + d + e - s; // bottom side
+        // X positions for G/D side posts (fixed X, variable Y)
+        const xGauche = -d - e;
+        const xDroite = dalle.longueur + d + e - s;
+
+        // Track which corner positions we've already placed
+        const placed = new Set();
+        function addPost(x, y) {
+            const key = `${Math.round(x)},${Math.round(y)}`;
+            if (!placed.has(key)) {
+                placed.add(key);
+                poteaux.push({id: Date.now() + Math.random(), section: s, x: Math.round(x), y: Math.round(y)});
+            }
+        }
+
+        // Process each active side
+        if (h) {
+            const res = computePostPositions(xStart, xEnd, s, maxPlanche);
+            res.positions.forEach(px => addPost(px, yHaut));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬆ Haut :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (b) {
+            const res = computePostPositions(xStart, xEnd, s, maxPlanche);
+            res.positions.forEach(px => addPost(px, yBas));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (g) {
+            const res = computePostPositions(yStart, yEnd, s, maxPlanche);
+            res.positions.forEach(py => addPost(xGauche, py));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬅ Gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (dr) {
+            const res = computePostPositions(yStart, yEnd, s, maxPlanche);
+            res.positions.forEach(py => addPost(xDroite, py));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>➡ Droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+
+        document.getElementById('autoEspacementInfo').innerHTML = infoHtml || '<span style="font-size:12px;color:#999;">Aucun côté sélectionné</span>';
         updatePoteauList(); draw(); drawElevation();
     }
     function supprimerPoteau(id){ poteaux=poteaux.filter(p=>p.id!==id); updatePoteauList(); draw(); drawElevation(); }
