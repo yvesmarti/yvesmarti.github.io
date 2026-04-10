@@ -44,15 +44,22 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
 <!-- Parcours -->
 <section class="section-warm" id="parcours">
     <div class="narrative">
-        <h2 class="section-title animate-on-scroll">Expériences professionnelles</h2>
+        <h2 class="section-title-geo animate-on-scroll">Expériences professionnelles</h2>
 
-        <div class="timeline">
+        <div class="tl" id="exp-timeline">
+            <div class="tl__track" aria-hidden="true">
+                <div class="tl__track-fill" id="tl-fill"></div>
+            </div>
+
             {% for exp in site.data.experiences %}
-            <div class="timeline-item">
-                <div class="timeline-date">{{ exp.periode }}</div>
-                <div class="timeline-title">{{ exp.poste }}</div>
-                <div class="timeline-company">{{ exp.organisation }}</div>
-                <div class="timeline-description">{{ exp.description }}</div>
+            <div class="tl__item">
+                <div class="tl__dot" aria-hidden="true"></div>
+                <div class="tl__body">
+                    <span class="tl__date">{{ exp.periode }}</span>
+                    <h3 class="tl__title">{{ exp.poste }}</h3>
+                    <p class="tl__company">{{ exp.organisation }}</p>
+                    <p class="tl__desc">{{ exp.description }}</p>
+                </div>
             </div>
             {% endfor %}
         </div>

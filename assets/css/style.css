@@ -1095,3 +1095,186 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===========================================
+   TIMELINE ANIMÉE — EXPÉRIENCES
+   =========================================== */
+
+/* Palette géo (ajoutée aux variables globales via custom props locaux) */
+:root {
+    --tl-teal:      #1a5c4e;
+    --tl-teal-mid:  #2a8c72;
+    --tl-ochre:     #b87614;
+    --tl-orange:    #d95521;
+    --tl-dot-glow:  rgba(217, 85, 33, 0.28);
+}
+
+/* Titre de section — géométrique/bold distinctif */
+.section-title-geo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.15rem, 3vw, 1.85rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--tl-teal);
+    margin-bottom: 3rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid var(--tl-orange);
+}
+
+/* Conteneur de la timeline */
+.tl {
+    position: relative;
+    padding-left: 40px;
+    margin: 0 0 3rem;
+}
+
+/* Ligne de fond (track) */
+.tl__track {
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: rgba(26, 92, 78, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* Ligne animée — se dessine au scroll via JS */
+.tl__track-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(
+        to bottom,
+        var(--tl-orange) 0%,
+        var(--tl-teal-mid) 100%
+    );
+    border-radius: 2px;
+    will-change: height;
+}
+
+/* Item de la timeline */
+.tl__item {
+    position: relative;
+    margin-bottom: 2.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.tl__item:last-child {
+    margin-bottom: 0;
+}
+
+.tl__item:hover {
+    background: rgba(255, 255, 255, 0.55);
+}
+
+/* Point sur la ligne — s'illumine quand la ligne passe */
+.tl__dot {
+    position: absolute;
+    left: -39px;
+    top: 1.35rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(26, 92, 78, 0.12);
+    border: 2px solid rgba(26, 92, 78, 0.2);
+    transition:
+        background 0.5s ease,
+        border-color 0.5s ease,
+        box-shadow 0.5s ease,
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+}
+
+.tl__item.is-lit .tl__dot {
+    background: var(--tl-orange);
+    border-color: var(--tl-orange);
+    box-shadow:
+        0 0 0 5px var(--tl-dot-glow),
+        0 0 18px var(--tl-dot-glow);
+    transform: scale(1.3);
+}
+
+/* Contenu — invisible avant activation, fade-in au passage de la ligne */
+.tl__body {
+    opacity: 0;
+    transform: translateX(14px);
+    transition:
+        opacity 0.55s ease 0.15s,
+        transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s;
+}
+
+.tl__item.is-lit .tl__body {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Date — monoespace */
+.tl__date {
+    font-family: 'Space Mono', 'Courier New', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--tl-orange);
+    letter-spacing: 0.12em;
+    display: inline-block;
+    background: rgba(217, 85, 33, 0.08);
+    padding: 0.2rem 0.65rem;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
+    border-left: 2px solid var(--tl-orange);
+}
+
+/* Titre du poste */
+.tl__title {
+    font-family: 'Outfit', 'Source Sans 3', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--tl-teal);
+    line-height: 1.35;
+    margin-bottom: 0.3rem;
+}
+
+/* Organisation */
+.tl__company {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--tl-ochre);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.55rem;
+}
+
+/* Description */
+.tl__desc {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 0.93rem;
+    color: #5a4e3c;
+    line-height: 1.75;
+    margin: 0;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .tl {
+        padding-left: 32px;
+    }
+
+    .tl__track {
+        left: 5px;
+    }
+
+    .tl__dot {
+        left: -31px;
+    }
+
+    .tl__item:hover {
+        background: transparent;
+    }
+}
