@@ -1,14 +1,33 @@
-# Compétences / Barres de progression
-# niveau = pourcentage (0-100)
+# Compétences par catégorie
 
 - nom: QGIS
-  niveau: 90
+  categorie: SIG
+  couleur: "#1D9E75"
 
 - nom: Analyse spatiale
-  niveau: 85
+  categorie: SIG
+  couleur: "#1D9E75"
 
 - nom: Cartographie web
-  niveau: 75
+  categorie: Visualisation
+  couleur: "#7F77DD"
 
 - nom: Tableaux de bord
-  niveau: 80
+  categorie: Visualisation
+  couleur: "#7F77DD"
+
+- nom: "Développement d'outils web"
+  categorie: Visualisation
+  couleur: "#7F77DD"
+
+- nom: Excel / PowerQuery
+  categorie: Données
+  couleur: "#378ADD"
+
+- nom: Traitement de données
+  categorie: Données
+  couleur: "#378ADD"
+
+- nom: Récupération de jeux de données
+  categorie: Données
+  couleur: "#378ADD"
