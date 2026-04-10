@@ -86,20 +86,16 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
             Concrètement, je fais parler les données territoriales.
         </p>
 
-        <!-- Liste de compétences -->
-        <ul class="skills-list">
+        <!-- Grille de compétences -->
+        <div class="skills-grid">
             {% for competence in site.data.competences %}
-            <li class="skill-item">
-                <span class="skill-dot" style="background-color: {{ competence.couleur }};"></span>
-                <span class="skill-name">{{ competence.nom }}</span>
-                <span class="skill-tag" style="border-color: {{ competence.couleur }}; color: {{ competence.couleur }};">{{ competence.categorie }}</span>
-            </li>
+            <div class="skill-card" style="--card-color: {{ competence.couleur }};">
+                <span class="skill-card-icon">{{ competence.icone }}</span>
+                <span class="skill-card-tag">{{ competence.categorie }}</span>
+                <strong class="skill-card-name">{{ competence.nom }}</strong>
+                <p class="skill-card-desc">{{ competence.description }}</p>
+            </div>
             {% endfor %}
-        </ul>
-        <div class="skills-legend">
-            <span class="legend-item"><span class="skill-dot" style="background-color: #1D9E75;"></span> SIG</span>
-            <span class="legend-item"><span class="skill-dot" style="background-color: #7F77DD;"></span> Visualisation</span>
-            <span class="legend-item"><span class="skill-dot" style="background-color: #378ADD;"></span> Données</span>
         </div>
 
         <p>
