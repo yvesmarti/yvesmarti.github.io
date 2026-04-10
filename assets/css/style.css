@@ -1000,11 +1000,13 @@ body {
     overflow: hidden;
     line-height: 0;
     font-size: 0;
+    margin-bottom: -2px;
 }
 
 .wave-separator svg {
     display: block;
     width: 200%;
+    height: 100%;
     animation: waveMove 8s linear infinite;
 }
 
