@@ -186,39 +186,8 @@
     }
 
     /* ------------------------------------------
-       6. BARRES DE COMPÉTENCES
+       6. (skill bars removed)
     ------------------------------------------ */
-    function initSkillBars() {
-        var container = document.querySelector('.skills-bars');
-        if (!container) return;
-
-        var bars = container.querySelectorAll('.skill-bar-fill');
-        if (!bars.length) return;
-
-        // Fallback sans IntersectionObserver
-        if (!('IntersectionObserver' in window)) {
-            bars.forEach(function (bar) {
-                bar.style.width = (bar.dataset.width || 0) + '%';
-            });
-            return;
-        }
-
-        var observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    bars.forEach(function (bar, index) {
-                        var width = bar.dataset.width || 0;
-                        setTimeout(function () {
-                            bar.style.width = width + '%';
-                        }, index * 150);
-                    });
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-
-        observer.observe(container);
-    }
 
     /* ------------------------------------------
        INITIALISATION
@@ -230,7 +199,6 @@
         initCounters();
         initTypewriter();
         initParallax();
-        initSkillBars();
     });
 
 }());
