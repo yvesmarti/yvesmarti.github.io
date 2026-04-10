@@ -99,16 +99,7 @@ body {
     overflow: hidden;
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 80%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(61, 139, 110, 0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
+/* Gradient décoratif déplacé dans .hero-parallax-bg (parallaxe JS) */
 
 .hero-content {
     max-width: 800px;
@@ -277,10 +268,10 @@ body {
 }
 
 .timeline-date {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: var(--color-accent);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
 .timeline-title {
@@ -842,5 +833,209 @@ body {
 
     .outils-section {
         padding: 3rem 5%;
+    }
+}
+
+/* ===========================================
+   BARRE DE PROGRESSION DE LECTURE
+   =========================================== */
+
+#reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--color-accent);
+    z-index: 300;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.08s linear;
+}
+
+/* ===========================================
+   ANIMATIONS AU SCROLL (Intersection Observer)
+   =========================================== */
+
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===========================================
+   TIMELINE INTERACTIVE
+   =========================================== */
+
+.timeline-item {
+    border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.timeline-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.65);
+}
+
+.timeline-item::before {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    transform-origin: center center;
+}
+
+.timeline-item:hover::before {
+    background-color: var(--color-primary);
+    transform: scale(1.5);
+}
+
+.timeline-date {
+    display: inline-block;
+    background: rgba(61, 139, 110, 0.12);
+    border-radius: 20px;
+    padding: 0.1rem 0.7rem;
+}
+
+/* ===========================================
+   EFFET TYPEWRITER
+   =========================================== */
+
+.typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: rgba(255, 255, 255, 0.75);
+    vertical-align: text-bottom;
+    margin-left: 1px;
+    animation: cursorBlink 0.75s step-end infinite;
+}
+
+.typewriter-cursor.done {
+    display: none;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+/* ===========================================
+   COMPTEURS ANIMÉS
+   =========================================== */
+
+.stat-counter {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================
+   BARRES DE COMPÉTENCES
+   =========================================== */
+
+.skills-bars {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.skill-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+}
+
+.skill-bar-name {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.skill-bar-percent {
+    color: var(--color-accent);
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+}
+
+.skill-bar-track {
+    height: 7px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.skill-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent);
+    border-radius: 4px;
+    transition: width 1s ease-out;
+}
+
+/* ===========================================
+   PARALLAXE HÉROS
+   =========================================== */
+
+.hero-parallax-bg {
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(61, 139, 110, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* ===========================================
+   SÉPARATEURS EN VAGUE SVG
+   =========================================== */
+
+.wave-separator {
+    display: block;
+    overflow: hidden;
+    line-height: 0;
+    font-size: 0;
+}
+
+.wave-separator svg {
+    display: block;
+    width: 200%;
+    animation: waveMove 8s linear infinite;
+}
+
+@keyframes waveMove {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+.wave-dark  { background: var(--color-primary); }
+.wave-light { background: var(--color-light); }
+.wave-warm  { background: var(--color-warm); }
+
+/* ===========================================
+   RESPONSIVE — AJOUTS
+   =========================================== */
+
+@media (max-width: 768px) {
+    /* Désactiver l'élévation au hover sur mobile */
+    .timeline-item:hover {
+        transform: none;
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    /* Barres de compétences : pleine largeur */
+    .skills-bars {
+        gap: 1rem;
+    }
+
+    /* Réduire l'amplitude des vagues sur petits écrans */
+    .wave-separator svg {
+        animation-duration: 12s;
     }
 }

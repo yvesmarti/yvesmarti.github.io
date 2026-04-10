@@ -1,8 +1,10 @@
 # Statistiques
-# Modifie simplement les chiffres ici
+# valeur = chiffre animé, suffixe = caractère fixe après le chiffre
 
-- nombre: "70+"
+- valeur: 70
+  suffixe: "+"
   label: collectivités accompagnées
 
-- nombre: "10"
+- valeur: 10
+  suffixe: ""
   label: ans d'expérience

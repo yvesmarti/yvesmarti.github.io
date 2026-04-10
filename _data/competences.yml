@@ -1,7 +1,14 @@
-# Compétences / Tags
-# Pour ajouter une compétence : ajoute simplement un élément à la liste
+# Compétences / Barres de progression
+# niveau = pourcentage (0-100)
 
-- QGIS
-- Analyse spatiale
-- Cartographie web
-- Tableaux de bord
+- nom: QGIS
+  niveau: 90
+
+- nom: Analyse spatiale
+  niveau: 85
+
+- nom: Cartographie web
+  niveau: 75
+
+- nom: Tableaux de bord
+  niveau: 80
