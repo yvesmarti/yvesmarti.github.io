@@ -6,30 +6,46 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
 
 <!-- Hero -->
 <section class="hero">
+    <div class="hero-parallax-bg" aria-hidden="true"></div>
     <div class="hero-content">
         <h1 class="hero-name">Yves Marti</h1>
         <p class="hero-role">Chargé de mission déchets &amp; SIG · Normandie</p>
-        <p class="hero-intro">
+        <p class="hero-intro" id="hero-typewriter">
             Des données aux décisions : je transforme les chiffres en indicateurs utiles et en cartes.
         </p>
     </div>
     <span class="scroll-indicator">Défiler</span>
 </section>
 
+<!-- Vague : héros (sombre) → narratif (clair) -->
+<div class="wave-separator wave-dark" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
+        <path fill="#f7f9f8" d="M0,30 C240,10 480,10 720,30 C960,50 1200,50 1440,30 C1680,10 1920,10 2160,30 C2400,50 2640,50 2880,30 L2880,60 L0,60 Z"/>
+    </svg>
+</div>
+
 <!-- Introduction narrative -->
-<div class="narrative">
+<div class="narrative animate-on-scroll">
     <p class="lead">
         J'ai accompagné pendant près de 10 ans les collectivités normandes dans un défi quotidien : comprendre et optimiser la gestion de leurs déchets.
     </p>
     <p>
         Mon terrain, c'est la <span class="highlight">Normandie</span>. Cinq départements, plus de trois millions d'habitants, des dizaines de collectivités avec chacune ses spécificités. L'enjeu ? Transformer des montagnes de données en cartes lisibles et en indicateurs qui éclairent les décisions.
+    </p>
+</div>
+
+<!-- Vague : narratif (clair) → parcours (chaud) -->
+<div class="wave-separator wave-light" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
+        <path fill="#e8ded4" d="M0,30 C240,50 480,50 720,30 C960,10 1200,10 1440,30 C1680,50 1920,50 2160,30 C2400,10 2640,10 2880,30 L2880,60 L0,60 Z"/>
+    </svg>
 </div>
 
 <!-- Parcours -->
 <section class="section-warm" id="parcours">
     <div class="narrative">
-        <h2 class="section-title">Expériences professionnelles</h2>
-        
+        <h2 class="section-title animate-on-scroll">Expériences professionnelles</h2>
+
         <div class="timeline">
             {% for exp in site.data.experiences %}
             <div class="timeline-item">
@@ -41,8 +57,8 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
             {% endfor %}
         </div>
 
-        <h2 class="section-title" style="margin-top: 4rem;">Formation</h2>
-        
+        <h2 class="section-title animate-on-scroll" style="margin-top: 4rem;">Formation</h2>
+
         <div class="timeline">
             {% for formation in site.data.formations %}
             <div class="timeline-item">
@@ -56,16 +72,32 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
     </div>
 </section>
 
+<!-- Vague : parcours (chaud) → compétences (sombre) -->
+<div class="wave-separator wave-warm" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
+        <path fill="#1a3a32" d="M0,30 C240,10 480,10 720,30 C960,50 1200,50 1440,30 C1680,10 1920,10 2160,30 C2400,50 2640,50 2880,30 L2880,60 L0,60 Z"/>
+    </svg>
+</div>
+
 <!-- Ce que je fais -->
 <section class="section-dark">
-    <div class="narrative">
+    <div class="narrative animate-on-scroll">
         <p class="lead">
             Concrètement, je fais parler les données territoriales.
         </p>
-        
-        <div class="skills-inline">
+
+        <!-- Barres de compétences animées -->
+        <div class="skills-bars">
             {% for competence in site.data.competences %}
-            <span class="skill-tag">{{ competence }}</span>
+            <div class="skill-bar-item">
+                <div class="skill-bar-header">
+                    <span class="skill-bar-name">{{ competence.nom }}</span>
+                    <span class="skill-bar-percent">{{ competence.niveau }}%</span>
+                </div>
+                <div class="skill-bar-track">
+                    <div class="skill-bar-fill" data-width="{{ competence.niveau }}"></div>
+                </div>
+            </div>
             {% endfor %}
         </div>
 
@@ -73,26 +105,36 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
             J'analyse les flux de déchets, je crée des outils qui permettent aux élus et techniciens de prendre des décisions éclairées. De la tarification incitative à l'optimisation des tournées, chaque projet est une nouvelle carte à dessiner, des données à valoriser.
         </p>
 
+        <!-- Compteurs animés -->
         <div class="stats-row">
             {% for stat in site.data.stats %}
             <div class="stat-inline">
-                <span class="number">{{ stat.nombre }}</span>
+                <span class="number">
+                    <span class="stat-counter" data-target="{{ stat.valeur }}" data-suffix="{{ stat.suffixe }}">{{ stat.valeur }}{{ stat.suffixe }}</span>
+                </span>
                 <span class="label">{{ stat.label }}</span>
             </div>
             {% endfor %}
         </div>
 
         <div class="quote-block">
-            « L’observation recueille les faits ; la réflexion les combine ; l’expérience vérifie le résultat de la combinaison » 
-            
-            Denis Diderot. 
+            « L'observation recueille les faits ; la réflexion les combine ; l'expérience vérifie le résultat de la combinaison »
+
+            Denis Diderot.
         </div>
     </div>
 </section>
 
+<!-- Vague : compétences (sombre) → outils (clair) -->
+<div class="wave-separator wave-dark" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
+        <path fill="#f7f9f8" d="M0,30 C240,50 480,50 720,30 C960,10 1200,10 1440,30 C1680,50 1920,50 2160,30 C2400,10 2640,10 2880,30 L2880,60 L0,60 Z"/>
+    </svg>
+</div>
+
 <!-- Outils -->
 <section id="outils">
-    <div class="narrative">
+    <div class="narrative animate-on-scroll">
         <p class="lead">
             Au fil des projets, je développe mes propres outils pratiques.
         </p>
@@ -126,18 +168,27 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
     </div>
 </section>
 
+<!-- Vague : outils (clair) → contact (sombre) -->
+<div class="wave-separator wave-light" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
+        <path fill="#1a3a32" d="M0,30 C240,10 480,10 720,30 C960,50 1200,50 1440,30 C1680,10 1920,10 2160,30 C2400,50 2640,50 2880,30 L2880,60 L0,60 Z"/>
+    </svg>
+</div>
+
 <!-- Contact -->
 <section class="contact-section" id="contact">
-    <p class="lead" style="font-family: var(--font-display); font-size: 2rem;">
-        Envie d'échanger ?
-    </p>
-    <p>
-        Projets territoriaux, questions SIG, gestion des déchets ; je suis toujours curieux de découvrir de nouveaux défis.
-    </p>
-    <a href="https://www.linkedin.com/in/{{ site.linkedin }}/" class="contact-link" target="_blank">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-        </svg>
-        Me contacter sur LinkedIn
-    </a>
+    <div class="animate-on-scroll">
+        <p class="lead" style="font-family: var(--font-display); font-size: 2rem;">
+            Envie d'échanger ?
+        </p>
+        <p>
+            Projets territoriaux, questions SIG, gestion des déchets ; je suis toujours curieux de découvrir de nouveaux défis.
+        </p>
+        <a href="https://www.linkedin.com/in/{{ site.linkedin }}/" class="contact-link" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            Me contacter sur LinkedIn
+        </a>
+    </div>
 </section>
