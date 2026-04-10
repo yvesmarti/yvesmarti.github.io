@@ -190,6 +190,59 @@
     ------------------------------------------ */
 
     /* ------------------------------------------
+       7. TIMELINE ANIMÉE — scroll-driven
+          La ligne se dessine au défilement ;
+          les points s'allument quand elle les atteint.
+    ------------------------------------------ */
+    function initAnimatedTimeline() {
+        var timeline = document.getElementById('exp-timeline');
+        var fill     = document.getElementById('tl-fill');
+        if (!timeline || !fill) return;
+
+        var items = Array.prototype.slice.call(
+            timeline.querySelectorAll('.tl__item')
+        );
+        if (!items.length) return;
+
+        var track = timeline.querySelector('.tl__track');
+        if (!track) return;
+
+        function update() {
+            var tr = track.getBoundingClientRect();
+
+            // Trigger à 62 % de la hauteur du viewport
+            var trigger  = window.innerHeight * 0.62;
+
+            // Progression : 0 quand le haut du track atteint le trigger,
+            //               1 quand le bas du track atteint le trigger.
+            var progress = (trigger - tr.top) / tr.height;
+            progress = Math.max(0, Math.min(1, progress));
+
+            fill.style.height = (progress * 100) + '%';
+
+            // Position Y absolue (dans le viewport) du bas de la ligne tracée
+            var fillBottomY = tr.top + progress * tr.height;
+
+            items.forEach(function (item) {
+                var dot = item.querySelector('.tl__dot');
+                if (!dot) return;
+
+                var dotRect   = dot.getBoundingClientRect();
+                var dotCenter = dotRect.top + dotRect.height / 2;
+
+                if (fillBottomY >= dotCenter && !item.classList.contains('is-lit')) {
+                    item.classList.add('is-lit');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        // Premier passage après que le layout soit stabilisé
+        setTimeout(update, 120);
+    }
+
+    /* ------------------------------------------
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
@@ -199,6 +252,7 @@
         initCounters();
         initTypewriter();
         initParallax();
+        initAnimatedTimeline();
     });
 
 }());
