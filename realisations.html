@@ -19,8 +19,7 @@ description: "Projets web réalisés par Yves Marti : sites vitrines, applicatio
 
 <section class="realisations-section">
 
-    {% for realisation in site.data.realisations %}
-    <article class="realisation-card" itemscope itemtype="https://schema.org/CreativeWork">
+    <article class="realisation-card">
         <div class="realisation-preview">
             <div class="browser-mockup">
                 <div class="browser-bar">
@@ -29,42 +28,31 @@ description: "Projets web réalisés par Yves Marti : sites vitrines, applicatio
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="browser-url">{{ realisation.lien | remove: 'https://' | remove: 'http://' | remove: '/' }}</div>
+                    <div class="browser-url">autoecolemarti.fr</div>
                 </div>
                 <div class="browser-content">
-                    <picture>
-                        <source srcset="{{ realisation.image | replace: '.png', '.webp' | relative_url }}" type="image/webp">
-                        <img src="{{ realisation.image | relative_url }}" alt="{{ realisation.image_alt }}" class="browser-screenshot" width="600" height="400" loading="lazy" itemprop="image">
-                    </picture>
+                    <img src="{{ '/assets/images/preview-autoecole-marti.png' | relative_url }}" alt="Aperçu du site Auto-École Marti" class="browser-screenshot">
                 </div>
             </div>
         </div>
 
         <div class="realisation-info">
             <div class="realisation-tags">
-                {% for tag in realisation.tags %}
-                <span class="realisation-tag">{{ tag }}</span>
-                {% endfor %}
+                <span class="realisation-tag">Site vitrine</span>
+                <span class="realisation-tag">Auto-école</span>
+                <span class="realisation-tag">Web</span>
             </div>
-            <h2 class="realisation-title" itemprop="name">{{ realisation.titre }}</h2>
-            <p class="realisation-desc" itemprop="description">
-                {{ realisation.description }}
+            <h2 class="realisation-title">Auto-École Marti</h2>
+            <p class="realisation-desc">
+                Site vitrine pour l'auto-école familiale Marti. Présentation des offres de formation, des tarifs et des moyens de contact, dans un format clair et adapté aux mobiles.
             </p>
-            {% if realisation.technologies %}
-            <div class="realisation-tech">
-                {% for tech in realisation.technologies %}
-                <span class="realisation-tech-tag">{{ tech }}</span>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <a href="{{ realisation.lien }}" target="_blank" rel="noopener noreferrer" class="realisation-link" itemprop="url">
+            <a href="https://autoecolemarti.fr" target="_blank" rel="noopener noreferrer" class="realisation-link">
                 Visiter le site
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
                 </svg>
             </a>
         </div>
     </article>
-    {% endfor %}
 
 </section>
