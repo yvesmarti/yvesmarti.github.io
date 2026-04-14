@@ -20,6 +20,45 @@
     }
 
     /* ------------------------------------------
+       THEME TOGGLE (Dark Mode)
+    ------------------------------------------ */
+    function initThemeToggle() {
+        var toggle = document.getElementById('theme-toggle');
+        var html = document.documentElement;
+        if (!toggle) return;
+
+        // Déterminer le thème initial
+        var savedTheme = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDarkMode = savedTheme === 'dark' || (savedTheme === null && prefersDark);
+
+        // Appliquer le thème initial
+        if (isDarkMode) {
+            html.classList.add('dark-mode');
+        } else {
+            html.classList.remove('dark-mode');
+        }
+
+        // Gérer le click sur le toggle
+        toggle.addEventListener('click', function () {
+            html.classList.toggle('dark-mode');
+            var isNowDark = html.classList.contains('dark-mode');
+            localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+        });
+
+        // Réagir aux changements de préférence système
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    html.classList.add('dark-mode');
+                } else {
+                    html.classList.remove('dark-mode');
+                }
+            }
+        });
+    }
+
+    /* ------------------------------------------
        1. BARRE DE PROGRESSION DE LECTURE
     ------------------------------------------ */
     function initProgressBar() {
@@ -246,6 +285,7 @@
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
+        initThemeToggle();
         initMobileMenu();
         initProgressBar();
         initScrollAnimations();
