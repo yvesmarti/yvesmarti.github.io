@@ -1,4 +1,17 @@
 /* ===========================================
+   ACCESSIBILITY: PREFERS REDUCED MOTION
+   =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===========================================
    VARIABLES & RESET
    =========================================== */
 
@@ -716,6 +729,22 @@ body {
     background: #3a5f95;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(74, 111, 165, 0.35);
+}
+
+.realisation-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.realisation-tech-tag {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.85rem;
+    background: rgba(61, 139, 110, 0.1);
+    color: var(--color-accent);
+    border-radius: 20px;
+    font-weight: 500;
 }
 
 @media (max-width: 768px) {
