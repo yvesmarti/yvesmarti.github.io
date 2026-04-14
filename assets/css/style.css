@@ -1,4 +1,17 @@
 /* ===========================================
+   ACCESSIBILITY: PREFERS REDUCED MOTION
+   =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===========================================
    VARIABLES & RESET
    =========================================== */
 
@@ -11,6 +24,32 @@
     --color-muted: #6b7c75;
     --font-display: 'DM Serif Display', serif;
     --font-body: 'Source Sans 3', sans-serif;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-primary: #e8f5f2;
+        --color-accent: #6ecc9e;
+        --color-light: #0f1f1b;
+        --color-warm: #2a3d38;
+        --color-text: #e8e8e8;
+        --color-muted: #9fa39c;
+    }
+}
+
+html.dark-mode {
+    color-scheme: dark;
+}
+
+html.dark-mode,
+html.dark-mode body {
+    --color-primary: #e8f5f2;
+    --color-accent: #6ecc9e;
+    --color-light: #0f1f1b;
+    --color-warm: #2a3d38;
+    --color-text: #e8e8e8;
+    --color-muted: #9fa39c;
 }
 
 * {
@@ -82,6 +121,56 @@ body {
     height: 2px;
     background: white;
     transition: all 0.3s ease;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-icon-light,
+.theme-icon-dark {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.theme-icon-dark {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+html.dark-mode .theme-icon-light {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+html.dark-mode .theme-icon-dark {
+    opacity: 1;
+    transform: rotate(0deg);
 }
 
 /* ===========================================
@@ -718,6 +807,22 @@ body {
     box-shadow: 0 6px 20px rgba(74, 111, 165, 0.35);
 }
 
+.realisation-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.realisation-tech-tag {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.85rem;
+    background: rgba(61, 139, 110, 0.1);
+    color: var(--color-accent);
+    border-radius: 20px;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
     .realisations-section {
         padding: 3rem 5%;
@@ -1277,4 +1382,73 @@ body {
     .tl__item:hover {
         background: transparent;
     }
+}
+
+/* ===========================================
+   DARK MODE ADJUSTMENTS
+   =========================================== */
+
+html.dark-mode .section-dark {
+    background: var(--color-warm);
+    color: var(--color-text);
+}
+
+html.dark-mode .section-dark .lead {
+    color: var(--color-text);
+}
+
+html.dark-mode .section-dark p {
+    color: rgba(232, 232, 232, 0.85);
+}
+
+html.dark-mode .section-dark .highlight {
+    color: var(--color-accent);
+}
+
+html.dark-mode .section-dark .skill-tag {
+    background: rgba(110, 204, 158, 0.15);
+    color: var(--color-text);
+}
+
+html.dark-mode .section-dark .stat-inline .label {
+    color: rgba(232, 232, 232, 0.6);
+}
+
+html.dark-mode .section-dark .quote-block {
+    color: var(--color-text);
+}
+
+html.dark-mode .section-dark .quote-block::before {
+    color: rgba(232, 232, 232, 0.1);
+}
+
+html.dark-mode .realisation-link {
+    background: #5a8cbf;
+}
+
+html.dark-mode .realisation-link:hover {
+    background: #6a9ccf;
+}
+
+html.dark-mode .tl__desc {
+    color: #b8b4a8;
+}
+
+html.dark-mode .skill-card {
+    border-color: rgba(110, 204, 158, 0.2);
+    background: rgba(110, 204, 158, 0.05);
+}
+
+html.dark-mode .skill-card:hover {
+    background: rgba(110, 204, 158, 0.12);
+}
+
+/* Links in dark mode */
+html.dark-mode a:not(.nav-logo):not(.nav-links a):not(.realisation-link) {
+    color: var(--color-accent);
+}
+
+html.dark-mode .page-header {
+    background: var(--color-warm);
+    color: var(--color-text);
 }

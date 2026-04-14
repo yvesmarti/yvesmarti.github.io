@@ -96,8 +96,8 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
         <!-- Grille de compétences -->
         <div class="skills-grid">
             {% for competence in site.data.competences %}
-            <div class="skill-card" style="--card-color: {{ competence.couleur }};">
-                <span class="skill-card-icon">{{ competence.icone }}</span>
+            <div class="skill-card" style="--card-color: {{ competence.couleur }};" aria-label="{{ competence.nom }} - {{ competence.description }}">
+                <span class="skill-card-icon" aria-hidden="true">{{ competence.icone }}</span>
                 <span class="skill-card-tag">{{ competence.categorie }}</span>
                 <strong class="skill-card-name">{{ competence.nom }}</strong>
                 <p class="skill-card-desc">{{ competence.description }}</p>
