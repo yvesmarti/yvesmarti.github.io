@@ -1511,11 +1511,69 @@ body,
 }
 
 /* ===========================================
-   MODE NUIT — MENU MOBILE
+   MODE NUIT — NAVIGATION
    =========================================== */
 
+/* Annule le mix-blend-mode qui crée un rendu noir sur fond sombre */
+[data-theme="dark"] .nav {
+    mix-blend-mode: normal;
+    background: rgba(10, 26, 16, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(90, 173, 138, 0.12);
+}
+
+/* Transition douce sur la nav elle-même */
+.nav {
+    transition: background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
+}
+
+/* Logo et liens : texte verdâtre doux au lieu du blanc pur en dark */
+[data-theme="dark"] .nav-logo {
+    color: #c8e8d8;
+}
+
+[data-theme="dark"] .nav-links a {
+    color: #b8d8c8;
+    transition: color 0.2s ease;
+    position: relative;
+}
+
+[data-theme="dark"] .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #5aad8a;
+    transition: width 0.25s ease;
+}
+
+[data-theme="dark"] .nav-links a:hover {
+    color: #5aad8a;
+}
+
+[data-theme="dark"] .nav-links a:hover::after {
+    width: 100%;
+}
+
+/* Icône toggle (soleil) en mode nuit */
+[data-theme="dark"] .theme-toggle {
+    color: #b8d8c8;
+}
+
+/* Menu mobile en mode nuit */
 [data-theme="dark"] .nav-links {
-    background: #0a1a10;
+    background: rgba(10, 26, 16, 0.95);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(90, 173, 138, 0.12);
+}
+
+/* Barres du burger en mode nuit */
+[data-theme="dark"] .nav-mobile-toggle span {
+    background: #b8d8c8;
 }
 
 /* ===========================================
