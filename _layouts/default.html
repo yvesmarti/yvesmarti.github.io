@@ -57,6 +57,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;1,400&family=Outfit:wght@700&family=Source+Sans+3:wght@300;400;600&family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
+    <!-- Thème : lecture anticipée pour éviter le flash (FOUC) -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
+
     <!-- CSS du site -->
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>

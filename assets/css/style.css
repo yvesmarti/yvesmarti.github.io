@@ -1278,3 +1278,268 @@ body {
         background: transparent;
     }
 }
+
+/* ===========================================
+   BOUTON TOGGLE THÈME (soleil / lune)
+   =========================================== */
+
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.85;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.theme-icon {
+    display: block;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Mode jour : on montre la lune (pour basculer en mode nuit) */
+.theme-icon--sun  { display: none; }
+.theme-icon--moon { display: block; }
+
+/* Mode nuit : on montre le soleil (pour revenir en mode jour) */
+[data-theme="dark"] .theme-icon--sun  { display: block; }
+[data-theme="dark"] .theme-icon--moon { display: none; }
+
+/* ===========================================
+   TRANSITION DOUCE AU CHANGEMENT DE THÈME
+   =========================================== */
+
+body,
+.narrative,
+.section-warm,
+.hero,
+.contact-section,
+.footer,
+.tools-teaser,
+.outil-card,
+.realisation-card,
+.outils-section,
+.realisations-section,
+.page-header,
+.browser-bar,
+.browser-content,
+.browser-url,
+.tl__item,
+.timeline-item {
+    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+/* ===========================================
+   MODE NUIT — VARIABLES GLOBALES
+   =========================================== */
+
+[data-theme="dark"] {
+    --color-primary: #0a1a10;
+    --color-accent:  #5aad8a;
+    --color-light:   #131e17;
+    --color-warm:    #1c2a20;
+    --color-text:    #d4e8dc;
+    --color-muted:   #8aaa9a;
+
+    /* Palette timeline */
+    --tl-teal:     #5aad8a;
+    --tl-teal-mid: #4a9d7a;
+    --tl-ochre:    #c8962e;
+    --tl-dot-glow: rgba(217, 85, 33, 0.45);
+}
+
+/* ===========================================
+   MODE NUIT — TEXTES SUR FOND CLAIR DEVENUS FONCÉS
+   Les éléments qui utilisent --color-primary comme couleur
+   de texte seraient illisibles : on les surcharge.
+   =========================================== */
+
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .outils-categorie {
+    color: #9dd4ba;
+}
+
+[data-theme="dark"] .narrative .lead {
+    color: #b8d8c8;
+}
+
+[data-theme="dark"] .quote-block {
+    color: #b8d8c8;
+}
+
+[data-theme="dark"] .tools-teaser h3,
+[data-theme="dark"] .outil-card h3 {
+    color: #b8d8c8;
+}
+
+[data-theme="dark"] .timeline-title {
+    color: #b8d8c8;
+}
+
+/* Timeline géo */
+[data-theme="dark"] .section-title-geo {
+    color: #5aad8a;
+    border-bottom-color: var(--tl-orange, #d95521);
+}
+
+[data-theme="dark"] .tl__title {
+    color: #b8d8c8;
+}
+
+[data-theme="dark"] .tl__desc {
+    color: #8aaa9a;
+}
+
+/* Page réalisations */
+[data-theme="dark"] .realisation-title {
+    color: #b8cce8;
+}
+
+/* ===========================================
+   MODE NUIT — FONDS HARDCODÉS EN BLANC / CLAIR
+   =========================================== */
+
+/* Cards teaser accueil */
+[data-theme="dark"] .tools-teaser {
+    background: #1a2e24;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Page outils */
+[data-theme="dark"] .outils-section {
+    background: #131e17;
+}
+
+[data-theme="dark"] .outils-section:nth-child(even) {
+    background: #1c2a20;
+}
+
+[data-theme="dark"] .outil-card {
+    background: #1a2e24;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .outils-section:nth-child(odd) .outil-card {
+    background: #1a2e24;
+}
+
+[data-theme="dark"] .outil-badge {
+    background: #253c2e;
+    color: #8aaa9a;
+}
+
+/* Page réalisations */
+[data-theme="dark"] .realisations-section {
+    background: #131e17;
+}
+
+[data-theme="dark"] .realisation-card {
+    background: #1a2e24;
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .realisation-preview {
+    background: #1a2535;
+}
+
+[data-theme="dark"] .browser-bar {
+    background: #252d38;
+}
+
+[data-theme="dark"] .browser-url {
+    background: #1a2535;
+    color: #7a9ab8;
+}
+
+[data-theme="dark"] .browser-content {
+    background: #141b25;
+}
+
+[data-theme="dark"] .realisation-tag {
+    background: #1a2535;
+    color: #7aa0c8;
+}
+
+/* ===========================================
+   MODE NUIT — SURVOLS & ÉTATS
+   =========================================== */
+
+[data-theme="dark"] .timeline-item:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .tl__item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .outil-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================================
+   MODE NUIT — VAGUES SVG (fill hardcodé dans le HTML)
+   On cible les paths par leur attribut fill et on
+   les remplace par les équivalents mode nuit.
+   =========================================== */
+
+/* fill="#f7f9f8"  (fond clair) → fond sombre */
+[data-theme="dark"] .wave-separator path[fill="#f7f9f8"] {
+    fill: #131e17;
+}
+
+/* fill="#e8ded4"  (fond chaud) → fond chaud sombre */
+[data-theme="dark"] .wave-separator path[fill="#e8ded4"] {
+    fill: #1c2a20;
+}
+
+/* fill="#1a3a32"  (fond primaire) → fond primaire sombre */
+[data-theme="dark"] .wave-separator path[fill="#1a3a32"] {
+    fill: #0a1a10;
+}
+
+/* ===========================================
+   MODE NUIT — MENU MOBILE
+   =========================================== */
+
+[data-theme="dark"] .nav-links {
+    background: #0a1a10;
+}
+
+/* ===========================================
+   MODE NUIT — SKILL TAGS (section light)
+   =========================================== */
+
+[data-theme="dark"] .skill-tag {
+    background: rgba(90, 173, 138, 0.15);
+    color: #b8d8c8;
+}
+
+/* ===========================================
+   MODE NUIT — CITATION (guillemet décoratif)
+   =========================================== */
+
+[data-theme="dark"] .quote-block::before {
+    color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===========================================
+   MODE NUIT — ASIDE (bordure gauche)
+   =========================================== */
+
+[data-theme="dark"] .narrative .aside {
+    border-left-color: rgba(255, 255, 255, 0.15);
+    color: var(--color-muted);
+}
