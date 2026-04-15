@@ -46,6 +46,16 @@ body {
     justify-content: space-between;
     align-items: center;
     mix-blend-mode: difference;
+    transition:
+        top          0.44s cubic-bezier(0.4, 0, 0.2, 1),
+        left         0.44s cubic-bezier(0.4, 0, 0.2, 1),
+        width        0.44s cubic-bezier(0.4, 0, 0.2, 1),
+        padding      0.44s cubic-bezier(0.4, 0, 0.2, 1),
+        border-radius 0.44s cubic-bezier(0.4, 0, 0.2, 1),
+        background   0.38s ease,
+        box-shadow   0.38s ease,
+        border-color 0.38s ease,
+        transform    0.44s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-logo {
@@ -53,6 +63,8 @@ body {
     font-size: 1.25rem;
     color: white;
     text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.3s ease;
 }
 
 .nav-links {
@@ -64,7 +76,11 @@ body {
 .nav-links a {
     color: white;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.25s ease;
 }
 
 .nav-mobile-toggle {
@@ -78,10 +94,71 @@ body {
 }
 
 .nav-mobile-toggle span {
-    width: 25px;
-    height: 2px;
+    width: 22px;
+    height: 1.5px;
     background: white;
+    display: block;
     transition: all 0.3s ease;
+}
+
+/* ── État scrollé : pill flottante (mode clair) ─────── */
+.nav--scrolled {
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem);
+    max-width: 860px;
+    padding: 0.6rem 1.6rem;
+    border-radius: 999px;
+    mix-blend-mode: normal;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.09), 0 1px 0 rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.nav--scrolled .nav-logo {
+    color: var(--color-primary);
+}
+
+.nav--scrolled .nav-links a {
+    color: var(--color-text);
+    position: relative;
+}
+
+.nav--scrolled .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1.5px;
+    background: var(--color-accent);
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav--scrolled .nav-links a:hover {
+    color: var(--color-accent);
+}
+
+.nav--scrolled .nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav--scrolled .theme-toggle {
+    color: var(--color-primary);
+}
+
+.nav--scrolled .nav-mobile-toggle span {
+    background: var(--color-text);
+}
+
+/* ── Navigation masquée (scroll vers le bas) ────────── */
+.nav--hidden {
+    top: -80px;
 }
 
 /* ===========================================
@@ -787,6 +864,23 @@ body {
    =========================================== */
 
 @media (max-width: 768px) {
+    /* Pill désactivée sur mobile : nav pleine largeur ancrée en haut */
+    .nav--scrolled {
+        left: 0;
+        transform: none;
+        width: 100%;
+        top: 0;
+        padding: 0.9rem 5%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+    }
+
+    .nav--hidden {
+        top: -72px;
+    }
+
     .nav-links {
         display: none;
         position: absolute;
@@ -1514,66 +1608,96 @@ body,
    MODE NUIT — NAVIGATION
    =========================================== */
 
-/* Annule le mix-blend-mode qui crée un rendu noir sur fond sombre */
-[data-theme="dark"] .nav {
+/* Base dark : veil léger en haut de page (hero toujours sombre) */
+[data-theme="dark"] .nav:not(.nav--scrolled) {
     mix-blend-mode: normal;
-    background: rgba(10, 26, 16, 0.72);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid rgba(90, 173, 138, 0.12);
+    background: linear-gradient(to bottom,
+        rgba(5, 15, 9, 0.55) 0%,
+        rgba(5, 15, 9, 0.0) 100%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
 }
 
-/* Transition douce sur la nav elle-même */
-.nav {
-    transition: background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
-}
-
-/* Logo et liens : texte verdâtre doux au lieu du blanc pur en dark */
+/* Logo et liens */
 [data-theme="dark"] .nav-logo {
-    color: #c8e8d8;
+    color: #d8ede4;
 }
 
 [data-theme="dark"] .nav-links a {
-    color: #b8d8c8;
-    transition: color 0.2s ease;
+    color: rgba(210, 235, 220, 0.78);
     position: relative;
 }
 
 [data-theme="dark"] .nav-links a::after {
     content: '';
     position: absolute;
-    bottom: -3px;
-    left: 0;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 0;
-    height: 1px;
-    background: #5aad8a;
-    transition: width 0.25s ease;
+    height: 1.5px;
+    background: #6ecba0;
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="dark"] .nav-links a:hover {
-    color: #5aad8a;
+    color: #8ed8b8;
 }
 
 [data-theme="dark"] .nav-links a:hover::after {
     width: 100%;
 }
 
-/* Icône toggle (soleil) en mode nuit */
+/* Toggle thème (soleil) */
 [data-theme="dark"] .theme-toggle {
-    color: #b8d8c8;
+    color: rgba(210, 235, 220, 0.78);
 }
 
-/* Menu mobile en mode nuit */
-[data-theme="dark"] .nav-links {
-    background: rgba(10, 26, 16, 0.95);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-top: 1px solid rgba(90, 173, 138, 0.12);
-}
-
-/* Barres du burger en mode nuit */
+/* Burger */
 [data-theme="dark"] .nav-mobile-toggle span {
-    background: #b8d8c8;
+    background: rgba(210, 235, 220, 0.78);
+}
+
+/* ── Dark mode scrollé : pill sombre premium ────────── */
+[data-theme="dark"] .nav--scrolled {
+    background: rgba(9, 20, 13, 0.84);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(90, 173, 138, 0.22);
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(110, 203, 160, 0.10),
+        0 0 0 0 transparent;
+}
+
+[data-theme="dark"] .nav--scrolled .nav-logo {
+    color: #d8ede4;
+}
+
+[data-theme="dark"] .nav--scrolled .nav-links a {
+    color: rgba(200, 228, 212, 0.82);
+}
+
+[data-theme="dark"] .nav--scrolled .nav-links a:hover {
+    color: #8ed8b8;
+}
+
+[data-theme="dark"] .nav--scrolled .theme-toggle {
+    color: rgba(200, 228, 212, 0.82);
+}
+
+[data-theme="dark"] .nav--scrolled .nav-mobile-toggle span {
+    background: rgba(200, 228, 212, 0.82);
+}
+
+/* Menu mobile déroulant en mode nuit */
+[data-theme="dark"] .nav-links {
+    background: rgba(10, 26, 16, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(90, 173, 138, 0.14);
 }
 
 /* ===========================================
