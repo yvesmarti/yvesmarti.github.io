@@ -439,22 +439,10 @@
             }
         }
 
-        var lastTs = 0;
-        var animId;
-        function animate(ts) {
-            if (ts - lastTs > 50) {
-                time  += 0.016;
-                lastTs = ts;
-                draw(time);
-            }
-            animId = requestAnimationFrame(animate);
-        }
-
         resize();
         window.addEventListener('resize', function () { resize(); }, { passive: true });
 
-        var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (prefersReduced) { draw(0); } else { animate(0); }
+        draw(0);
     }
 
     /* ------------------------------------------
