@@ -66,15 +66,33 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
 
                 {% for item in site.data.timeline %}
                 {% assign side = forloop.index | modulo: 2 %}
-                <div class="htl-item htl-item--{{ item.type }}{% if side == 1 %} htl-item--above{% else %} htl-item--below{% endif %}">
+                {% assign parts = item.periode | split: " – " %}
+                {% assign debut = parts[0] | strip %}
+                {% assign fin   = parts[1] | strip %}
+                {% assign debut_num = debut | plus: 0 %}
+                {% if fin == "" or fin == nil %}
+                  {% assign duree = 1 %}
+                {% else %}
+                  {% assign fin_num = fin | plus: 0 %}
+                  {% if fin_num == 0 %}{% assign fin_num = 2026 %}{% endif %}
+                  {% assign duree = fin_num | minus: debut_num %}
+                  {% if duree == 0 %}{% assign duree = 1 %}{% endif %}
+                {% endif %}
+                <div class="htl-item htl-item--{{ item.type }}{% if side == 1 %} htl-item--above{% else %} htl-item--below{% endif %}" data-duree="{{ duree }}">
                     <div class="htl-card">
                         <span class="htl-period">{{ item.periode }}</span>
                         <h3 class="htl-title">{{ item.titre }}</h3>
                         <p class="htl-org">{{ item.organisation }}</p>
                         <p class="htl-desc">{{ item.description }}</p>
+                        <div class="htl-duration-bar" aria-hidden="true">
+                            <div class="htl-duration-fill"></div>
+                        </div>
                     </div>
                     <div class="htl-connector" aria-hidden="true"></div>
                     <div class="htl-dot" aria-hidden="true"></div>
+                    <div class="htl-year-label" aria-hidden="true">
+                        <span class="htl-year-start">{{ debut }}</span>{% if fin != "" and fin != nil %}<span class="htl-year-end">{{ fin }}</span>{% endif %}
+                    </div>
                 </div>
                 {% endfor %}
 

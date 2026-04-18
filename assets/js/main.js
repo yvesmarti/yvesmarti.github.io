@@ -477,10 +477,33 @@
 
         var maxScrollX = 0;
         var scrollMultiplier = 1.5;
+        var maxDuree = 1;
+
+        function calcMaxDuree() {
+            var els = track.querySelectorAll('.htl-item[data-duree]');
+            maxDuree = 1;
+            for (var k = 0; k < els.length; k++) {
+                var d = parseInt(els[k].getAttribute('data-duree'), 10) || 1;
+                if (d > maxDuree) maxDuree = d;
+            }
+        }
+
+        function setDurationFill(item) {
+            var fill = item.querySelector('.htl-duration-fill');
+            if (!fill) return;
+            var duree = parseInt(item.getAttribute('data-duree'), 10) || 1;
+            fill.style.width = Math.round((duree / maxDuree) * 100) + '%';
+        }
 
         function setup() {
+            calcMaxDuree();
             if (isMobile()) {
                 section.style.height = '';
+                // On mobile cards are always visible — set fill widths immediately
+                var mobileItems = track.querySelectorAll('.htl-item');
+                for (var m = 0; m < mobileItems.length; m++) {
+                    setDurationFill(mobileItems[m]);
+                }
                 return;
             }
             // Read track width before altering section height
@@ -508,7 +531,10 @@
             var items = track.querySelectorAll('.htl-item');
             for (var i = 0; i < items.length; i++) {
                 if (items[i].offsetLeft - currentX < window.innerWidth * 0.82) {
-                    items[i].classList.add('is-visible');
+                    if (!items[i].classList.contains('is-visible')) {
+                        items[i].classList.add('is-visible');
+                        setDurationFill(items[i]);
+                    }
                 }
             }
         }
