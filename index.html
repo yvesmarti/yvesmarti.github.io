@@ -35,53 +35,60 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
     </p>
 </div>
 
-<!-- Vague : narratif (clair) → parcours (chaud) -->
+<!-- Vague : narratif (clair) → parcours (sombre) -->
 <div class="wave-separator wave-light" aria-hidden="true">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
-        <path fill="#e8ded4" d="M0,30 C240,50 480,50 720,30 C960,10 1200,10 1440,30 C1680,50 1920,50 2160,30 C2400,10 2640,10 2880,30 L2880,60 L0,60 Z"/>
+        <path fill="#1a2e25" d="M0,30 C240,50 480,50 720,30 C960,10 1200,10 1440,30 C1680,50 1920,50 2160,30 C2400,10 2640,10 2880,30 L2880,60 L0,60 Z"/>
     </svg>
 </div>
 
-<!-- Parcours -->
-<section class="section-warm" id="parcours">
-    <div class="narrative">
-        <h2 class="section-title-geo animate-on-scroll">Expériences professionnelles</h2>
-
-        <div class="tl" id="exp-timeline">
-            <div class="tl__track" aria-hidden="true">
-                <div class="tl__track-fill" id="tl-fill"></div>
-            </div>
-
-            {% for exp in site.data.experiences %}
-            <div class="tl__item">
-                <div class="tl__dot" aria-hidden="true"></div>
-                <div class="tl__body">
-                    <span class="tl__date">{{ exp.periode }}</span>
-                    <h3 class="tl__title">{{ exp.poste }}</h3>
-                    <p class="tl__company">{{ exp.organisation }}</p>
-                    <p class="tl__desc">{{ exp.description }}</p>
-                </div>
-            </div>
-            {% endfor %}
+<!-- Parcours — timeline horizontale défilante -->
+<section class="htl-section" id="parcours">
+    <div class="htl-sticky" id="htl-sticky">
+        <div class="htl-progress-bar" aria-hidden="true">
+            <div class="htl-progress-fill" id="htl-progress-fill"></div>
         </div>
+        <div class="htl-viewport">
+            <div class="htl-track" id="htl-track">
 
-        <h2 class="section-title animate-on-scroll" style="margin-top: 4rem;">Formation</h2>
+                <div class="htl-intro-slide">
+                    <h2 class="htl-section-title">Parcours</h2>
+                    <p class="htl-section-sub">Expériences &amp; Formation</p>
+                    <div class="htl-legend">
+                        <span class="htl-legend-item htl-legend-item--exp">Expériences</span>
+                        <span class="htl-legend-item htl-legend-item--edu">Formation</span>
+                    </div>
+                    <p class="htl-scroll-hint" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        Défiler
+                    </p>
+                </div>
 
-        <div class="timeline">
-            {% for formation in site.data.formations %}
-            <div class="timeline-item">
-                <div class="timeline-date">{{ formation.periode }}</div>
-                <div class="timeline-title">{{ formation.diplome }}</div>
-                <div class="timeline-company">{{ formation.etablissement }}</div>
-                <div class="timeline-description">{{ formation.description }}</div>
+                {% for item in site.data.timeline %}
+                {% assign side = forloop.index | modulo: 2 %}
+                <div class="htl-item htl-item--{{ item.type }}{% if side == 1 %} htl-item--above{% else %} htl-item--below{% endif %}">
+                    <div class="htl-card">
+                        <span class="htl-period">{{ item.periode }}</span>
+                        <h3 class="htl-title">{{ item.titre }}</h3>
+                        <p class="htl-org">{{ item.organisation }}</p>
+                        <p class="htl-desc">{{ item.description }}</p>
+                    </div>
+                    <div class="htl-connector" aria-hidden="true"></div>
+                    <div class="htl-dot" aria-hidden="true"></div>
+                </div>
+                {% endfor %}
+
+                <div class="htl-end-spacer" aria-hidden="true"></div>
             </div>
-            {% endfor %}
+            <div class="htl-axis" aria-hidden="true">
+                <div class="htl-axis-fill" id="htl-axis-fill"></div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Vague : parcours (chaud) → compétences (sombre) -->
-<div class="wave-separator wave-warm" aria-hidden="true">
+<!-- Vague : parcours (sombre) → compétences (sombre) -->
+<div class="wave-separator" style="background:#1a2e25;" aria-hidden="true">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2880 60" preserveAspectRatio="none">
         <path fill="#1a3a32" d="M0,30 C240,10 480,10 720,30 C960,50 1200,50 1440,30 C1680,10 1920,10 2160,30 C2400,50 2640,50 2880,30 L2880,60 L0,60 Z"/>
     </svg>

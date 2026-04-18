@@ -461,6 +461,70 @@
     }
 
     /* ------------------------------------------
+       HORIZONTAL SCROLLING TIMELINE
+       Converts vertical scroll to horizontal
+       translation inside #parcours.
+    ------------------------------------------ */
+    function initHorizontalTimeline() {
+        var section  = document.getElementById('parcours');
+        var track    = document.getElementById('htl-track');
+        var progFill = document.getElementById('htl-progress-fill');
+        var axisFill = document.getElementById('htl-axis-fill');
+
+        if (!section || !track || !progFill) return;
+
+        var isMobile = function () { return window.innerWidth <= 768; };
+
+        var maxScrollX = 0;
+
+        function setup() {
+            if (isMobile()) {
+                section.style.height = '';
+                return;
+            }
+            // Read track width before altering section height
+            maxScrollX = Math.max(0, track.scrollWidth - window.innerWidth);
+            section.style.height = 'calc(100vh + ' + maxScrollX + 'px)';
+        }
+
+        function update() {
+            if (isMobile()) return;
+
+            var sectionTop = section.getBoundingClientRect().top + window.scrollY;
+            var scrolled   = window.scrollY - sectionTop;
+            var progress   = maxScrollX > 0
+                ? Math.max(0, Math.min(1, scrolled / maxScrollX))
+                : 0;
+            var currentX = progress * maxScrollX;
+
+            track.style.transform = 'translateX(' + (-currentX) + 'px)';
+
+            var pct = progress * 100;
+            progFill.style.width = pct + '%';
+            if (axisFill) axisFill.style.width = pct + '%';
+
+            // Reveal items as they slide into view
+            var items = track.querySelectorAll('.htl-item');
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].offsetLeft - currentX < window.innerWidth * 0.82) {
+                    items[i].classList.add('is-visible');
+                }
+            }
+        }
+
+        var resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () { setup(); update(); }, 100);
+        });
+
+        window.addEventListener('scroll', update, { passive: true });
+
+        setup();
+        update();
+    }
+
+    /* ------------------------------------------
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
@@ -473,6 +537,7 @@
         initTypewriter();
         initParallax();
         initAnimatedTimeline();
+        initHorizontalTimeline();
         initIsolines();
     });
 
