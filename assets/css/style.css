@@ -1896,7 +1896,7 @@ body,
 /* Timeline item */
 .htl-item {
     position: relative;
-    flex: 0 0 300px;
+    flex: 0 0 400px;
     height: 100%;
     z-index: 2;
 }
@@ -1949,7 +1949,7 @@ body,
 /* Card */
 .htl-card {
     position: absolute;
-    width: 256px;
+    width: 320px;
     left: 50%;
     padding: 1.1rem 1.2rem;
     background: rgba(255, 255, 255, 0.04);
@@ -2050,8 +2050,8 @@ body,
 }
 
 .htl-end-spacer {
-    flex: 0 0 12vw;
-    min-width: 100px;
+    flex: 0 0 22vw;
+    min-width: 160px;
 }
 
 /* ---- Mobile: native horizontal touch scroll ---- */
