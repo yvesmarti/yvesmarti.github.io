@@ -256,6 +256,8 @@ body {
     line-height: 1.4;
     color: var(--color-primary);
     margin-bottom: 2rem;
+    font-weight: normal;
+    margin-top: 0;
 }
 
 .narrative .highlight {
@@ -820,6 +822,8 @@ body {
 .contact-section .lead {
     color: white;
     margin-bottom: 1rem;
+    font-weight: normal;
+    margin-top: 0;
 }
 
 .contact-section p {
