@@ -476,6 +476,7 @@
         var isMobile = function () { return window.innerWidth <= 768; };
 
         var maxScrollX = 0;
+        var scrollMultiplier = 1.5;
 
         function setup() {
             if (isMobile()) {
@@ -484,7 +485,7 @@
             }
             // Read track width before altering section height
             maxScrollX = Math.max(0, track.scrollWidth - window.innerWidth);
-            section.style.height = 'calc(100vh + ' + maxScrollX + 'px)';
+            section.style.height = 'calc(100vh + ' + (maxScrollX * scrollMultiplier) + 'px)';
         }
 
         function update() {
@@ -493,7 +494,7 @@
             var sectionTop = section.getBoundingClientRect().top + window.scrollY;
             var scrolled   = window.scrollY - sectionTop;
             var progress   = maxScrollX > 0
-                ? Math.max(0, Math.min(1, scrolled / maxScrollX))
+                ? Math.max(0, Math.min(1, scrolled / (maxScrollX * scrollMultiplier)))
                 : 0;
             var currentX = progress * maxScrollX;
 
