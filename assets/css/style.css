@@ -156,10 +156,6 @@ body {
     background: var(--color-text);
 }
 
-/* ── Navigation masquée (scroll vers le bas) ────────── */
-.nav--hidden {
-    top: -80px;
-}
 
 /* ===========================================
    HERO
@@ -892,10 +888,6 @@ body {
         border-left: none;
         border-right: none;
         border-top: none;
-    }
-
-    .nav--hidden {
-        top: -72px;
     }
 
     .nav-links {
