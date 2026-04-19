@@ -459,6 +459,7 @@
         var maxScrollX = 0;
         var scrollMultiplier = 1.5;
         var maxDuree = 1;
+        var segData  = [];
 
         function calcMaxDuree() {
             var els = track.querySelectorAll('.htl-item[data-duree]');
@@ -476,20 +477,42 @@
             fill.style.width = Math.round((duree / maxDuree) * 100) + '%';
         }
 
+        function setupSegBars(items) {
+            segData = [];
+            var threshold = window.innerWidth * 0.5;
+            for (var i = 0; i < items.length; i++) {
+                var bar  = items[i].querySelector('.htl-seg-bar');
+                var fill = items[i].querySelector('.htl-seg-fill');
+                if (!bar || !fill || i === items.length - 1) {
+                    if (bar) bar.style.display = 'none';
+                    segData.push(null);
+                    continue;
+                }
+                var dotX     = items[i].offsetLeft + items[i].offsetWidth * 0.5;
+                var nextDotX = items[i + 1].offsetLeft + items[i + 1].offsetWidth * 0.5;
+                bar.style.width = (nextDotX - dotX) + 'px';
+                segData.push({
+                    fill:  fill,
+                    start: Math.max(0, dotX - threshold),
+                    end:   Math.max(1, nextDotX - threshold)
+                });
+            }
+        }
+
         function setup() {
             calcMaxDuree();
             if (isMobile()) {
                 section.style.height = '';
-                // On mobile cards are always visible — set fill widths immediately
                 var mobileItems = track.querySelectorAll('.htl-item');
                 for (var m = 0; m < mobileItems.length; m++) {
                     setDurationFill(mobileItems[m]);
                 }
                 return;
             }
-            // Read track width before altering section height
             maxScrollX = Math.max(0, track.scrollWidth - window.innerWidth);
             section.style.height = 'calc(100vh + ' + (maxScrollX * scrollMultiplier) + 'px)';
+            var items = track.querySelectorAll('.htl-item');
+            setupSegBars(items);
         }
 
         function update() {
@@ -507,6 +530,16 @@
             var pct = progress * 100;
             progFill.style.width = pct + '%';
             if (axisFill) axisFill.style.width = pct + '%';
+
+            // Animate segment bars on the axis
+            for (var s = 0; s < segData.length; s++) {
+                if (!segData[s]) continue;
+                var seg    = segData[s];
+                var segPct = seg.end > seg.start
+                    ? Math.max(0, Math.min(1, (currentX - seg.start) / (seg.end - seg.start)))
+                    : 0;
+                seg.fill.style.width = (segPct * 100) + '%';
+            }
 
             // Reveal items as they slide into view
             var items = track.querySelectorAll('.htl-item');
