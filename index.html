@@ -120,24 +120,25 @@ description: "Portfolio de Yves Marti, chargé de mission déchets et SIG en Nor
             Concrètement, je fais parler les données territoriales.
         </h2>
 
-        <!-- Filtres de compétences -->
-        <div class="skills-filters" role="group" aria-label="Filtrer par catégorie">
-            <button class="filter-btn active" data-filter="Toutes">Toutes</button>
-            <button class="filter-btn" data-filter="Cartographie">Cartographie</button>
-            <button class="filter-btn" data-filter="Données">Données</button>
-            <button class="filter-btn" data-filter="Outils pratiques">Outils pratiques</button>
-        </div>
-
-        <!-- Grille de compétences -->
-        <div class="skills-grid">
-            {% for competence in site.data.competences %}
-            <div class="skill-card" style="--card-color: {{ competence.couleur }};" data-categorie="{{ competence.categorie }}">
-                <span class="skill-card-icon">{{ competence.icone }}</span>
-                <span class="skill-card-tag">{{ competence.categorie }}</span>
-                <strong class="skill-card-name">{{ competence.nom }}</strong>
-                <p class="skill-card-desc">{{ competence.description }}</p>
+        <!-- Filtres + Grille de compétences — wrapper élargi sur desktop -->
+        <div class="skills-wide">
+            <div class="skills-filters" role="group" aria-label="Filtrer par catégorie">
+                <button class="filter-btn active" data-filter="Toutes">Toutes</button>
+                <button class="filter-btn" data-filter="Cartographie">Cartographie</button>
+                <button class="filter-btn" data-filter="Données">Données</button>
+                <button class="filter-btn" data-filter="Outils pratiques">Outils pratiques</button>
             </div>
-            {% endfor %}
+
+            <div class="skills-grid">
+                {% for competence in site.data.competences %}
+                <div class="skill-card" style="--card-color: {{ competence.couleur }};" data-categorie="{{ competence.categorie }}">
+                    <span class="skill-card-icon">{{ competence.icone }}</span>
+                    <span class="skill-card-tag">{{ competence.categorie }}</span>
+                    <strong class="skill-card-name">{{ competence.nom }}</strong>
+                    <p class="skill-card-desc">{{ competence.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <p>
