@@ -2088,6 +2088,35 @@ body,
 
 .htl-year-end { font-size: 0.53rem; }
 
+/* Segment progress bar on the axis — between consecutive dots */
+.htl-seg-bar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 4px;
+    width: 0;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.htl-seg-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    will-change: width;
+}
+
+.htl-item--exp .htl-seg-fill {
+    background: linear-gradient(to right, #d95521, rgba(217, 85, 33, 0.55));
+}
+
+.htl-item--edu .htl-seg-fill {
+    background: linear-gradient(to right, #2a8c72, rgba(42, 140, 114, 0.55));
+}
+
 /* Duration bar inside cards */
 .htl-duration-bar {
     height: 3px;
@@ -2159,6 +2188,7 @@ body,
     .htl-dot,
     .htl-connector,
     .htl-axis,
+    .htl-seg-bar,
     .htl-year-label { display: none; }
 
     .htl-card {
