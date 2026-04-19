@@ -29,37 +29,19 @@
     /* ------------------------------------------
        NAV SCROLL BEHAVIOR
        - pill flottante après 80 px
-       - masqué en scrollant vers le bas, visible en remontant
     ------------------------------------------ */
     function initNavScroll() {
         var nav = document.getElementById('nav');
         if (!nav) return;
 
-        var lastScrollY   = window.scrollY || 0;
-        var ticking       = false;
-        var PILL_TRIGGER  = 80;   // px avant activation de la pill
-        var HIDE_TRIGGER  = 220;  // px avant activation du masquage
+        var ticking = false;
+        var PILL_TRIGGER = 80;
 
         function update() {
             var currentY = window.scrollY || document.documentElement.scrollTop;
             var scrolled = currentY > PILL_TRIGGER;
-
-            // Pill flottante
             nav.classList.toggle('nav--scrolled', scrolled);
-
-            // Masquer / afficher selon la direction du scroll
-            if (currentY > HIDE_TRIGGER) {
-                if (currentY > lastScrollY) {
-                    nav.classList.add('nav--hidden');
-                } else {
-                    nav.classList.remove('nav--hidden');
-                }
-            } else {
-                nav.classList.remove('nav--hidden');
-            }
-
-            lastScrollY = currentY;
-            ticking     = false;
+            ticking = false;
         }
 
         window.addEventListener('scroll', function () {
@@ -69,7 +51,6 @@
             }
         }, { passive: true });
 
-        // Passe initial (cas où la page est ouverte déjà scrollée)
         update();
     }
 
