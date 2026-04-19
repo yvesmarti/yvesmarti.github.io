@@ -1119,6 +1119,46 @@ body {
     opacity: 1;
 }
 
+/* Filtres de compétences */
+.skills-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.filter-btn {
+    padding: 0.35rem 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    letter-spacing: 0.02em;
+}
+
+.filter-btn:hover {
+    border-color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.filter-btn.active {
+    background: #1D9E75;
+    border-color: #1D9E75;
+    color: #fff;
+}
+
+/* Carte atténuée lors du filtrage */
+.skill-card.dimmed {
+    opacity: 0.18;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
 /* ===========================================
    PARALLAXE HÉROS
    =========================================== */
