@@ -2,33 +2,27 @@
 
 - nom: QGIS
   icone: "🗺️"
-  categorie: SIG
+  categorie: Cartographie
   couleur: "#1D9E75"
   description: Analyse, édition et mise en page cartographique sous QGIS
 
 - nom: Analyse spatiale
   icone: "📍"
-  categorie: SIG
+  categorie: Cartographie
   couleur: "#1D9E75"
   description: Croisement de couches, zones tampon, statistiques géographiques
 
 - nom: Cartographie web
   icone: "🌐"
-  categorie: Visualisation
-  couleur: "#7F77DD"
+  categorie: Cartographie
+  couleur: "#1D9E75"
   description: Cartes interactives Leaflet publiées sur GitHub Pages
 
 - nom: Tableaux de bord
   icone: "📊"
-  categorie: Visualisation
-  couleur: "#7F77DD"
+  categorie: Données
+  couleur: "#378ADD"
   description: Indicateurs, synthèses visuelles et reporting pour collectivités
-
-- nom: "Développement d'outils web"
-  icone: "🛠️"
-  categorie: Visualisation
-  couleur: "#7F77DD"
-  description: "Outils HTML/JS autonomes : isochrones, géocodage, calendriers"
 
 - nom: Excel / PowerQuery
   icone: "📗"
@@ -42,8 +36,14 @@
   couleur: "#378ADD"
   description: Nettoyage, structuration et analyse de jeux de données bruts
 
-- nom: Récupération de jeux de données
+- nom: APIs ouvertes
   icone: "🔗"
   categorie: Données
   couleur: "#378ADD"
-  description: "APIs ouvertes : BAN, INSEE, IGN, flux WMS/WFS, open data"
+  description: "BAN, INSEE, IGN, flux WMS/WFS, open data"
+
+- nom: Outils web
+  icone: "🛠️"
+  categorie: "Outils pratiques"
+  couleur: "#7F77DD"
+  description: "Outils HTML/JS autonomes : isochrones, géocodage, calendriers"

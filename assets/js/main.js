@@ -566,6 +566,32 @@
     }
 
     /* ------------------------------------------
+       FILTRES COMPÉTENCES
+    ------------------------------------------ */
+    function initSkillFilters() {
+        var buttons = document.querySelectorAll('.filter-btn');
+        var cards   = document.querySelectorAll('.skill-card[data-categorie]');
+        if (!buttons.length || !cards.length) return;
+
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var filter = btn.getAttribute('data-filter');
+
+                buttons.forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+
+                cards.forEach(function (card) {
+                    if (filter === 'Toutes' || card.getAttribute('data-categorie') === filter) {
+                        card.classList.remove('dimmed');
+                    } else {
+                        card.classList.add('dimmed');
+                    }
+                });
+            });
+        });
+    }
+
+    /* ------------------------------------------
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
@@ -580,6 +606,7 @@
         initAnimatedTimeline();
         initHorizontalTimeline();
         initIsolines();
+        initSkillFilters();
     });
 
 }());
