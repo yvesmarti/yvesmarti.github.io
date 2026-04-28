@@ -460,6 +460,7 @@
         var scrollMultiplier = 1.5;
         var maxDuree = 1;
         var segData  = [];
+        var mobileObserver = null;
 
         function calcMaxDuree() {
             var els = track.querySelectorAll('.htl-item[data-duree]');
@@ -499,16 +500,36 @@
             }
         }
 
+        function setupMobileObserver() {
+            if (mobileObserver) mobileObserver.disconnect();
+            var mobileItems = track.querySelectorAll('.htl-item');
+            if ('IntersectionObserver' in window) {
+                mobileObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            setDurationFill(entry.target);
+                            mobileObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.15 });
+                mobileItems.forEach(function (item) { mobileObserver.observe(item); });
+            } else {
+                mobileItems.forEach(function (item) {
+                    item.classList.add('is-visible');
+                    setDurationFill(item);
+                });
+            }
+        }
+
         function setup() {
             calcMaxDuree();
             if (isMobile()) {
                 section.style.height = '';
-                var mobileItems = track.querySelectorAll('.htl-item');
-                for (var m = 0; m < mobileItems.length; m++) {
-                    setDurationFill(mobileItems[m]);
-                }
+                setupMobileObserver();
                 return;
             }
+            if (mobileObserver) { mobileObserver.disconnect(); mobileObserver = null; }
             maxScrollX = Math.max(0, track.scrollWidth - window.innerWidth);
             section.style.height = 'calc(100vh + ' + (maxScrollX * scrollMultiplier) + 'px)';
             var items = track.querySelectorAll('.htl-item');

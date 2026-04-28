@@ -2196,9 +2196,11 @@ body,
 }
 
 /* ---- Mobile: native horizontal touch scroll ---- */
+/* ---- Mobile: vertical timeline ---- */
 @media (max-width: 768px) {
     .htl-section {
         height: auto !important;
+        min-height: auto;
     }
 
     .htl-sticky {
@@ -2208,57 +2210,105 @@ body,
     }
 
     .htl-viewport {
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        overflow: visible;
+        position: static;
     }
 
-    .htl-viewport::-webkit-scrollbar { display: none; }
+    .htl-progress-bar { display: none; }
+    .htl-axis { display: none; }
+    .htl-end-spacer { display: none; }
 
+    /* Vertical column with a left timeline line */
     .htl-track {
-        position: static;
+        position: relative;
         transform: none !important;
-        min-height: 80vw;
-        align-items: flex-start;
-        padding: 3rem 1rem 4rem;
-        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        height: auto;
+        min-height: auto;
+        padding: 0 1.25rem 3rem 2.75rem;
+        gap: 0;
+    }
+
+    /* The vertical line */
+    .htl-track::before {
+        content: '';
+        position: absolute;
+        left: 1.1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.08);
     }
 
     .htl-intro-slide {
-        flex: 0 0 240px;
-        padding: 1rem 1.5rem;
+        flex: none;
+        width: 100%;
+        padding: 3rem 0 2.5rem 0;
         justify-content: flex-start;
-        padding-top: 1.5rem;
+        align-items: flex-start;
+        text-align: left;
     }
+
+    /* No horizontal scroll hint on mobile */
+    .htl-scroll-hint { display: none; }
 
     .htl-item {
-        flex: 0 0 250px;
+        position: relative;
+        flex: none;
         height: auto;
-        min-height: 200px;
+        width: 100%;
+        display: block;
+        padding: 0;
+        margin-bottom: 2rem;
+        min-height: auto;
     }
 
-    .htl-dot,
-    .htl-connector,
-    .htl-axis,
-    .htl-seg-bar,
+    /* Dot on the left vertical line
+       Line is at left: 1.1rem from track.
+       Items start at padding-left: 2.75rem from track.
+       Dot is 14px wide → left edge at 1.1rem − 7px = 0.663rem from track
+       Relative to item: 0.663rem − 2.75rem ≈ −2.09rem */
+    .htl-dot {
+        position: absolute;
+        left: -2.09rem;
+        top: 1.25rem;
+        transform: scale(0);
+        display: block;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s,
+                    box-shadow 0.4s ease 0.05s;
+    }
+
+    .htl-item.is-visible .htl-dot {
+        transform: scale(1);
+    }
+
+    .htl-connector { display: none; }
+    .htl-seg-bar   { display: none; }
     .htl-year-label { display: none; }
 
+    /* Use !important to override desktop specificity (.htl-item--above .htl-card etc.) */
     .htl-card {
-        position: static;
-        width: auto;
-        transform: none !important;
+        position: static !important;
+        width: 100% !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        opacity: 0 !important;
+        transform: translateX(10px) !important;
+        transition: opacity 0.42s ease 0.18s,
+                    transform 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.18s !important;
+    }
+
+    .htl-item.is-visible .htl-card {
         opacity: 1 !important;
+        transform: translateX(0) !important;
     }
 
     .htl-duration-fill {
-        transition: none;
-        width: var(--dur-pct, 0%);
-    }
-
-    .htl-progress-bar {
-        position: fixed;
-        display: none;
+        transition: width 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.55s;
+        width: 0%;
     }
 }
 
