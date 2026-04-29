@@ -1,0 +1,351 @@
+/* ===========================================
+   PAGE RÉALISATIONS — REDESIGN
+   =========================================== */
+
+/* ── Surcharge body pour cette page ── */
+.rl-page {
+  background: #fff;
+  color: #111;
+}
+
+/* ── Hero ── */
+.rl-hero {
+  padding: 3.5rem 2.5rem 2.5rem;
+  border-bottom: 1px solid #ece9e3;
+}
+
+.rl-hero-eyebrow {
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: .6rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.rl-hero-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.1;
+  margin-bottom: .7rem;
+  letter-spacing: -.02em;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.rl-hero-sub {
+  font-size: .95rem;
+  color: #666;
+  max-width: 520px;
+  line-height: 1.65;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ── Barre de filtres ── */
+.rl-filter-section {
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid #f0ede8;
+}
+
+.rl-filter-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.rl-filter-count {
+  margin-left: auto;
+  font-size: .78rem;
+  color: #999;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.rl-pill {
+  padding: .38rem .9rem;
+  border-radius: 99px;
+  font-size: .78rem;
+  letter-spacing: .02em;
+  cursor: pointer;
+  border: 1.5px solid #e5e2dc;
+  background: #f4f2ee;
+  color: #555;
+  font-weight: 500;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.rl-pill:hover {
+  background: #e8f4f0;
+  border-color: #6abfaa;
+  color: #2a7a65;
+}
+
+.rl-pill.active {
+  background: #2a7a65;
+  border-color: #2a7a65;
+  color: #fff;
+}
+
+/* ── Grille ── */
+.rl-grid-section {
+  padding: 2rem 2.5rem 4rem;
+}
+
+.rl-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .rl-card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 580px) {
+  .rl-card-grid { grid-template-columns: 1fr; }
+  .rl-hero { padding: 2.5rem 1.25rem 1.75rem; }
+  .rl-filter-section { padding: 1.25rem; }
+  .rl-grid-section { padding: 1.5rem 1.25rem 3rem; }
+}
+
+/* ── Card ── */
+.rl-card {
+  border: 1.5px solid #ece9e3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.rl-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.09);
+  border-color: #6abfaa;
+}
+
+/* Thumbnail */
+.rl-card-thumb {
+  height: 148px;
+  background: #f7f5f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  border-bottom: 1.5px solid #ece9e3;
+  position: relative;
+  overflow: hidden;
+}
+
+.rl-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.rl-card-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    oklch(55% .12 182 / .06) 0%,
+    oklch(55% .12 182 / .14) 100%);
+  pointer-events: none;
+}
+
+.rl-card-thumb-emoji {
+  position: relative;
+  z-index: 1;
+}
+
+/* Corps */
+.rl-card-body {
+  padding: 1.1rem 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.rl-card-tags {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: .6rem;
+  flex-wrap: wrap;
+}
+
+/* Badges de type */
+.rl-badge {
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: .22rem .6rem;
+  border-radius: 4px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.rl-badge--etude  { background: #f0faf6; color: #2a7a65; }
+.rl-badge--astuce { background: #fff8ed; color: #b87a00; }
+.rl-badge--outil  { background: #f0f4ff; color: #4060c0; }
+.rl-badge--site   { background: #fdf0f8; color: #9040a0; }
+
+.rl-card-title {
+  font-size: .95rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: .38rem;
+  line-height: 1.35;
+}
+
+.rl-card-desc {
+  font-size: .8rem;
+  color: #666;
+  line-height: 1.58;
+  flex: 1;
+}
+
+.rl-card-footer {
+  margin-top: .85rem;
+  padding-top: .75rem;
+  border-top: 1px solid #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rl-card-meta-tags {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+}
+
+.rl-card-meta-tag {
+  font-size: .65rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.rl-card-meta-tag::before {
+  content: '#';
+}
+
+.rl-card-link {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #2a7a65;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  white-space: nowrap;
+}
+
+.rl-card-arrow {
+  display: inline-block;
+  transition: transform .18s ease;
+}
+
+.rl-card:hover .rl-card-arrow {
+  transform: translateX(3px);
+}
+
+/* État vide */
+.rl-empty {
+  grid-column: 1 / -1;
+  padding: 3rem;
+  text-align: center;
+  color: #999;
+  font-size: .9rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ── Nav : lien actif Réalisations ── */
+.nav--scrolled .nav-links a.rl-nav-active {
+  color: #111;
+  font-weight: 700;
+  border-bottom: 1.5px solid #111;
+  padding-bottom: 2px;
+}
+
+/* ── Mode nuit ── */
+[data-theme="dark"] .rl-hero {
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .rl-hero-eyebrow { color: #6a9a7a; }
+[data-theme="dark"] .rl-hero-title   { color: #d4e8dc; }
+[data-theme="dark"] .rl-hero-sub     { color: #8aaa9a; }
+
+[data-theme="dark"] .rl-filter-section {
+  border-bottom-color: #1c2a20;
+}
+
+[data-theme="dark"] .rl-pill {
+  background: #1c2a20;
+  border-color: #2a3d30;
+  color: #8aaa9a;
+}
+
+[data-theme="dark"] .rl-pill:hover {
+  background: #1a3028;
+  border-color: #4a9d7a;
+  color: #6ecba0;
+}
+
+[data-theme="dark"] .rl-pill.active {
+  background: #1D9E75;
+  border-color: #1D9E75;
+  color: #fff;
+}
+
+[data-theme="dark"] .rl-filter-count { color: #6a9a7a; }
+
+[data-theme="dark"] .rl-card {
+  background: #1a2e24;
+  border-color: #2a3d30;
+}
+
+[data-theme="dark"] .rl-card:hover {
+  border-color: #4a9d7a;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+}
+
+[data-theme="dark"] .rl-card-thumb {
+  background: #141e18;
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .rl-card-title   { color: #d4e8dc; }
+[data-theme="dark"] .rl-card-desc    { color: #8aaa9a; }
+
+[data-theme="dark"] .rl-card-footer {
+  border-top-color: #2a3d30;
+}
+
+[data-theme="dark"] .rl-card-meta-tag { color: #5a7a6a; }
+
+[data-theme="dark"] .rl-card-link { color: #5aad8a; }
+
+[data-theme="dark"] .rl-badge--etude  { background: #0f2018; color: #5aad8a; }
+[data-theme="dark"] .rl-badge--astuce { background: #2a1e08; color: #c8962e; }
+[data-theme="dark"] .rl-badge--outil  { background: #0f1428; color: #7090d8; }
+[data-theme="dark"] .rl-badge--site   { background: #280f28; color: #c070d0; }
+
+[data-theme="dark"] .rl-empty { color: #5a7a6a; }
+
+/* Override fond body hérité sur cette page */
+body.rl-page {
+  background: #fff;
+}
+
+[data-theme="dark"] body.rl-page {
+  background: #131e17;
+}

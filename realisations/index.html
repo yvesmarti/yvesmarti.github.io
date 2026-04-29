@@ -1,86 +1,33 @@
 ---
-layout: page
+layout: default
 title: "Réalisations"
-subtitle: "Projets web développés, outils d'analyse de données et articles techniques autour de la donnée territoriale."
 description: "Portfolio de réalisations d'Yves Marti : sites web, outils d'analyse et articles techniques sur la donnée territoriale."
+extra_css: /assets/css/realisations.css
+extra_js: /assets/js/realisations.js
+body_class: rl-page
 ---
 
-<section class="realisations-section animate-on-scroll">
-    <h2 class="section-title">Sites web</h2>
+<script>
+var RL_ITEMS = {{ site.data.realisations | jsonify }};
+</script>
 
-    <div class="realisation-card">
-        <div class="realisation-preview">
-            <div class="browser-mockup">
-                <div class="browser-bar">
-                    <div class="browser-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <div class="browser-url">autoecolemarti.fr</div>
-                </div>
-                <div class="browser-content">
-                    <img src="{{ '/assets/images/preview-autoecole-marti.png' | relative_url }}"
-                         alt="Aperçu du site Auto-École Marti"
-                         class="browser-screenshot">
-                </div>
-            </div>
-        </div>
-        <div class="realisation-info">
-            <div class="realisation-tags">
-                <span class="realisation-tag">Site vitrine</span>
-                <span class="realisation-tag">Auto-école</span>
-                <span class="realisation-tag">Web</span>
-            </div>
-            <h3 class="realisation-title">Auto-École Marti</h3>
-            <p class="realisation-desc">Site vitrine pour l'auto-école familiale Marti. Présentation des offres de formation, des tarifs et des moyens de contact, dans un format clair et adapté aux mobiles.</p>
-            <a href="https://autoecolemarti.fr" target="_blank" rel="noopener noreferrer" class="realisation-link">
-                Visiter le site
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/>
-                    <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-            </a>
-        </div>
-    </div>
-</section>
+<header class="rl-hero">
+  <div class="rl-hero-eyebrow">Portfolio</div>
+  <h1 class="rl-hero-title">Réalisations</h1>
+  <p class="rl-hero-sub">Projets web, études de cas, astuces et outils pratiques autour de la donnée territoriale.</p>
+</header>
 
-<section class="realisations-section animate-on-scroll">
-    <h2 class="section-title">Articles &amp; analyses</h2>
-    <p style="color: var(--color-muted); margin-bottom: 2rem;">Retours d'expérience, études de cas et guides pratiques autour de la donnée territoriale et du développement d'outils.</p>
+<div class="rl-filter-section">
+  <div class="rl-filter-row" id="rl-filter-row">
+    <button class="rl-pill active" data-filter="all">Tout</button>
+    <button class="rl-pill" data-filter="etude">Étude de cas</button>
+    <button class="rl-pill" data-filter="astuce">Astuce</button>
+    <button class="rl-pill" data-filter="outil">Outil</button>
+    <button class="rl-pill" data-filter="site">Site web</button>
+    <span class="rl-filter-count" id="rl-count"></span>
+  </div>
+</div>
 
-    <div class="realisation-card">
-        <div class="realisation-info">
-            <div class="realisation-tags">
-                <span class="realisation-tag">Case study</span>
-                <span class="realisation-tag">Collectivités territoriales</span>
-            </div>
-            <h3 class="realisation-title">Automatiser la prospection de la Redevance Spéciale avec Power Query</h3>
-            <p class="realisation-desc">Comment interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties à la RS sur un territoire intercommunal.</p>
-            <a href="{{ '/realisations/etude-de-cas-redevance-speciale.html' | relative_url }}" class="realisation-link">
-                Lire l'article
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                </svg>
-            </a>
-        </div>
-    </div>
-
-    <div class="realisation-card" style="margin-top: 1.5rem;">
-        <div class="realisation-info">
-            <div class="realisation-tags">
-                <span class="realisation-tag">Guide pratique</span>
-                <span class="realisation-tag">Open Data Territorial</span>
-            </div>
-            <h3 class="realisation-title">APIs open data utiles pour les données territoriales</h3>
-            <p class="realisation-desc">Une sélection d'APIs publiques pour automatiser la collecte, structurer les référentiels géographiques et enrichir les analyses économiques locales.</p>
-            <a href="{{ '/realisations/api-utiles.html' | relative_url }}" class="realisation-link">
-                Lire l'article
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                </svg>
-            </a>
-        </div>
-    </div>
+<section class="rl-grid-section">
+  <div class="rl-card-grid" id="rl-grid"></div>
 </section>

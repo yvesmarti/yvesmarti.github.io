@@ -1,0 +1,48 @@
+- id: 1
+  title: "Auto-École Marti"
+  desc: "Site vitrine pour l'auto-école familiale. Présentation des formations, tarifs et contacts, adapté aux mobiles."
+  type: "site"
+  tags: ["HTML", "CSS", "Jekyll"]
+  emoji: "🚗"
+  image: "/assets/images/preview-autoecole-marti.png"
+  url: "https://autoecolemarti.fr"
+
+- id: 2
+  title: "Automatiser la prospection Redevance Spéciale avec Power Query"
+  desc: "Interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties sur un territoire intercommunal."
+  type: "etude"
+  tags: ["Power Query", "Excel", "APIs"]
+  emoji: "📊"
+  url: "/realisations/etude-de-cas-redevance-speciale.html"
+
+- id: 3
+  title: "APIs open data utiles pour les données territoriales"
+  desc: "Sélection d'APIs publiques pour automatiser la collecte, structurer les référentiels géographiques et enrichir les analyses locales."
+  type: "astuce"
+  tags: ["Open Data", "APIs", "GIS"]
+  emoji: "🔗"
+  url: "/realisations/api-utiles.html"
+
+- id: 4
+  title: "Carte isochrone interactive"
+  desc: "Outil HTML/JS autonome pour calculer et visualiser des zones d'accessibilité temporelle à partir d'un point sur la carte."
+  type: "outil"
+  tags: ["Leaflet", "JS", "OSRM"]
+  emoji: "🗺️"
+  url: "/outils"
+
+- id: 5
+  title: "Géocoder des adresses en masse"
+  desc: "Un outil simple pour envoyer un fichier CSV d'adresses à la BAN et récupérer les coordonnées géographiques, sans installation."
+  type: "outil"
+  tags: ["BAN", "CSV", "JS"]
+  emoji: "📍"
+  url: "/outils"
+
+- id: 6
+  title: "Visualiser des photos géolocalisées sur une carte"
+  desc: "Déposer un dossier de photos EXIF et les voir apparaître sur une carte Leaflet — utile pour les relevés terrain."
+  type: "astuce"
+  tags: ["EXIF", "Leaflet", "JS"]
+  emoji: "📸"
+  url: "/outils"
