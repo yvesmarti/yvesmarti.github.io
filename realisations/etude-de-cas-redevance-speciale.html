@@ -453,6 +453,27 @@
       color: var(--text);
     }
 
+    /* ── NAV LEFT (breadcrumb) ── */
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .nav-sep {
+      font-size: 12px;
+      color: var(--border-strong);
+    }
+
+    .nav-breadcrumb {
+      font-size: 13px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-breadcrumb:hover { color: var(--text); }
+
     /* ── FOOTER ── */
     footer {
       border-top: 0.5px solid var(--border);
@@ -461,6 +482,21 @@
       font-size: 12px;
       color: var(--text-3);
     }
+
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-nav a {
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-nav a:hover { color: var(--text); }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeUp {
@@ -484,7 +520,11 @@
 <body>
 
 <nav>
-  <a href="#" class="nav-brand">Portfolio</a>
+  <div class="nav-left">
+    <a href="../" class="nav-brand">YM</a>
+    <span class="nav-sep" aria-hidden="true">/</span>
+    <a href="./" class="nav-breadcrumb">Réalisations</a>
+  </div>
   <ul class="nav-links">
     <li><a href="#probleme">Contexte</a></li>
     <li><a href="#donnees">Données</a></li>
@@ -826,11 +866,26 @@
         <span style="color:var(--text-3);">EPCI 200065563<br>38 communes</span>
       </div>
     </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Sur le site</div>
+      <a href="../" class="sidebar-link">Accueil</a>
+      <a href="./" class="sidebar-link">Réalisations</a>
+      <a href="../outils.html" class="sidebar-link">Outils</a>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Autre article</div>
+      <a href="./api-utiles.html" class="sidebar-link">APIs Open Data — Guide pratique</a>
+    </div>
   </aside>
 </div><!-- /article -->
 
 <footer>
-  Case study rédigé en avril 2026 · Power Query & API data.gouv.fr
+  <nav class="footer-nav" aria-label="Navigation du site">
+    <a href="../">Accueil</a>
+    <a href="./">Réalisations</a>
+    <a href="../outils.html">Outils</a>
+  </nav>
+  Case study rédigé en avril 2026 · Power Query &amp; API data.gouv.fr
 </footer>
 
 <script>
