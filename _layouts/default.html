@@ -99,8 +99,11 @@
 
     <!-- CSS du site -->
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    {% if page.extra_css %}
+    <link rel="stylesheet" href="{{ page.extra_css | relative_url }}">
+    {% endif %}
 </head>
-<body>
+<body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
     <div id="reading-progress" aria-hidden="true"></div>
 
@@ -113,5 +116,8 @@
     {% include footer.html %}
 
     <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
+    {% if page.extra_js %}
+    <script src="{{ page.extra_js | relative_url }}" defer></script>
+    {% endif %}
 </body>
 </html>
