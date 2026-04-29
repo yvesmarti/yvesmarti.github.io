@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide — APIs Open Data pour les données territoriales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf9f6;
+      --surface: #f2f0eb;
+      --surface2: #e8e5de;
+      --border: rgba(60,55,45,0.12);
+      --border-strong: rgba(60,55,45,0.22);
+      --text: #1a1814;
+      --text-2: #4a4740;
+      --text-3: #8a8680;
+      --accent: #1a5c3e;
+      --accent-bg: #eaf3ed;
+      --accent-text: #0f3d28;
+      --code-bg: #16161a;
+      --code-border: rgba(255,255,255,0.07);
+      --code-header: rgba(255,255,255,0.04);
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'Source Code Pro', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.8rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3.5rem;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+      background: var(--accent-bg);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 1.4rem;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 5vw, 46px);
+      font-weight: 600;
+      line-height: 1.18;
+      color: var(--text);
+      max-width: 700px;
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--text-2);
+      max-width: 580px;
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      font-size: 12px;
+      color: var(--text-3);
+      padding-bottom: 2rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .meta-item { display: flex; align-items: center; gap: 6px; }
+    .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-3); }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      margin: 2.5rem 0;
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .stat {
+      background: var(--bg);
+      padding: 1.4rem 1.6rem;
+    }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.4;
+    }
+
+    /* ── LAYOUT ── */
+    .article {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .content { min-width: 0; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: sticky;
+      top: 80px;
+    }
+
+    .sidebar-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.8rem;
+    }
+
+    .sidebar-link {
+      display: block;
+      font-size: 12.5px;
+      color: var(--text-2);
+      text-decoration: none;
+      padding: 4px 0;
+      border-left: 2px solid transparent;
+      padding-left: 10px;
+      transition: all 0.15s;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-link:hover {
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .sidebar-link.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 500;
+    }
+
+    .api-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border-strong);
+      border-radius: 20px;
+      padding: 3px 9px;
+      color: var(--text-2);
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .api-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 3.5rem; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.9rem;
+      margin-top: 2.5rem;
+    }
+
+    h2:first-of-type { margin-top: 0; }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin: 1.8rem 0 0.6rem;
+    }
+
+    p {
+      font-size: 15.5px;
+      color: var(--text-2);
+      line-height: 1.78;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin: 1rem 0 1rem 1.2rem;
+      color: var(--text-2);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    li { margin-bottom: 0.4rem; }
+
+    hr {
+      border: none;
+      border-top: 0.5px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-bg);
+      padding: 1rem 1.2rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+      font-size: 14.5px;
+      color: var(--accent-text);
+      line-height: 1.6;
+    }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 1.5rem 0;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .flow-arrow { font-size: 14px; color: var(--text-3); }
+
+    /* ── API CARDS ── */
+    .api-cards { display: flex; flex-direction: column; gap: 10px; margin: 1.2rem 0; }
+
+    .api-card {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .api-card-title { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .api-card-desc { font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+
+    /* ── CODE ── */
+    .code-block {
+      background: var(--code-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+      border: 0.5px solid var(--code-border);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--code-header);
+      border-bottom: 0.5px solid var(--code-border);
+    }
+
+    .code-dots { display: flex; gap: 6px; }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28c840; }
+
+    .code-filename {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #7a8aaa;
+    }
+
+    .code-lang {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a5a70;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .code-body {
+      padding: 1.2rem 1.5rem;
+      overflow-x: auto;
+    }
+
+    .code-body pre {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: #c9d1e0;
+      white-space: pre;
+      tab-size: 4;
+    }
+
+    .kw { color: #c792ea; }
+    .fn { color: #82aaff; }
+    .str { color: #c3e88d; }
+    .cm { color: #4a5a6a; font-style: italic; }
+    .num { color: #f78c6c; }
+    .op { color: #89ddff; }
+
+    /* ── POSSIBILITIES ── */
+    .poss-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 1.5rem 0;
+    }
+
+    .poss-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .poss-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+    }
+
+    .poss-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .poss-icon svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .poss-title { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+    .poss-desc { font-size: 12.5px; color: var(--text-3); line-height: 1.55; }
+
+    /* ── INLINE CODE ── */
+    code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 0.5px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero { animation: fadeUp 0.6s ease both; }
+    .stats-row { animation: fadeUp 0.6s 0.15s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 720px) {
+      .article { grid-template-columns: 1fr; gap: 0; }
+      .sidebar { display: none; }
+      .stats-row { grid-template-columns: 1fr; }
+      .poss-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-brand">Blog</a>
+  <ul class="nav-links">
+    <li><a href="#contexte">Contexte</a></li>
+    <li><a href="#apis">Les APIs</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#avantages">Avantages</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <span class="tag">Guide pratique · Open Data Territorial</span>
+  <h1>APIs open data utiles pour les données territoriales</h1>
+  <p class="hero-sub">Une sélection d'APIs publiques pour automatiser la collecte, structurer les référentiels géographiques et enrichir les analyses économiques locales.</p>
+  <div class="meta-row">
+    <span class="meta-item"><span class="meta-dot"></span> data.gouv.fr</span>
+    <span class="meta-item"><span class="meta-dot"></span> Géocodage & Géographie</span>
+    <span class="meta-item"><span class="meta-dot"></span> API Sirene</span>
+    <span class="meta-item"><span class="meta-dot"></span> OpenStreetMap</span>
+    <span class="meta-item"><span class="meta-dot"></span> Avril 2026</span>
+  </div>
+</div>
+
+<div style="max-width:860px;margin:0 auto;padding:0 2rem;">
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num">6</div>
+      <div class="stat-label">APIs publiques présentées</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0 €</div>
+      <div class="stat-label">coût d'accès aux données</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100 %</div>
+      <div class="stat-label">open data et reproductible</div>
+    </div>
+  </div>
+</div>
+
+<div class="article">
+  <div class="content">
+
+    <!-- CONTEXTE -->
+    <div class="section" id="contexte">
+      <p class="section-label">Le contexte</p>
+      <h2>Passer d'un usage manuel à une approche dynamique</h2>
+      <p>Dans les projets liés aux données territoriales — entreprises, géographie, open data — l'utilisation d'APIs permet d'automatiser la collecte et d'enrichir les analyses sans passer par des fichiers statiques souvent obsolètes.</p>
+      <p>Même avec un niveau intermédiaire, il est possible d'intégrer ces APIs dans des workflows simples (Power Query, scripts Python) et d'en tirer une valeur immédiate : référentiels toujours à jour, géocodage en masse et croisement facilité entre plusieurs sources.</p>
+      <div class="callout">
+        Tester les requêtes directement dans le navigateur est le meilleur point de départ : lire la structure JSON, modifier progressivement les paramètres, puis industrialiser dans un outil de traitement.
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- APIs -->
+    <div class="section" id="apis">
+      <p class="section-label">Les outils</p>
+      <h2>Six APIs publiques pour couvrir tous les besoins territoriaux</h2>
+
+      <!-- API 1 -->
+      <h3>1. Géographie administrative</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>geo.api.gouv.fr</span>
+          </div>
+          <div>
+            <div class="api-card-title">Référentiel officiel des communes, départements et régions</div>
+            <div class="api-card-desc">API officielle pour récupérer les codes INSEE, les populations et construire des référentiels territoriails propres. Aucune clé requise.</div>
+          </div>
+        </div>
+      </div>
+      <p><strong>Exemple :</strong> rechercher une commune par nom.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Requête commune</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://geo.api.gouv.fr/communes?nom=caen&fields=nom,code,population&format=json</pre></div>
+      </div>
+      <p><strong>Résultat :</strong> nom, code INSEE, population.</p>
+      <p><strong>Exemple :</strong> récupérer les communes d'un département.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Communes par département</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://geo.api.gouv.fr/departements/14/communes</pre></div>
+      </div>
+      <p>Très utile pour faire des jointures territoriales et construire des référentiels propres.</p>
+
+      <!-- API 2 -->
+      <h3>2. Géocodage officiel</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>api-adresse.data.gouv.fr</span>
+          </div>
+          <div>
+            <div class="api-card-title">Convertir une adresse en coordonnées GPS</div>
+            <div class="api-card-desc">Géocodage officiel de la Base Adresse Nationale. Retourne latitude, longitude et score de précision. Idéal pour la cartographie.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Géocodage simple</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://api-adresse.data.gouv.fr/search/?q=12 rue de paris caen</pre></div>
+      </div>
+      <p><strong>Exemple avec filtre sur une commune :</strong></p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Filtre communal</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://api-adresse.data.gouv.fr/search/?q=mairie&city=Caen</pre></div>
+      </div>
+      <p>Indispensable pour la cartographie et la géolocalisation de fichiers entreprises.</p>
+
+      <!-- API 3 -->
+      <h3>3. Entreprises — API Sirene (INSEE)</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>api.insee.fr</span>
+          </div>
+          <div>
+            <div class="api-card-title">Données officielles sur les entreprises françaises</div>
+            <div class="api-card-desc">SIRET, activité (NAF), adresse et état administratif. Nécessite une clé API gratuite. Parfaite pour les analyses économiques locales.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Établissements actifs par code postal</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://api.insee.fr/entreprises/sirene/V3/siret?q=codePostalEtablissement:14000 AND etatAdministratifEtablissement:A&nombre=10</pre></div>
+      </div>
+      <p><strong>Résultat :</strong> SIRET, activité (NAF), adresse complète.</p>
+      <div class="callout">
+        ⚠️ Cette API nécessite une clé API gratuite disponible sur <a href="https://api.insee.fr" style="color:var(--accent);">api.insee.fr</a>.
+      </div>
+
+      <!-- API 4 -->
+      <h3>4. OpenStreetMap — Overpass API</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>overpass-api.de</span>
+          </div>
+          <div>
+            <div class="api-card-title">Interroger directement la base OpenStreetMap</div>
+            <div class="api-card-desc">Requêteur puissant pour extraire des POI (restaurants, écoles, commerces) dans une zone géographique délimitée.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Restaurants à Caen</span>
+          <span class="code-lang">Overpass QL</span>
+        </div>
+        <div class="code-body"><pre>https://overpass-api.de/api/interpreter?data=[out:json];
+area[name="Caen"]->.searchArea;
+(
+  node["amenity"="restaurant"](area.searchArea);
+);
+out;</pre></div>
+      </div>
+      <p><strong>Résultat :</strong> liste de points géolocalisés prêts à être cartographiés.</p>
+
+      <!-- API 5 -->
+      <h3>5. Géocodage libre — Nominatim</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>nominatim.openstreetmap.org</span>
+          </div>
+          <div>
+            <div class="api-card-title">Alternative simple et gratuite au géocodage</div>
+            <div class="api-card-desc">Service de géocodage basé sur OpenStreetMap. Retourne coordonnées et bounding box. Attention aux limites d'usage en volume.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+          <span class="code-filename">Recherche Nominatim</span>
+          <span class="code-lang">HTTP</span>
+        </div>
+        <div class="code-body"><pre>https://nominatim.openstreetmap.org/search?q=Caen&format=json</pre></div>
+      </div>
+
+      <!-- API 6 -->
+      <h3>6. Données foncières — DVF (Etalab)</h3>
+      <div class="api-cards">
+        <div class="api-card">
+          <div style="flex-shrink:0;padding-top:2px;">
+            <span class="api-pill"><span class="api-dot"></span>app.dvf.etalab.gouv.fr</span>
+          </div>
+          <div>
+            <div class="api-card-title">Transactions immobilières en France</div>
+            <div class="api-card-desc">Accès indirect via fichiers ou endpoints Etalab. Permet l'analyse du marché immobilier et le croisement avec d'autres données territoriales.</div>
+          </div>
+        </div>
+      </div>
+      <p>L'accès se fait principalement via les fichiers open data ou les API Etalab dérivées. Les données DVF permettent d'analyser les prix au m² par commune, de suivre les tendances du marché et d'enrichir les études territoriales.</p>
+    </div>
+
+    <hr>
+
+    <!-- WORKFLOW -->
+    <div class="section" id="workflow">
+      <p class="section-label">Mise en pratique</p>
+      <h2>Un workflow combiné pour des bases territoriales complètes</h2>
+      <p>Dans mes projets, je combine souvent plusieurs APIs pour constituer une base de données territoriale directement exploitable dans QGIS ou Power BI.</p>
+
+      <div class="flow">
+        <div class="flow-step">geo.api.gouv.fr</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">API Sirene</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">api-adresse.data.gouv.fr</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">Overpass API</div>
+      </div>
+
+      <p><strong>Le processus en quatre étapes :</strong></p>
+      <ul>
+        <li><strong>Récupération des communes</strong> via <code>geo.api.gouv.fr</code> pour obtenir les codes INSEE du territoire ;</li>
+        <li><strong>Extraction des entreprises</strong> via l'API Sirene en filtrant par code postal et état actif ;</li>
+        <li><strong>Géocodage</strong> des adresses via <code>api-adresse.data.gouv.fr</code> pour obtenir latitude et longitude ;</li>
+        <li><strong>Enrichissement cartographique</strong> via Overpass pour ajouter des POI pertinents (commerces, services).</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Résultat :</strong> une base de données territoriale complète, actualisable en un clic, directement exploitable dans QGIS ou Power BI.
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- AVANTAGES -->
+    <div class="section" id="avantages">
+      <p class="section-label">Les avantages</p>
+      <h2>Pourquoi utiliser des APIs ?</h2>
+      <p>Les APIs transforment fondamentalement la manière de travailler avec les données publiques :</p>
+
+      <div class="poss-grid">
+        <div class="poss-card">
+          <div class="poss-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h8"/></svg>
+          </div>
+          <div class="poss-title">Automatiser les mises à jour</div>
+          <div class="poss-desc">Plus besoin de retélécharger manuellement des fichiers à chaque changement : l'actualisation se fait en un clic ou par script planifié.</div>
+        </div>
+        <div class="poss-card">
+          <div class="poss-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="4"/></svg>
+          </div>
+          <div class="poss-title">Éviter les fichiers statiques obsolètes</div>
+          <div class="poss-desc">Les données interrogées en direct reflètent l'état actuel du référentiel, sans décalage temporel ni erreur de version.</div>
+        </div>
+        <div class="poss-card">
+          <div class="poss-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div class="poss-title">Croiser facilement plusieurs sources</div>
+          <div class="poss-desc">La jointure entre géographie, entreprises et adresses devient reproductible et programmatique, même sur de gros volumes.</div>
+        </div>
+        <div class="poss-card">
+          <div class="poss-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="poss-title">Reproductibilité des analyses</div>
+          <div class="poss-desc">Un workflow documenté en Power Query ou en Python peut être partagé, audité et réutilisé sur d'autres territoires sans effort.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- CONCLUSION -->
+    <div class="section" id="conclusion">
+      <p class="section-label">Conclusion</p>
+      <h2>Vers des workflows reproductibles</h2>
+      <p>Les APIs open data permettent de passer d'un usage manuel des données à une approche beaucoup plus dynamique. Même avec un niveau intermédiaire, il est possible de les intégrer dans des workflows simples et d'en tirer beaucoup de valeur.</p>
+      <p>Leur véritable force réside dans la combinaison : aucune API seule ne répond à tous les besoins, mais assemblées intelligemment, elles constituent une infrastructure de données territoriales puissante et gratuite.</p>
+
+      <div class="callout">
+        <strong>Conseils pratiques pour démarrer :</strong><br>
+        • Tester les requêtes directement dans le navigateur<br>
+        • Lire la structure JSON (même sans tout comprendre)<br>
+        • Modifier progressivement les paramètres<br>
+        • Documenter chaque étape dans Power Query ou un notebook Python
+      </div>
+
+      <p style="margin-top:1.5rem;"><strong>Prochaine étape :</strong> automatiser ces requêtes dans un workflow complet avec Power Query ou Python pour obtenir une actualisation sans intervention manuelle.</p>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Sommaire</div>
+      <a href="#contexte" class="sidebar-link">Le contexte</a>
+      <a href="#apis" class="sidebar-link">Les APIs</a>
+      <a href="#workflow" class="sidebar-link">Workflow combiné</a>
+      <a href="#avantages" class="sidebar-link">Avantages</a>
+      <a href="#conclusion" class="sidebar-link">Conclusion</a>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">APIs couvertes</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+        <span class="api-pill"><span class="api-dot"></span>geo.api.gouv.fr</span>
+        <span class="api-pill"><span class="api-dot"></span>api-adresse</span>
+        <span class="api-pill"><span class="api-dot"></span>API Sirene</span>
+        <span class="api-pill"><span class="api-dot"></span>Overpass</span>
+        <span class="api-pill"><span class="api-dot"></span>Nominatim</span>
+        <span class="api-pill"><span class="api-dot"></span>DVF</span>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Outils mentionnés</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+        <span class="api-pill"><span class="api-dot"></span>Power Query</span>
+        <span class="api-pill"><span class="api-dot"></span>Python</span>
+        <span class="api-pill"><span class="api-dot"></span>Excel</span>
+        <span class="api-pill"><span class="api-dot"></span>QGIS</span>
+        <span class="api-pill"><span class="api-dot"></span>Power BI</span>
+      </div>
+    </div>
+  </aside>
+</div><!-- /article -->
+
+<footer>
+  Article rédigé en avril 2026 · APIs open data & données territoriales
+</footer>
+
+<script>
+  const links = document.querySelectorAll('.sidebar-link');
+  const sections = document.querySelectorAll('.section, [id]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
