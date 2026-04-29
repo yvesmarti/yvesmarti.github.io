@@ -1,575 +1,86 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Réalisations — Yves Marti</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+---
+layout: page
+title: "Réalisations"
+subtitle: "Projets web développés, outils d'analyse de données et articles techniques autour de la donnée territoriale."
+description: "Portfolio de réalisations d'Yves Marti : sites web, outils d'analyse et articles techniques sur la donnée territoriale."
+---
 
-    :root {
-      --bg: #faf9f6;
-      --surface: #f2f0eb;
-      --surface2: #e8e5de;
-      --border: rgba(60,55,45,0.12);
-      --border-strong: rgba(60,55,45,0.22);
-      --text: #1a1814;
-      --text-2: #4a4740;
-      --text-3: #8a8680;
-      --accent: #1a5c3e;
-      --accent-bg: #eaf3ed;
-      --accent-text: #0f3d28;
-      --font-display: 'Playfair Display', Georgia, serif;
-      --font-body: 'DM Sans', sans-serif;
-      --font-mono: 'Source Code Pro', monospace;
-    }
+<section class="realisations-section animate-on-scroll">
+    <h2 class="section-title">Sites web</h2>
 
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font-body);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(250,249,246,0.88);
-      backdrop-filter: blur(12px);
-      border-bottom: 0.5px solid var(--border);
-      padding: 0 2rem;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .nav-brand {
-      font-family: var(--font-display);
-      font-size: 15px;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 1.8rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-size: 13px;
-      color: var(--text-3);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--text); }
-
-    /* ── HERO ── */
-    .hero {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 5rem 2rem 3.5rem;
-    }
-
-    .tag {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent-text);
-      background: var(--accent-bg);
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-bottom: 1.4rem;
-    }
-
-    h1 {
-      font-family: var(--font-display);
-      font-size: clamp(28px, 5vw, 46px);
-      font-weight: 600;
-      line-height: 1.18;
-      color: var(--text);
-      max-width: 700px;
-      margin-bottom: 1.1rem;
-    }
-
-    .hero-sub {
-      font-size: 17px;
-      font-weight: 300;
-      color: var(--text-2);
-      max-width: 620px;
-      line-height: 1.65;
-      margin-bottom: 2rem;
-    }
-
-    .meta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.2rem;
-      font-size: 12px;
-      color: var(--text-3);
-      padding-bottom: 2rem;
-      border-bottom: 0.5px solid var(--border);
-    }
-
-    .meta-item { display: flex; align-items: center; gap: 6px; }
-    .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-3); }
-
-    /* ── LAYOUT ── */
-    .page-body {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 3rem 2rem 6rem;
-      display: grid;
-      grid-template-columns: 1fr 240px;
-      gap: 4rem;
-      align-items: start;
-    }
-
-    .content { min-width: 0; }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      position: sticky;
-      top: 80px;
-    }
-
-    .sidebar-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
-    }
-
-    .sidebar-title {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 0.8rem;
-    }
-
-    .sidebar-link {
-      display: block;
-      font-size: 12.5px;
-      color: var(--text-2);
-      text-decoration: none;
-      padding: 4px 0;
-      border-left: 2px solid transparent;
-      padding-left: 10px;
-      transition: all 0.15s;
-      line-height: 1.4;
-      margin-bottom: 2px;
-    }
-
-    .sidebar-link:hover {
-      color: var(--accent);
-      border-left-color: var(--accent);
-    }
-
-    .sidebar-link.active {
-      color: var(--accent);
-      border-left-color: var(--accent);
-      font-weight: 500;
-    }
-
-    /* ── SECTIONS ── */
-    .section { margin-bottom: 4rem; }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 0.5rem;
-    }
-
-    h2 {
-      font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 1.2rem;
-      margin-top: 0;
-    }
-
-    p {
-      font-size: 15.5px;
-      color: var(--text-2);
-      line-height: 1.78;
-      margin-bottom: 1rem;
-    }
-
-    hr {
-      border: none;
-      border-top: 0.5px solid var(--border);
-      margin: 3rem 0;
-    }
-
-    /* ── SITE CARD ── */
-    .site-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-      transition: box-shadow 0.2s;
-    }
-
-    .site-card:hover {
-      box-shadow: 0 4px 24px rgba(60,55,45,0.10);
-    }
-
-    .browser-mockup {
-      border-bottom: 0.5px solid var(--border);
-    }
-
-    .browser-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      background: var(--surface2);
-      border-bottom: 0.5px solid var(--border);
-    }
-
-    .browser-dots { display: flex; gap: 5px; }
-    .browser-dots span {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--border-strong);
-    }
-
-    .browser-url {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-3);
-      background: var(--bg);
-      border: 0.5px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 10px;
-      flex: 1;
-    }
-
-    .browser-content img {
-      width: 100%;
-      height: auto;
-      display: block;
-      max-height: 320px;
-      object-fit: cover;
-      object-position: top;
-    }
-
-    .site-card-info {
-      padding: 1.4rem 1.6rem;
-    }
-
-    .site-card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 0.8rem;
-    }
-
-    .site-card-tag {
-      font-size: 11px;
-      font-weight: 500;
-      background: var(--accent-bg);
-      color: var(--accent-text);
-      border-radius: 20px;
-      padding: 3px 10px;
-    }
-
-    .site-card-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-    }
-
-    .site-card-desc {
-      font-size: 14.5px;
-      color: var(--text-3);
-      line-height: 1.65;
-      margin-bottom: 1.2rem;
-    }
-
-    .site-card-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: var(--accent);
-      text-decoration: none;
-      transition: gap 0.15s;
-    }
-
-    .site-card-link:hover { gap: 10px; }
-
-    /* ── ARTICLE CARDS ── */
-    .articles-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .article-card {
-      display: flex;
-      gap: 1.5rem;
-      align-items: flex-start;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: 14px;
-      padding: 1.4rem 1.6rem;
-      text-decoration: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .article-card:hover {
-      border-color: var(--border-strong);
-      box-shadow: 0 3px 16px rgba(60,55,45,0.09);
-    }
-
-    .article-card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--accent-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .article-card-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: var(--accent);
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .article-card-body { flex: 1; min-width: 0; }
-
-    .article-card-meta {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 4px;
-    }
-
-    .article-card-title {
-      font-family: var(--font-display);
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-
-    .article-card-desc {
-      font-size: 13.5px;
-      color: var(--text-3);
-      line-height: 1.6;
-    }
-
-    .article-card-arrow {
-      color: var(--text-3);
-      flex-shrink: 0;
-      margin-top: 2px;
-      transition: color 0.15s, transform 0.15s;
-    }
-
-    .article-card:hover .article-card-arrow {
-      color: var(--accent);
-      transform: translateX(3px);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      border-top: 0.5px solid var(--border);
-      padding: 2rem;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-3);
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero { animation: fadeUp 0.6s ease both; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 860px) {
-      .page-body { grid-template-columns: 1fr; gap: 0; }
-      .sidebar { display: none; }
-      h1 { font-size: 28px; }
-    }
-  </style>
-</head>
-<body>
-
-<nav>
-  <a href="/" class="nav-brand">Yves Marti</a>
-  <ul class="nav-links">
-    <li><a href="/#parcours">Parcours</a></li>
-    <li><a href="/outils">Outils</a></li>
-    <li><a href="/realisations/">Réalisations</a></li>
-    <li><a href="/#contact">Contact</a></li>
-  </ul>
-</nav>
-
-<div class="hero">
-  <span class="tag">Portfolio · Sites web & analyses</span>
-  <h1>Mes réalisations</h1>
-  <p class="hero-sub">Projets web développés, outils d'analyse de données et articles techniques autour de la donnée territoriale.</p>
-  <div class="meta-row">
-    <span class="meta-item"><span class="meta-dot"></span> Développement web</span>
-    <span class="meta-item"><span class="meta-dot"></span> Données territoriales</span>
-    <span class="meta-item"><span class="meta-dot"></span> Power Query · APIs · QGIS</span>
-  </div>
-</div>
-
-<div class="page-body">
-  <div class="content">
-
-    <!-- SITE WEB -->
-    <div class="section" id="sites">
-      <p class="section-label">Sites web</p>
-      <h2>Projets développés</h2>
-      <p>Sites vitrines et applications web réalisés de la conception à la mise en ligne.</p>
-
-      <div class="site-card">
-        <div class="browser-mockup">
-          <div class="browser-bar">
-            <div class="browser-dots">
-              <span></span><span></span><span></span>
+    <div class="realisation-card">
+        <div class="realisation-preview">
+            <div class="browser-mockup">
+                <div class="browser-bar">
+                    <div class="browser-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="browser-url">autoecolemarti.fr</div>
+                </div>
+                <div class="browser-content">
+                    <img src="{{ '/assets/images/preview-autoecole-marti.png' | relative_url }}"
+                         alt="Aperçu du site Auto-École Marti"
+                         class="browser-screenshot">
+                </div>
             </div>
-            <div class="browser-url">autoecolemarti.fr</div>
-          </div>
-          <div class="browser-content">
-            <img src="../assets/images/preview-autoecole-marti.png" alt="Aperçu du site Auto-École Marti">
-          </div>
         </div>
-        <div class="site-card-info">
-          <div class="site-card-tags">
-            <span class="site-card-tag">Site vitrine</span>
-            <span class="site-card-tag">Auto-école</span>
-            <span class="site-card-tag">Web</span>
-          </div>
-          <div class="site-card-title">Auto-École Marti</div>
-          <p class="site-card-desc">Site vitrine pour l'auto-école familiale Marti. Présentation des offres de formation, des tarifs et des moyens de contact, dans un format clair et adapté aux mobiles.</p>
-          <a href="https://autoecolemarti.fr" target="_blank" rel="noopener noreferrer" class="site-card-link">
-            Visiter le site
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
-            </svg>
-          </a>
+        <div class="realisation-info">
+            <div class="realisation-tags">
+                <span class="realisation-tag">Site vitrine</span>
+                <span class="realisation-tag">Auto-école</span>
+                <span class="realisation-tag">Web</span>
+            </div>
+            <h3 class="realisation-title">Auto-École Marti</h3>
+            <p class="realisation-desc">Site vitrine pour l'auto-école familiale Marti. Présentation des offres de formation, des tarifs et des moyens de contact, dans un format clair et adapté aux mobiles.</p>
+            <a href="https://autoecolemarti.fr" target="_blank" rel="noopener noreferrer" class="realisation-link">
+                Visiter le site
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+            </a>
         </div>
-      </div>
+    </div>
+</section>
+
+<section class="realisations-section animate-on-scroll">
+    <h2 class="section-title">Articles &amp; analyses</h2>
+    <p style="color: var(--color-muted); margin-bottom: 2rem;">Retours d'expérience, études de cas et guides pratiques autour de la donnée territoriale et du développement d'outils.</p>
+
+    <div class="realisation-card">
+        <div class="realisation-info">
+            <div class="realisation-tags">
+                <span class="realisation-tag">Case study</span>
+                <span class="realisation-tag">Collectivités territoriales</span>
+            </div>
+            <h3 class="realisation-title">Automatiser la prospection de la Redevance Spéciale avec Power Query</h3>
+            <p class="realisation-desc">Comment interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties à la RS sur un territoire intercommunal.</p>
+            <a href="{{ '/realisations/etude-de-cas-redevance-speciale.html' | relative_url }}" class="realisation-link">
+                Lire l'article
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                </svg>
+            </a>
+        </div>
     </div>
 
-    <hr>
-
-    <!-- ARTICLES / BLOG -->
-    <div class="section" id="articles">
-      <p class="section-label">Articles & analyses</p>
-      <h2>Notes techniques</h2>
-      <p>Retours d'expérience, études de cas et guides pratiques autour de la donnée territoriale et du développement d'outils.</p>
-
-      <div class="articles-grid">
-
-        <a href="/realisations/etude-de-cas-redevance-speciale.html" class="article-card">
-          <div class="article-card-icon">
-            <svg viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4"/><path d="M12 3v14M8 7l4-4 4 4"/></svg>
-          </div>
-          <div class="article-card-body">
-            <div class="article-card-meta">Case study · Collectivités territoriales</div>
-            <div class="article-card-title">Automatiser la prospection de la Redevance Spéciale avec Power Query</div>
-            <div class="article-card-desc">Comment interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties à la RS sur un territoire intercommunal.</div>
-          </div>
-          <svg class="article-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-
-        <a href="/realisations/api-utiles.html" class="article-card">
-          <div class="article-card-icon">
-            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h8M4 18h8"/><rect x="14" y="14" width="8" height="6" rx="1"/></svg>
-          </div>
-          <div class="article-card-body">
-            <div class="article-card-meta">Guide pratique · Open Data Territorial</div>
-            <div class="article-card-title">APIs open data utiles pour les données territoriales</div>
-            <div class="article-card-desc">Une sélection d'APIs publiques pour automatiser la collecte, structurer les référentiels géographiques et enrichir les analyses économiques locales.</div>
-          </div>
-          <svg class="article-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-
-      </div>
+    <div class="realisation-card" style="margin-top: 1.5rem;">
+        <div class="realisation-info">
+            <div class="realisation-tags">
+                <span class="realisation-tag">Guide pratique</span>
+                <span class="realisation-tag">Open Data Territorial</span>
+            </div>
+            <h3 class="realisation-title">APIs open data utiles pour les données territoriales</h3>
+            <p class="realisation-desc">Une sélection d'APIs publiques pour automatiser la collecte, structurer les référentiels géographiques et enrichir les analyses économiques locales.</p>
+            <a href="{{ '/realisations/api-utiles.html' | relative_url }}" class="realisation-link">
+                Lire l'article
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                </svg>
+            </a>
+        </div>
     </div>
-
-  </div><!-- /content -->
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-card">
-      <div class="sidebar-title">Sur cette page</div>
-      <a href="#sites" class="sidebar-link">Sites web</a>
-      <a href="#articles" class="sidebar-link">Articles & analyses</a>
-    </div>
-    <div class="sidebar-card">
-      <div class="sidebar-title">Domaines</div>
-      <div style="font-size:12.5px;color:var(--text-2);line-height:1.8;">
-        Développement web<br>
-        Données territoriales<br>
-        Power Query · Langage M<br>
-        APIs open data<br>
-        QGIS · Cartographie
-      </div>
-    </div>
-  </aside>
-</div><!-- /page-body -->
-
-<footer>
-  Yves Marti · Portfolio réalisations
-</footer>
-
-<script>
-  const links = document.querySelectorAll('.sidebar-link');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        links.forEach(l => l.classList.remove('active'));
-        const active = document.querySelector(`.sidebar-link[href="#${entry.target.id}"]`);
-        if (active) active.classList.add('active');
-      }
-    });
-  }, { rootMargin: '-30% 0px -60% 0px' });
-
-  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
-</script>
-
-</body>
-</html>
+</section>
