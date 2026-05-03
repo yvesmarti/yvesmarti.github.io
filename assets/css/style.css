@@ -1757,11 +1757,13 @@ body,
 }
 
 /* Menu mobile déroulant en mode nuit */
-[data-theme="dark"] .nav-links {
-    background: rgba(10, 26, 16, 0.97);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(90, 173, 138, 0.14);
+@media (max-width: 768px) {
+    [data-theme="dark"] .nav-links {
+        background: rgba(10, 26, 16, 0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(90, 173, 138, 0.14);
+    }
 }
 
 /* ===========================================
