@@ -21,6 +21,7 @@
 
 html {
     scroll-behavior: smooth;
+    font-size: 19px;
 }
 
 body {
@@ -28,7 +29,7 @@ body {
     color: var(--color-text);
     background: var(--color-light);
     line-height: 1.8;
-    font-size: 18px;
+    font-size: 1.05rem;
 }
 
 /* ===========================================
