@@ -7,6 +7,7 @@
     <!-- Titre & description -->
     {% assign page_title = page.title | default: site.title %}
     {% assign page_description = page.description | default: site.description %}
+    {% assign page_image = page.image | default: '/assets/images/og-image.png' %}
     <title>{{ page_title }}</title>
     <meta name="description" content="{{ page_description }}">
     <meta name="keywords" content="{{ site.keywords }}">
@@ -24,13 +25,19 @@
     <meta property="og:url" content="{{ site.url }}{{ page.url | replace:'index.html','' }}">
     <meta property="og:locale" content="fr_FR">
     <meta property="og:site_name" content="{{ site.title }}">
+    <meta property="og:image" content="{{ site.url }}{{ page_image }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Yves Marti — Chargé de mission déchets & SIG, Normandie">
     {% if page.url == "/" %}<meta property="profile:first_name" content="Yves">
     <meta property="profile:last_name" content="Marti">{% endif %}
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ page_title }}">
     <meta name="twitter:description" content="{{ page_description }}">
+    <meta name="twitter:image" content="{{ site.url }}{{ page_image }}">
+    <meta name="twitter:image:alt" content="Yves Marti — Chargé de mission déchets & SIG, Normandie">
     <meta name="twitter:creator" content="@{{ site.linkedin }}">
 
     <!-- JSON-LD Person schema (home uniquement) -->
