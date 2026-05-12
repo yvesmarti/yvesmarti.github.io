@@ -47,3 +47,27 @@
   categorie: "Outils pratiques"
   couleur: "#7F77DD"
   description: "Outils HTML/JS autonomes : isochrones, géocodage, calendriers"
+
+- nom: SEO & visibilité web
+  icone: "📈"
+  categorie: "Outils pratiques"
+  couleur: "#7F77DD"
+  description: Référencement naturel, balises meta, Google Search Console, données structurées schema.org
+
+- nom: Marchés publics
+  icone: "📋"
+  categorie: "Gestion de projet"
+  couleur: "#E8943A"
+  description: Rédaction de CCTP et DQE, analyse d'offres, suivi de marchés de travaux
+
+- nom: Coordination multi-acteurs
+  icone: "🤝"
+  categorie: "Gestion de projet"
+  couleur: "#E8943A"
+  description: Pilotage de projets intercommunaux, dialogue avec élus, communes et prestataires
+
+- nom: IA appliquée
+  icone: "🤖"
+  categorie: "IA comme outil de travail"
+  couleur: "#E85A7E"
+  description: "Claude, LM Studio, prompting appliqué au développement et à l'analyse"
