@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --orange: #C0612B;
-    --orange-light: #F2D9CB;
-    --orange-pale: #FAF0EA;
+    --teal: #2a7a5e;
+    --teal-light: #c4ddd5;
+    --teal-pale: #f0f5f3;
     --dark: #2C2C2C;
     --mid: #555;
     --light: #888;
@@ -22,7 +22,7 @@
 
   body {
     font-family: 'Source Sans 3', sans-serif;
-    background: #E8E4DF;
+    background: #e8ded4;
     color: var(--dark);
     min-height: 100vh;
     padding: 30px 20px 60px;
@@ -40,7 +40,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--orange);
+    background: var(--teal);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -52,7 +52,7 @@
     text-decoration: none;
     transition: background .2s;
   }
-  .btn-dl:hover { background: #a0501f; }
+  .btn-dl:hover { background: #1a5c4a; }
   .btn-dl svg { width: 16px; height: 16px; fill: white; }
 
   /* ── CV wrapper ── */
@@ -70,7 +70,7 @@
     grid-template-columns: 58% 42%;
   }
   .header-left {
-    background: var(--orange);
+    background: #1a3a32;
     padding: 32px 28px;
   }
   .header-left h1 {
@@ -88,7 +88,7 @@
     font-family: 'Lora', serif;
   }
   .header-right {
-    background: var(--orange-light);
+    background: var(--teal-light);
     padding: 24px 22px;
     display: flex;
     flex-direction: column;
@@ -102,7 +102,7 @@
     align-items: center;
     gap: 8px;
   }
-  .contact-item a { color: var(--orange); text-decoration: none; }
+  .contact-item a { color: var(--teal); text-decoration: none; }
   .contact-item a:hover { text-decoration: underline; }
   .contact-icon { width: 14px; text-align: center; opacity: .7; }
 
@@ -112,17 +112,17 @@
     grid-template-columns: 58% 42%;
   }
   .col-main { padding: 28px 28px 28px 28px; border-right: 1px solid #EEE; }
-  .col-side { padding: 28px 22px; background: var(--orange-pale); }
+  .col-side { padding: 28px 22px; background: var(--teal-pale); }
 
   /* ── Section titles ── */
   .section-title {
     font-family: 'Lora', serif;
     font-size: 14px;
     font-weight: 600;
-    color: var(--orange);
+    color: var(--teal);
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    border-bottom: 2px solid var(--orange);
+    border-bottom: 2px solid var(--teal);
     padding-bottom: 5px;
     margin-bottom: 16px;
     margin-top: 0;
@@ -142,7 +142,7 @@
     font-family: 'Lora', serif;
     font-size: 13.5px;
     font-weight: 600;
-    color: var(--orange);
+    color: var(--teal);
   }
   .employer-period {
     font-size: 12px;
@@ -175,7 +175,7 @@
     content: "•";
     position: absolute;
     left: 0;
-    color: var(--orange);
+    color: var(--teal);
     font-size: 11px;
     top: 1px;
   }
@@ -183,7 +183,7 @@
   /* ── Interactive spans ── */
   .detail-trigger {
     cursor: pointer;
-    border-bottom: 1.5px dashed var(--orange);
+    border-bottom: 1.5px dashed var(--teal);
     color: var(--dark);
     font-weight: 600;
     transition: color .15s, background .15s;
@@ -191,12 +191,12 @@
     padding: 0 2px;
   }
   .detail-trigger:hover {
-    color: var(--orange);
-    background: var(--orange-light);
+    color: var(--teal);
+    background: var(--teal-light);
   }
   .detail-trigger.active {
-    color: var(--orange);
-    background: var(--orange-light);
+    color: var(--teal);
+    background: var(--teal-light);
   }
 
   /* ── Sidebar skills ── */
@@ -217,7 +217,7 @@
   .skill-tag {
     font-size: 11.5px;
     background: white;
-    border: 1px solid var(--orange-light);
+    border: 1px solid var(--teal-light);
     color: var(--mid);
     padding: 2px 8px;
     border-radius: 2px;
@@ -247,7 +247,7 @@
     margin: 32px 28px;
     position: relative;
     height: 1px;
-    background: var(--orange-light);
+    background: var(--teal-light);
   }
   .page-break::after {
     content: "";
@@ -257,9 +257,9 @@
     transform: translate(-50%, -50%);
     width: 5px;
     height: 5px;
-    background: var(--orange);
+    background: var(--teal);
     border-radius: 50%;
-    box-shadow: -16px 0 0 var(--orange), 16px 0 0 var(--orange);
+    box-shadow: -16px 0 0 var(--teal), 16px 0 0 var(--teal);
   }
 
   /* ── Detail Panel ── */
@@ -291,7 +291,7 @@
   .detail-panel.open { right: 0; }
 
   .panel-header {
-    background: var(--orange);
+    background: #1a3a32;
     padding: 22px 24px 18px;
     flex-shrink: 0;
   }
@@ -338,9 +338,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: var(--orange);
+    color: var(--teal);
     margin-bottom: 8px;
-    border-bottom: 1px solid var(--orange-light);
+    border-bottom: 1px solid var(--teal-light);
     padding-bottom: 4px;
   }
   .panel-text {
@@ -356,9 +356,9 @@
   }
   .panel-tag {
     font-size: 12px;
-    background: var(--orange-pale);
-    border: 1px solid var(--orange-light);
-    color: var(--orange);
+    background: var(--teal-pale);
+    border: 1px solid var(--teal-light);
+    color: var(--teal);
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 2px;
@@ -379,7 +379,7 @@
     content: "→";
     position: absolute;
     left: 0;
-    color: var(--orange);
+    color: var(--teal);
     font-size: 11px;
   }
 
@@ -388,14 +388,14 @@
     display: inline-block;
     margin-left: 6px;
     font-size: 11px;
-    color: var(--orange);
+    color: var(--teal);
     opacity: .7;
     font-style: italic;
   }
 
   /* ── Footer ── */
   .cv-footer {
-    border-top: 1px solid var(--orange-light);
+    border-top: 1px solid var(--teal-light);
     padding: 16px 28px;
     display: flex;
     justify-content: space-between;
@@ -406,7 +406,7 @@
     font-family: 'Lora', serif;
     font-size: 13px;
     font-weight: 600;
-    color: var(--orange);
+    color: var(--teal);
     letter-spacing: .3px;
   }
   .cv-footer-links {
@@ -420,11 +420,11 @@
     text-decoration: none;
     transition: color .15s;
   }
-  .cv-footer-links a:hover { color: var(--orange); }
+  .cv-footer-links a:hover { color: var(--teal); }
   .cv-footer-sep {
     width: 3px;
     height: 3px;
-    background: var(--orange-light);
+    background: var(--teal-light);
     border-radius: 50%;
   }
 
@@ -677,7 +677,7 @@
       </div>
 
       <p style="margin-top:28px;font-size:11px;color:#AAA;font-style:italic;line-height:1.5;">
-        💡 Cliquer sur les éléments <span style="border-bottom:1.5px dashed var(--orange);color:var(--orange);font-weight:600;">soulignés en pointillés</span> pour afficher le détail des compétences associées.
+        💡 Cliquer sur les éléments <span style="border-bottom:1.5px dashed var(--teal);color:var(--teal);font-weight:600;">soulignés en pointillés</span> pour afficher le détail des compétences associées.
       </p>
 
     </div><!-- /col-side -->
