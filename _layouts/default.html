@@ -56,13 +56,48 @@
       "name": "Yves Marti",
       "jobTitle": "{{ site.profession }}",
       "url": "{{ site.url }}",
-      "sameAs": ["https://www.linkedin.com/in/{{ site.linkedin }}/"],
-      "knowsAbout": ["QGIS", "SIG", "gestion des déchets", "cartographie", "analyse de données territoriales", "Normandie"],
+      "description": "Portfolio professionnel de Yves Marti, expert en gestion des déchets et études environnementales. 10 ans d'expérience en Normandie : observatoire régional des déchets, cartographie QGIS, analyse de données territoriales.",
+      "image": "{{ site.url }}/assets/images/og-image.png",
+      "alumniOf": [
+        {
+          "@type": "EducationalOrganization",
+          "name": "Université Bordeaux III",
+          "description": "Master 2 Gestion Territoriale du Développement Durable"
+        },
+        {
+          "@type": "EducationalOrganization",
+          "name": "Université Bordeaux III",
+          "description": "Licence de Géographie — Approches Géographiques du Développement et des Territoires"
+        },
+        {
+          "@type": "EducationalOrganization",
+          "name": "Université Bordeaux III",
+          "description": "Licence Langues Étrangères Appliquées — Anglais / Espagnol, Spécialité Relations Internationales"
+        }
+      ],
       "address": {
         "@type": "PostalAddress",
+        "addressLocality": "Caen",
         "addressRegion": "Normandie",
         "addressCountry": "FR"
-      }
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/{{ site.linkedin }}/",
+        "https://github.com/{{ site.linkedin }}"
+      ],
+      "knowsAbout": [
+        "Gestion des déchets",
+        "Observatoire régional des déchets",
+        "Études d'impact environnemental",
+        "Développement durable",
+        "Géographie",
+        "SIG",
+        "QGIS",
+        "Cartographie thématique",
+        "Analyse de données territoriales",
+        "Collectivités locales",
+        "Normandie"
+      ]
     }
     </script>
     {% else %}
