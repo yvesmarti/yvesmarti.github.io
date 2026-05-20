@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurateur de Dalle & Claustra v6</title>
+    <!-- SEO injected -->
+    <meta name="description" content="Dimensionner et configurer une dalle pour point d'apport volontaire avec bacs et claustra : génération de schémas et métrés.">
+    <meta name="author" content="Yves Marti">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yvesmarti.github.io/outils/schemas_dalles.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Configurateur de dalle & claustra (PAV) — Yves Marti">
+    <meta property="og:description" content="Dimensionner et configurer une dalle pour point d'apport volontaire avec bacs et claustra : génération de schémas et métrés.">
+    <meta property="og:url" content="https://yvesmarti.github.io/outils/schemas_dalles.html">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="Yves MARTI">
+    <meta property="og:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Configurateur de dalle & claustra (PAV) — Yves Marti">
+    <meta name="twitter:description" content="Dimensionner et configurer une dalle pour point d'apport volontaire avec bacs et claustra : génération de schémas et métrés.">
+    <meta name="twitter:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
+    <meta name="twitter:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta name="twitter:creator" content="@yvesmarti">
+    <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
+    <!-- SheetJS (xlsx-js-style fork) pour export Excel avec styles -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; font-size: 20px; }
+        .container { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
+        .panel { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .panel-scroll { max-height: calc(100vh - 100px); overflow-y: auto; }
+        .panel h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 10px; font-size: 15px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 13px; }
+        input[type="number"], input[type="text"], select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; }
+        input[type="color"] { width: 45px; height: 30px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; padding: 2px; }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        input:focus, select:focus { outline: none; border-color: #3498db; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        button { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; transition: background 0.3s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; }
+        .btn-warning { background: #8b4513; color: white; }
+        .btn-warning:hover { background: #6b3410; }
+        .btn-danger { background: #e74c3c; color: white; padding: 5px 10px; font-size: 11px; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-rotate { background: #9b59b6; color: white; padding: 5px 10px; font-size: 11px; }
+        .btn-rotate:hover { background: #8e44ad; }
+        .bac-list, .poteau-list { margin-top: 10px; max-height: 150px; overflow-y: auto; }
+        .bac-item, .poteau-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; font-size: 12px; }
+        .poteau-item { background: #fdf2e9; border-left: 4px solid #8b4513; }
+        .recap-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; font-size: 13px; }
+        .recap-box table { width: 100%; border-collapse: collapse; }
+        .recap-box td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+        .recap-box td:first-child { color: #666; }
+        .recap-box td:last-child { font-weight: 600; text-align: right; }
+        .recap-box tr:last-child td { border-bottom: none; }
+        .recap-devis { background: #e8f5e9; border-color: #4caf50; }
+        .recap-devis h4 { margin: 0 0 10px 0; color: #2e7d32; }
+        .recap-warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px; margin-top: 10px; font-size: 12px; }
+        .item-btns { display: flex; gap: 5px; }
+        .canvas-container { position: relative; overflow: auto; min-height: 400px; display: flex; flex-direction: column; }
+        canvas { border: 1px solid #ddd; background: white; cursor: move; }
+        .legend { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .legend-color { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #999; }
+        .info-box { background: #e8f4f8; border-left: 4px solid #3498db; padding: 10px; margin-top: 15px; font-size: 11px; }
+        .presets { margin-bottom: 15px; }
+        .preset-btn { padding: 6px 10px; margin: 2px; font-size: 11px; background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; border-radius: 5px; cursor: pointer; }
+        .preset-btn:hover { background: #d5dbdb; }
+        .dimensions-info { font-size: 11px; color: #7f8c8d; margin-top: 5px; }
+        .export-btns { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .color-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .color-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .grid-settings { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-radius: 5px; flex-wrap: wrap; }
+        .grid-settings label { margin-bottom: 0; display: flex; align-items: center; gap: 5px; font-size: 12px; }
+        .claustra-sides { display: flex; gap: 15px; margin: 10px 0; flex-wrap: wrap; }
+        .claustra-sides label { display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 12px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab { padding: 8px 15px; background: #ecf0f1; border: none; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 13px; }
+        .tab.active { background: #3498db; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .view-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+        .view-tab { padding: 6px 14px; background: #ecf0f1; border: none; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 12px; }
+        .view-tab.active { background: #2ecc71; color: white; }
+        .view-content { display: none; }
+        .view-content.active { display: block; }
+        .elevation-selector { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .elev-btn { padding: 5px 12px; font-size: 12px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 4px; cursor: pointer; }
+        .elev-btn.active { background: #8b4513; color: white; border-color: #8b4513; }
+        .elev-btn:hover:not(.active) { background: #d5dbdb; }
+        .elev-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Orientation toggle */
+        .orientation-toggle { display: flex; gap: 0; margin: 12px 0; border-radius: 6px; overflow: hidden; border: 2px solid #8b4513; }
+        .orient-btn { flex: 1; padding: 10px 8px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; background: #fff; color: #8b4513; border: none; transition: all 0.2s; }
+        .orient-btn.active { background: #8b4513; color: #fff; }
+        .orient-btn:hover:not(.active) { background: #fdf2e9; }
+        .orient-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <h1>🧱 Configurateur de dalle avec claustra v6</h1>
+    
+    <div class="container">
+        <div class="panel panel-scroll">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('tabDalle')">📐 Dalle</button>
+                <button class="tab" onclick="showTab('tabBacs')">🗑️ Bacs</button>
+                <button class="tab" onclick="showTab('tabClaustra')">🪵 Claustra</button>
+                <button class="tab" onclick="showTab('tabRecap')">📊 Récap</button>
+                <button class="tab" onclick="showTab('tabOptions')">⚙️ Options</button>
+            </div>
+
+            <!-- TAB DALLE -->
+            <div id="tabDalle" class="tab-content active">
+                <h2>📐 Dimensions de la dalle</h2>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Longueur (cm)</label>
+                        <input type="number" id="dalleLongueur" value="450" min="50" max="1500">
+                    </div>
+                    <div class="form-group">
+                        <label>Largeur (cm)</label>
+                        <input type="number" id="dalleLargeur" value="120" min="50" max="800">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="updateDalle()">Mettre à jour</button>
+                <div class="info-box" style="margin-top: 15px;">
+                    <strong>Orientation :</strong> La longueur est horizontale, la largeur est verticale. Le côté "bas" est généralement l'accès.
+                </div>
+            </div>
+
+            <!-- TAB BACS -->
+            <div id="tabBacs" class="tab-content">
+                <h2>🗑️ Ajouter un bac</h2>
+                <div class="presets">
+                    <label>Préréglages :</label><br>
+                    <button class="preset-btn" onclick="setPreset(49, 55, 'OMr', '120L')">OMr 120L</button>
+                    <button class="preset-btn" onclick="setPreset(59, 73, 'OMr', '240L')">OMr 240L</button>
+                    <button class="preset-btn" onclick="setPreset(66, 87, 'OMr', '340L')">OMr 340L</button>
+                    <button class="preset-btn" onclick="setPreset(124, 66, 'OMr', '500L')">OMr 500L</button>
+                    <button class="preset-btn" onclick="setPreset(136, 77, 'OMr', '660L')">OMr 660L</button>
+                    <button class="preset-btn" onclick="setPreset(137, 77, 'OMr', '770L')">OMr 770L</button>
+                    <br>
+                    <button class="preset-btn" onclick="setPreset(49, 55, 'Emballages', '120L')">Emb. 120L</button>
+                    <button class="preset-btn" onclick="setPreset(59, 73, 'Emballages', '240L')">Emb. 240L</button>
+                    <button class="preset-btn" onclick="setPreset(66, 87, 'Emballages', '340L')">Emb. 340L</button>
+                    <button class="preset-btn" onclick="setPreset(124, 66, 'Emballages', '500L')">Emb. 500L</button>
+                    <button class="preset-btn" onclick="setPreset(136, 77, 'Emballages', '660L')">Emb. 660L</button>
+                    <button class="preset-btn" onclick="setPreset(137, 77, 'Emballages', '770L')">Emb. 770L</button>
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Type de bac</label>
+                        <select id="bacType">
+                            <option value="OMr">Ordures Ménagères résiduelles</option>
+                            <option value="Emballages">Emballages</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom/Volume</label>
+                        <input type="text" id="bacNom" placeholder="ex: 360L">
+                    </div>
+                </div>
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Largeur (cm)</label>
+                        <input type="number" id="bacLargeur" value="66" min="30" max="200">
+                    </div>
+                    <div class="form-group">
+                        <label>Profondeur (cm)</label>
+                        <input type="number" id="bacProfondeur" value="87" min="30" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label>Rotation</label>
+                        <select id="bacRotation">
+                            <option value="0">0°</option>
+                            <option value="90">90°</option>
+                            <option value="180">180°</option>
+                            <option value="270">270°</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="dimensions-info">💡 Largeur = face avant (poignée)</p>
+                <button class="btn-success" onclick="ajouterBac()">+ Ajouter ce bac</button>
+                <h2 style="margin-top: 20px;">📋 Bacs placés (<span id="bacCount">0</span>)</h2>
+                <div class="bac-list" id="bacList"></div>
+            </div>
+
+            <!-- TAB CLAUSTRA -->
+            <div id="tabClaustra" class="tab-content">
+                <h2>🪵 Configuration du claustra</h2>
+
+                <label>Orientation des planches :</label>
+                <div class="orientation-toggle">
+                    <button class="orient-btn active" id="orientVertical" onclick="setOrientation('vertical')">
+                        <span class="orient-icon">|||</span> Verticales
+                    </button>
+                    <button class="orient-btn" id="orientHorizontal" onclick="setOrientation('horizontal')">
+                        <span class="orient-icon">≡</span> Horizontales
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Côtés avec claustra :</label>
+                    <div class="claustra-sides">
+                        <label><input type="checkbox" id="claustraHaut" checked onchange="onClaustraChange()"> Haut</label>
+                        <label><input type="checkbox" id="claustraGauche" checked onchange="onClaustraChange()"> Gauche</label>
+                        <label><input type="checkbox" id="claustraDroite" checked onchange="onClaustraChange()"> Droite</label>
+                        <label><input type="checkbox" id="claustraBas" onchange="onClaustraChange()"> Bas (accès complet)</label>
+                    </div>
+                </div>
+
+                <!-- ACCÈS PARTIEL -->
+                <div style="margin-top:12px;padding:12px;background:#e8f8e8;border-radius:8px;border:1px solid #a0c4a0;">
+                    <label style="font-weight:700;color:#2e7d32;font-size:13px;display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" id="accesPartielEnabled" onchange="onAccesPartielChange()">
+                        🚪 Planches côté accès (partiel + ouverture)
+                    </label>
+                    <p class="dimensions-info" style="margin-top:6px;">Ajoute des planches à gauche et droite de l'ouverture d'accès, avec poteaux encadrant l'ouverture. Incompatible avec "Bas complet".</p>
+                    <div id="accesPartielInputs" style="display:none;margin-top:10px;">
+                        <div class="input-row">
+                            <div class="form-group">
+                                <label>Planches côté gauche (cm)</label>
+                                <input type="number" id="accesGauche" value="60" min="0" max="500" onchange="onAccesPartielChange()">
+                            </div>
+                            <div class="form-group">
+                                <label>Planches côté droite (cm)</label>
+                                <input type="number" id="acesDroite" value="60" min="0" max="500" onchange="onAccesPartielChange()">
+                            </div>
+                        </div>
+                        <div id="accesOuvertureInfo" style="font-size:12px;color:#2e7d32;margin-top:4px;font-weight:600;"></div>
+                    </div>
+                </div>
+
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Épaisseur (cm)</label>
+                        <input type="number" id="claustraEpaisseur" value="15" min="5" max="50" onchange="onClaustraChange()">
+                    </div>
+                    <div class="form-group">
+                        <label>Débord (cm)</label>
+                        <input type="number" id="claustraDebord" value="5" min="0" max="50" onchange="onClaustraChange()">
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur</label>
+                        <input type="color" id="claustraCouleur" value="#8b4513" onchange="draw(); drawElevation()">
+                    </div>
+                </div>
+                <p class="dimensions-info">💡 Débord = dépassement du claustra par rapport à la dalle</p>
+
+                <h2 style="margin-top: 20px;">🪵 Poteaux</h2>
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Section (cm)</label>
+                        <input type="number" id="poteauSection" value="10" min="5" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Position X</label>
+                        <input type="number" id="poteauX" value="0" min="-50">
+                    </div>
+                    <div class="form-group">
+                        <label>Position Y</label>
+                        <input type="number" id="poteauY" value="0" min="-50">
+                    </div>
+                </div>
+                <button class="btn-warning" onclick="ajouterPoteau()">+ Ajouter un poteau</button>
+
+                <div style="margin-top: 15px; padding: 12px; background: #fdf2e9; border-radius: 8px; border: 1px solid #e8c9a0;">
+                    <label style="color: #8b4513; margin-bottom: 8px;">⚡ Placement automatique des poteaux</label>
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label>Longueur max planche (cm)</label>
+                            <input type="number" id="maxPlancheLength" value="180" min="50" max="300" step="10">
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-end;">
+                            <button class="btn-primary" onclick="ajouterPoteauxAuto()" style="width:100%;background:#8b4513;">⚡ Placer poteaux auto</button>
+                        </div>
+                    </div>
+                    <p class="dimensions-info">💡 Place les poteaux aux angles + intermédiaires pour que chaque travée ≤ longueur max planche</p>
+                    <div id="autoEspacementInfo" style="margin-top: 8px;"></div>
+                </div>
+
+                <div class="poteau-list" id="poteauList"></div>
+            </div>
+
+            <!-- TAB RECAP -->
+            <div id="tabRecap" class="tab-content">
+                <h2>📊 Récapitulatif dalle</h2>
+                <div class="recap-box" id="recapDalle"></div>
+
+                <h2 style="margin-top: 20px;">🪵 Récapitulatif claustra</h2>
+                <div class="recap-box" id="recapClaustra"></div>
+
+                <h2 style="margin-top: 20px;" id="recapPlanchesTitle">🪵 Calcul des planches</h2>
+                <div class="form-group">
+                    <label>Hauteur du claustra (cm)</label>
+                    <input type="number" id="claustraHauteur" value="160" min="50" max="250" onchange="updateRecap(); drawElevation()">
+                </div>
+                <div class="input-row-3">
+                    <div class="form-group">
+                        <label>Largeur planche (cm)</label>
+                        <input type="number" id="plancheLargeur" value="15" min="5" max="50" onchange="updateRecap(); drawElevation()">
+                    </div>
+                    <div class="form-group">
+                        <label>Épaisseur (cm)</label>
+                        <input type="number" id="plancheEpaisseur" value="2" min="1" max="10" step="0.5" onchange="updateRecap(); drawElevation()">
+                    </div>
+                    <div class="form-group">
+                        <label>Espacement (cm)</label>
+                        <input type="number" id="plancheEspacement" value="2" min="0" max="10" step="0.5" onchange="updateRecap(); drawElevation()">
+                    </div>
+                </div>
+                <p class="dimensions-info" id="orientHint">💡 Espacement = jour entre chaque planche</p>
+
+                <div class="recap-box recap-devis" id="recapPlanches"></div>
+                <button class="btn-primary" onclick="exportDevis()" style="margin-top: 15px;">📋 Exporter récap pour devis</button>
+                <button class="btn-success" onclick="exportExcel()" style="margin-top: 8px;">📊 Exporter Excel (.xlsx)</button>
+            </div>
+
+            <!-- TAB OPTIONS -->
+            <div id="tabOptions" class="tab-content">
+                <h2>🔲 Grille d'alignement</h2>
+                <div class="grid-settings">
+                    <label><input type="checkbox" id="showGrid" checked onchange="draw()"> Afficher</label>
+                    <label>Pas : <input type="number" id="gridSize" value="10" min="5" max="50" style="width: 55px;" onchange="draw()"> cm</label>
+                    <label><input type="checkbox" id="snapToGrid" checked> Aimanter</label>
+                </div>
+
+                <h2 style="margin-top: 20px;">🎨 Couleurs des flux</h2>
+                <div class="color-settings">
+                    <div class="color-item"><input type="color" id="colorOMr" value="#e74c3c" onchange="updateColors()"><span>OMr</span></div>
+                    <div class="color-item"><input type="color" id="colorEmballages" value="#f1c40f" onchange="updateColors()"><span>Emballages</span></div>
+                </div>
+                <button class="btn-primary" onclick="resetColors()" style="font-size: 11px; padding: 5px 10px;">↺ Réinitialiser couleurs</button>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>💡 Interactions :</strong><br>
+                    • Glisser-déposer : déplacer bacs et poteaux<br>
+                    • Clic droit sur bac : rotation 90°<br>
+                    • Double-clic : supprimer l'élément
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="view-tabs">
+                <button class="view-tab active" onclick="showView('viewPlan')">📐 Vue de dessus</button>
+                <button class="view-tab" onclick="showView('viewElevation')">🏗️ Vue de face (élévation)</button>
+            </div>
+
+            <div id="viewPlan" class="view-content active">
+                <div class="canvas-container"><canvas id="canvas"></canvas></div>
+                <div class="legend" id="legendContainer"></div>
+                <div class="export-btns">
+                    <button class="btn-primary" onclick="exportImage('canvas')">📷 Exporter PNG</button>
+                    <button class="btn-primary" onclick="exportConfig()">💾 Sauvegarder</button>
+                    <button class="btn-primary" onclick="importConfig()">📂 Charger</button>
+                    <button class="btn-danger" onclick="resetAll()">🔄 Tout effacer</button>
+                </div>
+            </div>
+
+            <div id="viewElevation" class="view-content">
+                <div class="elevation-selector" id="elevationSelector"></div>
+                <div class="canvas-container"><canvas id="canvasElevation"></canvas></div>
+                <div class="info-box" style="margin-top: 10px;" id="elevInfo">
+                    Vue de face du claustra tel qu'on le verrait depuis l'extérieur. La dalle béton est en gris.
+                </div>
+                <div class="export-btns">
+                    <button class="btn-primary" onclick="exportImage('canvasElevation')">📷 Exporter PNG élévation</button>
+                </div>
+            </div>
+
+            <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="loadConfig(event)">
+        </div>
+    </div>
+    
+    <script>
+    // ================================================================
+    //  ÉTAT GLOBAL
+    // ================================================================
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const canvasElev = document.getElementById('canvasElevation');
+    const ctxElev = canvasElev.getContext('2d');
+    
+    let echelle = 2;
+    let dalle = { longueur: 450, largeur: 120 };
+    let bacs = [];
+    let poteaux = [];
+    let selectedItem = null, selectedType = null, offsetX, offsetY, isDragging = false;
+    let currentElevationSide = 'haut';
+    let orientationPlanches = 'vertical'; // 'vertical' ou 'horizontal'
+    let colors = { 'OMr': { base: '#e74c3c' }, 'Emballages': { base: '#f1c40f' } };
+    let accesPartiel = { enabled: false, gaucheLen: 60, droiteLen: 60 };
+
+    // ================================================================
+    //  UTILITAIRES COULEURS
+    // ================================================================
+    function hexToRgb(hex) {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return r ? { r: parseInt(r[1],16), g: parseInt(r[2],16), b: parseInt(r[3],16) } : null;
+    }
+    function lightenColor(hex, p) { const c=hexToRgb(hex); if(!c) return hex; return `rgb(${Math.round(Math.min(255,c.r+(255-c.r)*p))},${Math.round(Math.min(255,c.g+(255-c.g)*p))},${Math.round(Math.min(255,c.b+(255-c.b)*p))})`; }
+    function darkenColor(hex, p) { const c=hexToRgb(hex); if(!c) return hex; return `rgb(${Math.round(Math.max(0,c.r*(1-p)))},${Math.round(Math.max(0,c.g*(1-p)))},${Math.round(Math.max(0,c.b*(1-p)))})`; }
+    function getColorSet(type) { const b=colors[type]?.base||'#999'; return {fill:lightenColor(b,.7), stroke:b, text:darkenColor(b,.3)}; }
+
+    // ================================================================
+    //  TABS & NAVIGATION
+    // ================================================================
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+    function showView(viewId) {
+        document.querySelectorAll('.view-content').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        event.target.classList.add('active');
+        if(viewId==='viewElevation'){ updateElevationButtons(); drawElevation(); }
+    }
+
+    // ================================================================
+    //  ORIENTATION
+    // ================================================================
+    function setOrientation(mode) {
+        orientationPlanches = mode;
+        document.getElementById('orientVertical').classList.toggle('active', mode==='vertical');
+        document.getElementById('orientHorizontal').classList.toggle('active', mode==='horizontal');
+        updateRecap();
+        drawElevation();
+    }
+
+    function onClaustraChange() {
+        // Mutual exclusion : bas complet et accès partiel incompatibles
+        const basChecked = document.getElementById('claustraBas').checked;
+        if (basChecked && accesPartiel.enabled) {
+            accesPartiel.enabled = false;
+            document.getElementById('accesPartielEnabled').checked = false;
+            document.getElementById('accesPartielInputs').style.display = 'none';
+            document.getElementById('accesOuvertureInfo').innerHTML = '';
+        }
+        draw(); drawElevation(); updateRecap();
+    }
+
+    function onAccesPartielChange() {
+        const enabled = document.getElementById('accesPartielEnabled').checked;
+        accesPartiel.enabled = enabled;
+        // Mutual exclusion : désactive bas complet si accès partiel activé
+        if (enabled && document.getElementById('claustraBas').checked) {
+            document.getElementById('claustraBas').checked = false;
+        }
+        accesPartiel.gaucheLen = parseInt(document.getElementById('accesGauche').value) || 0;
+        accesPartiel.droiteLen = parseInt(document.getElementById('acesDroite').value) || 0;
+        document.getElementById('accesPartielInputs').style.display = enabled ? 'grid' : 'none';
+        if (enabled) {
+            const deb = parseInt(document.getElementById('claustraDebord').value) || 0;
+            const ep  = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+            const g   = document.getElementById('claustraGauche').checked;
+            const dr  = document.getElementById('claustraDroite').checked;
+            const totalW = dalle.longueur + deb*2 + (g ? ep : 0) + (dr ? ep : 0);
+            const s = parseInt(document.getElementById('poteauSection').value) || 10;
+            const ouverture = totalW - accesPartiel.gaucheLen - accesPartiel.droiteLen - 2*s;
+            document.getElementById('accesOuvertureInfo').innerHTML = ouverture > 0
+                ? `Ouverture calculée : <strong>${ouverture} cm</strong> (poteaux : ${s}×${s} cm)`
+                : `<span style="color:#c0392b">⚠️ Longueurs trop grandes, l'ouverture est nulle ou négative !</span>`;
+        } else {
+            document.getElementById('accesOuvertureInfo').innerHTML = '';
+        }
+        draw(); drawElevation(); updateRecap();
+    }
+
+    // ================================================================
+    //  COULEURS UI
+    // ================================================================
+    function updateColors() { colors.OMr.base=document.getElementById('colorOMr').value; colors.Emballages.base=document.getElementById('colorEmballages').value; updateLegend(); updateBacList(); draw(); }
+    function resetColors() { document.getElementById('colorOMr').value='#e74c3c'; document.getElementById('colorEmballages').value='#f1c40f'; updateColors(); }
+    function updateLegend() {
+        const c=document.getElementById('legendContainer');
+        let h=Object.entries(colors).map(([t,co])=>`<div class="legend-item"><div class="legend-color" style="background:${co.base}"></div><span>${t}</span></div>`).join('');
+        h+=`<div class="legend-item"><div class="legend-color" style="background:${document.getElementById('claustraCouleur').value}"></div><span>Claustra</span></div>`;
+        h+=`<div class="legend-item"><div class="legend-color" style="background:#5d4e37"></div><span>Poteaux</span></div>`;
+        c.innerHTML=h;
+    }
+    function setPreset(l,p,t,n){ document.getElementById('bacLargeur').value=l; document.getElementById('bacProfondeur').value=p; document.getElementById('bacType').value=t; document.getElementById('bacNom').value=n; document.getElementById('bacRotation').value='0'; }
+
+    // ================================================================
+    //  DALLE
+    // ================================================================
+    function updateDalle() {
+        dalle.longueur=parseInt(document.getElementById('dalleLongueur').value)||300;
+        dalle.largeur=parseInt(document.getElementById('dalleLargeur').value)||200;
+        const d=parseInt(document.getElementById('claustraDebord').value)||0;
+        const e=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const tw=dalle.longueur+(d+e)*2, th=dalle.largeur+(d+e)*2;
+        echelle=Math.min(800/tw, 550/th, 3);
+        draw(); drawElevation(); updateRecap();
+        if(accesPartiel.enabled) onAccesPartielChange();
+    }
+
+    // ================================================================
+    //  BACS
+    // ================================================================
+    function ajouterBac() {
+        const type=document.getElementById('bacType').value, nom=document.getElementById('bacNom').value||type;
+        const l=parseInt(document.getElementById('bacLargeur').value)||60, p=parseInt(document.getElementById('bacProfondeur').value)||80;
+        const rot=parseInt(document.getElementById('bacRotation').value)||0;
+        bacs.push({id:Date.now(),type,nom,largeur:l,profondeur:p,rotation:rot,x:10+(bacs.length%3)*80,y:10+Math.floor(bacs.length/3)*90});
+        updateBacList(); draw();
+    }
+    function rotateBac(id){ const b=bacs.find(x=>x.id===id); if(b){b.rotation=(b.rotation+90)%360; updateBacList(); draw();} }
+    function supprimerBac(id){ bacs=bacs.filter(b=>b.id!==id); updateBacList(); draw(); }
+    function updateBacList(){
+        document.getElementById('bacCount').textContent=bacs.length;
+        document.getElementById('bacList').innerHTML=bacs.map(b=>{const c=getColorSet(b.type); return `<div class="bac-item" style="background:${c.fill};border-left:4px solid ${c.stroke}"><span><strong>${b.nom}</strong> ${b.largeur}×${b.profondeur} ${b.rotation}°</span><div class="item-btns"><button class="btn-rotate" onclick="rotateBac(${b.id})">↻</button><button class="btn-danger" onclick="supprimerBac(${b.id})">✕</button></div></div>`;}).join('');
+        updateRecap();
+    }
+    function getBacDimensions(b){ return (b.rotation===90||b.rotation===270)?{w:b.profondeur,h:b.largeur}:{w:b.largeur,h:b.profondeur}; }
+
+    // ================================================================
+    //  POTEAUX
+    // ================================================================
+    function ajouterPoteau(){
+        const s=parseInt(document.getElementById('poteauSection').value)||10;
+        poteaux.push({id:Date.now(),section:s,x:parseInt(document.getElementById('poteauX').value)||0,y:parseInt(document.getElementById('poteauY').value)||0});
+        updatePoteauList(); draw(); drawElevation();
+    }
+    function ajouterPoteauxAuto(){
+        // Clear existing poteaux
+        poteaux = [];
+
+        const s=parseInt(document.getElementById('poteauSection').value)||10;
+        const d=parseInt(document.getElementById('claustraDebord').value)||5, e=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const h=document.getElementById('claustraHaut').checked, b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked, dr=document.getElementById('claustraDroite').checked;
+        const maxPlanche=parseInt(document.getElementById('maxPlancheLength').value)||180;
+
+        // Helper: compute uniform post positions along a line segment
+        // Returns array of post positions (left edge of each post) along the axis
+        function computePostPositions(startCoord, endCoord, postSize, maxPlank) {
+            const totalLength = endCoord - startCoord;
+            // Number of spans needed so each plank fits within maxPlank
+            // totalLength = nPosts * postSize + nSpans * plankLength
+            // nPosts = nSpans + 1
+            // totalLength = (nSpans+1)*postSize + nSpans*plankLength
+            // We want plankLength <= maxPlank
+            // nSpans >= (totalLength - postSize) / (maxPlank + postSize)
+            let nSpans = Math.ceil((totalLength - postSize) / (maxPlank + postSize));
+            if (nSpans < 1) nSpans = 1;
+            const nPosts = nSpans + 1;
+            // Actual plank length (uniform)
+            const plankLength = (totalLength - nPosts * postSize) / nSpans;
+            // Centre-to-centre = plankLength + postSize
+            const c2c = plankLength + postSize;
+            // Generate post left-edge positions
+            const positions = [];
+            for (let i = 0; i < nPosts; i++) {
+                positions.push(startCoord + i * c2c);
+            }
+            return { positions, nSpans, nPosts, plankLength: Math.round(plankLength * 10) / 10, c2c: Math.round(c2c * 10) / 10 };
+        }
+
+        let infoHtml = '';
+
+        // Haut/Bas sides run along X axis
+        // Gauche/Droite sides run along Y axis
+        const xStart = (g ? -d - e : -d);
+        const xEnd   = (dr ? dalle.longueur + d + e : dalle.longueur + d);
+        const yStart = (h ? -d - e : -d);
+        const yEnd   = (b ? dalle.largeur + d + e : dalle.largeur + d);
+
+        // Y positions for H/B side posts (fixed Y, variable X)
+        const yHaut = -d - e;       // top edge of haut claustra
+        const yBas  = dalle.largeur + d + e - s; // bottom side
+        // X positions for G/D side posts (fixed X, variable Y)
+        const xGauche = -d - e;
+        const xDroite = dalle.longueur + d + e - s;
+
+        // Track which corner positions we've already placed
+        const placed = new Set();
+        function addPost(x, y) {
+            const key = `${Math.round(x)},${Math.round(y)}`;
+            if (!placed.has(key)) {
+                placed.add(key);
+                poteaux.push({id: Date.now() + Math.random(), section: s, x: Math.round(x), y: Math.round(y)});
+            }
+        }
+
+        // Process each active side
+        if (h) {
+            const res = computePostPositions(xStart, xEnd, s, maxPlanche);
+            res.positions.forEach(px => addPost(px, yHaut));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬆ Haut :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (b) {
+            const res = computePostPositions(xStart, xEnd, s, maxPlanche);
+            res.positions.forEach(px => addPost(px, yBas));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (g) {
+            const res = computePostPositions(yStart, yEnd, s, maxPlanche);
+            res.positions.forEach(py => addPost(xGauche, py));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬅ Gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+        if (dr) {
+            const res = computePostPositions(yStart, yEnd, s, maxPlanche);
+            res.positions.forEach(py => addPost(xDroite, py));
+            infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>➡ Droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+        }
+
+        document.getElementById('autoEspacementInfo').innerHTML = infoHtml || '<span style="font-size:12px;color:#999;">Aucun côté sélectionné</span>';
+        updatePoteauList(); draw(); drawElevation();
+    }
+    function supprimerPoteau(id){ poteaux=poteaux.filter(p=>p.id!==id); updatePoteauList(); draw(); drawElevation(); }
+    function updatePoteauList(){
+        document.getElementById('poteauList').innerHTML=poteaux.map((p,i)=>`<div class="poteau-item"><span>Poteau ${i+1} (${p.section}×${p.section}cm) @ ${p.x},${p.y}</span><div class="item-btns"><button class="btn-danger" onclick="supprimerPoteau(${p.id})">✕</button></div></div>`).join('');
+        updateRecap();
+    }
+
+    // ================================================================
+    //  SEGMENTS (logique commune plan + élévation)
+    // ================================================================
+    function getSegmentsForSide(cote){
+        const h=document.getElementById('claustraHaut').checked, b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked, dr=document.getElementById('claustraDroite').checked;
+        const deb=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const gX=-deb-ep, dX=dalle.longueur+deb+ep, hY=-deb-ep, bY=dalle.largeur+deb+ep;
+        let debut,fin,ps;
+        if(cote==='haut'){ debut=g?gX:-deb; fin=dr?dX:dalle.longueur+deb; ps=poteaux.filter(p=>p.y<=-deb&&(p.y+p.section)>=hY).map(p=>({pos:p.x,section:p.section})); }
+        else if(cote==='bas'){ debut=g?gX:-deb; fin=dr?dX:dalle.longueur+deb; ps=poteaux.filter(p=>(p.y+p.section)>=dalle.largeur+deb&&p.y<=bY).map(p=>({pos:p.x,section:p.section})); }
+        else if(cote==='gauche'){ debut=h?hY:-deb; fin=b?bY:dalle.largeur+deb; ps=poteaux.filter(p=>p.x<=-deb&&(p.x+p.section)>=gX).map(p=>({pos:p.y,section:p.section})); }
+        else{ debut=h?hY:-deb; fin=b?bY:dalle.largeur+deb; ps=poteaux.filter(p=>p.x>=dalle.longueur+deb).map(p=>({pos:p.y,section:p.section})); }
+        ps.sort((a,b2)=>a.pos-b2.pos);
+        let segs=[], pRel=[], cur=debut;
+        ps.forEach(p=>{ if(p.pos>cur) segs.push({start:cur-debut,width:Math.round(p.pos-cur)}); pRel.push({start:p.pos-debut,width:p.section}); cur=p.pos+p.section; });
+        if(cur<fin) segs.push({start:cur-debut,width:Math.round(fin-cur)});
+        if(!segs.length) segs.push({start:0,width:Math.round(fin-debut)});
+        return {totalWidth:Math.round(fin-debut), segments:segs, poteaux:pRel};
+    }
+
+    // ================================================================
+    //  DESSIN VUE DE DESSUS
+    // ================================================================
+    function draw(){
+        const deb=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const claustraCouleur=document.getElementById('claustraCouleur').value;
+        const pad=80, oc=(deb+ep)*echelle;
+        canvas.width=dalle.longueur*echelle+pad*2+oc*2;
+        canvas.height=dalle.largeur*echelle+pad*2+oc*2;
+        const dX=pad+oc, dY=pad+oc;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const h=document.getElementById('claustraHaut').checked, b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked, dr=document.getElementById('claustraDroite').checked;
+        ctx.fillStyle=claustraCouleur; ctx.strokeStyle=darkenColor(claustraCouleur,.3); ctx.lineWidth=1;
+        const cW=dalle.longueur+(deb*2)+(g?ep:0)+(dr?ep:0);
+
+        // Déterminer si on dessine des traits verticaux ou horizontaux pour la texture en vue de dessus
+        // En vue de dessus, la "texture" montre l'orientation des planches :
+        //   - Planches verticales sur côtés H/B → traits verticaux (perpendiculaires au mur)
+        //   - Planches horizontales sur côtés H/B → traits horizontaux (parallèles au mur)
+        // Mais en vue de dessus on ne voit que l'épaisseur, donc on simplifie avec la texture "bois"
+
+        if(h){ const x=dX-deb*echelle-(g?ep*echelle:0), y=dY-deb*echelle-ep*echelle, w=cW*echelle, hh=ep*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='vertical'); }
+        if(b){ const x=dX-deb*echelle-(g?ep*echelle:0), y=dY+dalle.largeur*echelle+deb*echelle, w=cW*echelle, hh=ep*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='vertical'); }
+        if(g){ const x=dX-deb*echelle-ep*echelle, y=dY-deb*echelle, w=ep*echelle, hh=(dalle.largeur+deb*2)*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='horizontal'); }
+        if(dr){ const x=dX+dalle.longueur*echelle+deb*echelle, y=dY-deb*echelle, w=ep*echelle, hh=(dalle.largeur+deb*2)*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='horizontal'); }
+
+        // ACCÈS PARTIEL — planches gauche + droite avec ouverture
+        if(accesPartiel.enabled && !b){
+            const xBase=dX-deb*echelle-(g?ep*echelle:0);
+            const yAcc=dY+dalle.largeur*echelle+deb*echelle;
+            const hh=ep*echelle;
+            const s=parseInt(document.getElementById('poteauSection').value)||10;
+            const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
+            ctx.fillStyle=claustraCouleur; ctx.strokeStyle=darkenColor(claustraCouleur,.3); ctx.lineWidth=1;
+            // Planche gauche
+            if(gL>0){
+                const wG=gL*echelle; ctx.fillRect(xBase,yAcc,wG,hh); ctx.strokeRect(xBase,yAcc,wG,hh); drawWT(ctx,xBase,yAcc,wG,hh,orientationPlanches==='vertical');
+            }
+            // Planche droite
+            if(dR>0){
+                const xR=xBase+(cW-dR)*echelle, wD=dR*echelle; ctx.fillRect(xR,yAcc,wD,hh); ctx.strokeRect(xR,yAcc,wD,hh); drawWT(ctx,xR,yAcc,wD,hh,orientationPlanches==='vertical');
+            }
+            // Poteaux encadrant l'ouverture
+            const ouverture=cW-gL-dR-2*s;
+            if(ouverture>0){
+                ctx.fillStyle='#5d4e37';
+                // Poteau gauche (bord droit des planches G)
+                const xPG=xBase+gL*echelle, pW=s*echelle;
+                ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2; ctx.strokeRect(xPG,yAcc,pW,hh);
+                // Poteau droit (bord gauche des planches D)
+                const xPD=xBase+(gL+s+ouverture)*echelle;
+                ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
+                // Flèche ouverture
+                ctx.fillStyle='#27ae60'; ctx.font='11px Arial'; ctx.textAlign='center';
+                const xOuvCentre=xBase+(gL+s+ouverture/2)*echelle;
+                ctx.fillText(`↕ ouv. ${ouverture} cm`,xOuvCentre,yAcc+hh+14);
+            }
+        }
+
+        // Poteaux
+        poteaux.forEach(p=>{
+            const x=dX+p.x*echelle, y=dY+p.y*echelle, s=p.section*echelle;
+            ctx.fillStyle='#5d4e37'; ctx.fillRect(x,y,s,s);
+            ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2; ctx.strokeRect(x,y,s,s);
+            ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(x+s*.2,y); ctx.lineTo(x+s*.2,y+s); ctx.moveTo(x+s*.8,y); ctx.lineTo(x+s*.8,y+s); ctx.stroke();
+        });
+
+        // Dalle
+        ctx.fillStyle='#bdc3c7'; ctx.fillRect(dX,dY,dalle.longueur*echelle,dalle.largeur*echelle);
+        ctx.strokeStyle='#7f8c8d'; ctx.lineWidth=3; ctx.strokeRect(dX,dY,dalle.longueur*echelle,dalle.largeur*echelle);
+        ctx.fillStyle='#a6acaf';
+        for(let i=0;i<150;i++){ ctx.beginPath(); ctx.arc(dX+Math.random()*dalle.longueur*echelle,dY+Math.random()*dalle.largeur*echelle,1,0,Math.PI*2); ctx.fill(); }
+
+        // Grille
+        const showGrid=document.getElementById('showGrid').checked, gs=parseInt(document.getElementById('gridSize').value)||10;
+        if(showGrid){
+            ctx.strokeStyle='rgba(52,152,219,0.3)'; ctx.lineWidth=1;
+            for(let x=gs;x<dalle.longueur;x+=gs){ ctx.beginPath(); ctx.moveTo(dX+x*echelle,dY); ctx.lineTo(dX+x*echelle,dY+dalle.largeur*echelle); ctx.stroke(); }
+            for(let y=gs;y<dalle.largeur;y+=gs){ ctx.beginPath(); ctx.moveTo(dX,dY+y*echelle); ctx.lineTo(dX+dalle.longueur*echelle,dY+y*echelle); ctx.stroke(); }
+            ctx.fillStyle='#7f8c8d'; ctx.font='9px Arial'; ctx.textAlign='center';
+            for(let x=0;x<=dalle.longueur;x+=gs*2) ctx.fillText(x,dX+x*echelle,dY-8);
+            ctx.textAlign='right';
+            for(let y=0;y<=dalle.largeur;y+=gs*2) ctx.fillText(y,dX-8,dY+y*echelle+3);
+        }
+
+        // Dimensions
+        ctx.fillStyle='#2c3e50'; ctx.font='bold 14px Arial'; ctx.textAlign='center';
+        ctx.fillText(`${dalle.longueur} cm`,dX+dalle.longueur*echelle/2,dY-25);
+        ctx.save(); ctx.translate(dX+dalle.longueur*echelle+30,dY+dalle.largeur*echelle/2); ctx.rotate(Math.PI/2); ctx.fillText(`${dalle.largeur} cm`,0,0); ctx.restore();
+        if(!b && !accesPartiel.enabled){ ctx.fillStyle='#27ae60'; ctx.font='12px Arial'; ctx.textAlign='center'; ctx.fillText('↓ ACCÈS ↓',dX+dalle.longueur*echelle/2,dY+dalle.largeur*echelle+20); }
+
+        // Bacs
+        bacs.forEach(bac=>{
+            const cs=getColorSet(bac.type), dims=getBacDimensions(bac);
+            const x=dX+bac.x*echelle, y=dY+bac.y*echelle, w=dims.w*echelle, hh=dims.h*echelle;
+            ctx.fillStyle=cs.fill; ctx.fillRect(x,y,w,hh);
+            ctx.strokeStyle=cs.stroke; ctx.lineWidth=2; ctx.strokeRect(x,y,w,hh);
+            ctx.strokeStyle=cs.stroke; ctx.lineWidth=4; ctx.beginPath();
+            const hm=8,hi=4;
+            if(bac.rotation===0){ctx.moveTo(x+hm,y+hi);ctx.lineTo(x+w-hm,y+hi);}
+            else if(bac.rotation===90){ctx.moveTo(x+w-hi,y+hm);ctx.lineTo(x+w-hi,y+hh-hm);}
+            else if(bac.rotation===180){ctx.moveTo(x+hm,y+hh-hi);ctx.lineTo(x+w-hm,y+hh-hi);}
+            else{ctx.moveTo(x+hi,y+hm);ctx.lineTo(x+hi,y+hh-hm);}
+            ctx.stroke();
+            ctx.fillStyle=cs.text; ctx.font='bold 11px Arial'; ctx.textAlign='center';
+            ctx.fillText(bac.nom,x+w/2,y+hh/2);
+            ctx.font='9px Arial'; ctx.fillText(`${bac.largeur}×${bac.profondeur}`,x+w/2,y+hh/2+12);
+        });
+
+        ctx.fillStyle='#2c3e50'; ctx.font='11px Arial'; ctx.textAlign='left';
+        ctx.fillText(`Échelle: 1cm = ${echelle.toFixed(1)}px`,10,canvas.height-10);
+    }
+
+    function drawWT(context,x,y,w,h,vertical){
+        context.strokeStyle='rgba(0,0,0,0.1)'; context.lineWidth=1;
+        if(vertical){ for(let i=5;i<w;i+=8){context.beginPath();context.moveTo(x+i,y);context.lineTo(x+i,y+h);context.stroke();} }
+        else{ for(let i=5;i<h;i+=8){context.beginPath();context.moveTo(x,y+i);context.lineTo(x+w,y+i);context.stroke();} }
+    }
+
+    // ================================================================
+    //  DESSIN ÉLÉVATION
+    // ================================================================
+    function updateElevationButtons(){
+        const sides=[
+            {id:'haut',label:'⬆ Haut',on:document.getElementById('claustraHaut').checked},
+            {id:'bas',label:'⬇ Bas',on:document.getElementById('claustraBas').checked || accesPartiel.enabled},
+            {id:'gauche',label:'⬅ Gauche',on:document.getElementById('claustraGauche').checked},
+            {id:'droite',label:'➡ Droite',on:document.getElementById('claustraDroite').checked}
+        ];
+        document.getElementById('elevationSelector').innerHTML=sides.map(s=>
+            `<button class="elev-btn ${s.id===currentElevationSide?'active':''}" ${!s.on?'disabled':''} onclick="currentElevationSide='${s.id}';updateElevationButtons();drawElevation();">${s.label}</button>`
+        ).join('');
+        if(!sides.find(s=>s.id===currentElevationSide)?.on){ const f=sides.find(s=>s.on); if(f){currentElevationSide=f.id; updateElevationButtons();} }
+    }
+
+    function drawElevation(){
+        const sideEnabled={
+            haut:document.getElementById('claustraHaut').checked,
+            bas:document.getElementById('claustraBas').checked || accesPartiel.enabled,
+            gauche:document.getElementById('claustraGauche').checked,
+            droite:document.getElementById('claustraDroite').checked
+        };
+        if(!sideEnabled[currentElevationSide]){
+            canvasElev.width=400; canvasElev.height=200;
+            ctxElev.clearRect(0,0,400,200); ctxElev.fillStyle='#999'; ctxElev.font='14px Arial'; ctxElev.textAlign='center';
+            ctxElev.fillText('Aucun claustra sur ce côté',200,100); return;
+        }
+
+        const couleur=document.getElementById('claustraCouleur').value;
+        const hClaustra=parseInt(document.getElementById('claustraHauteur').value)||120;
+        const lPlanche=parseInt(document.getElementById('plancheLargeur').value)||15;
+        const espInput=document.getElementById('plancheEspacement').value;
+        const esp=espInput===''?3:parseFloat(espInput);
+
+        // Accès partiel : construction de sideData spécifique pour côté bas
+        let sideData, isAccesPartielBas = false;
+        if(currentElevationSide==='bas' && accesPartiel.enabled && !document.getElementById('claustraBas').checked){
+            isAccesPartielBas=true;
+            const debAP=parseInt(document.getElementById('claustraDebord').value)||0;
+            const epAP=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+            const gAP=document.getElementById('claustraGauche').checked, drAP=document.getElementById('claustraDroite').checked;
+            const totalWap=dalle.longueur+debAP*2+(gAP?epAP:0)+(drAP?epAP:0);
+            const sAP=parseInt(document.getElementById('poteauSection').value)||10;
+            const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
+            const ouv=Math.max(0,totalWap-gL-dR-2*sAP);
+            const segs=[]; if(gL>0)segs.push({start:0,width:gL}); if(dR>0)segs.push({start:totalWap-dR,width:dR});
+            const posts=[]; if(ouv>0){posts.push({start:gL,width:sAP});posts.push({start:gL+sAP+ouv,width:sAP});}
+            sideData={totalWidth:totalWap,segments:segs.length?segs:[{start:0,width:totalWap}],poteaux:posts,ouverture:ouv,ouvertureStart:gL+sAP};
+        } else {
+            sideData=getSegmentsForSide(currentElevationSide);
+        }
+        const totalW=sideData.totalWidth;
+        const hDalle=15, ancrage=20, pad=60;
+        const totalH=hClaustra+hDalle;
+        const sc=Math.min(850/totalW, 450/totalH, 3);
+
+        canvasElev.width=totalW*sc+pad*2;
+        canvasElev.height=totalH*sc+pad*2+30;
+        ctxElev.clearRect(0,0,canvasElev.width,canvasElev.height);
+
+        const oX=pad, oY=pad;
+
+        // Fond ciel
+        ctxElev.fillStyle='#eaf2f8';
+        ctxElev.fillRect(0,0,canvasElev.width,oY+hClaustra*sc);
+
+        // Dalle
+        const dalleTop=oY+hClaustra*sc;
+        ctxElev.fillStyle='#bdc3c7'; ctxElev.fillRect(oX,dalleTop,totalW*sc,hDalle*sc);
+        ctxElev.strokeStyle='#7f8c8d'; ctxElev.lineWidth=2; ctxElev.strokeRect(oX,dalleTop,totalW*sc,hDalle*sc);
+        ctxElev.fillStyle='#a6acaf';
+        for(let i=0;i<60;i++){ ctxElev.beginPath(); ctxElev.arc(oX+Math.random()*totalW*sc,dalleTop+Math.random()*hDalle*sc,.8,0,Math.PI*2); ctxElev.fill(); }
+
+        // Sol
+        ctxElev.fillStyle='#d5c4a1';
+        ctxElev.fillRect(0,dalleTop+hDalle*sc,canvasElev.width,canvasElev.height-(dalleTop+hDalle*sc));
+
+        // Poteaux (fond, derrière les planches)
+        sideData.poteaux.forEach(p=>{
+            const px=oX+p.start*sc, pw=p.width*sc;
+            const pTop=oY, pH=(hClaustra+hDalle+ancrage)*sc;
+            ctxElev.fillStyle='#5d4e37'; ctxElev.fillRect(px,pTop,pw,pH);
+            ctxElev.strokeStyle='#3d2e17'; ctxElev.lineWidth=1.5; ctxElev.strokeRect(px,pTop,pw,pH);
+            ctxElev.strokeStyle='rgba(0,0,0,0.08)'; ctxElev.lineWidth=1;
+            ctxElev.beginPath(); ctxElev.moveTo(px+pw*.3,pTop); ctxElev.lineTo(px+pw*.3,pTop+pH);
+            ctxElev.moveTo(px+pw*.7,pTop); ctxElev.lineTo(px+pw*.7,pTop+pH); ctxElev.stroke();
+        });
+
+        // PLANCHES
+        if(orientationPlanches==='vertical'){
+            drawPlanchesVerticales(sideData, oX, oY, hClaustra, lPlanche, esp, sc, couleur);
+        } else {
+            drawPlanchesHorizontales(sideData, oX, oY, hClaustra, lPlanche, esp, sc, couleur);
+        }
+
+        // Couvertine alu
+        ctxElev.fillStyle='#a0a0a0';
+        ctxElev.fillRect(oX-2, oY-4, totalW*sc+4, 4);
+        ctxElev.strokeStyle='#888'; ctxElev.lineWidth=1;
+        ctxElev.strokeRect(oX-2, oY-4, totalW*sc+4, 4);
+
+        // Poteaux (avant, par-dessus les planches — juste les contours pour marquer la superposition)
+        sideData.poteaux.forEach(p=>{
+            const px=oX+p.start*sc, pw=p.width*sc;
+            const pTop=oY, pH=(hClaustra+hDalle+ancrage)*sc;
+            ctxElev.strokeStyle='#3d2e17'; ctxElev.lineWidth=2; ctxElev.strokeRect(px,pTop,pw,pH);
+        });
+
+        // Cotations
+        ctxElev.fillStyle='#2c3e50'; ctxElev.font='bold 13px Arial'; ctxElev.textAlign='center';
+        ctxElev.fillText(`${totalW} cm`, oX+totalW*sc/2, oY-15);
+
+        // Hauteur claustra
+        const cotX=oX+totalW*sc+15;
+        ctxElev.save(); ctxElev.translate(cotX,oY+hClaustra*sc/2); ctxElev.rotate(Math.PI/2); ctxElev.fillText(`${hClaustra} cm`,0,0); ctxElev.restore();
+        ctxElev.strokeStyle='#2c3e50'; ctxElev.lineWidth=1;
+        ctxElev.beginPath(); ctxElev.moveTo(cotX-8,oY); ctxElev.lineTo(cotX-8,oY+hClaustra*sc); ctxElev.stroke();
+        ctxElev.beginPath(); ctxElev.moveTo(cotX-12,oY); ctxElev.lineTo(cotX-4,oY); ctxElev.moveTo(cotX-12,oY+hClaustra*sc); ctxElev.lineTo(cotX-4,oY+hClaustra*sc); ctxElev.stroke();
+
+        // Dalle label
+        ctxElev.font='10px Arial'; ctxElev.fillStyle='#666'; ctxElev.textAlign='left';
+        ctxElev.fillText(`Dalle ${hDalle} cm`,oX+totalW*sc+8,dalleTop+hDalle*sc/2+4);
+
+        // Titre
+        ctxElev.fillStyle='#2c3e50'; ctxElev.font='bold 14px Arial'; ctxElev.textAlign='left';
+        const labels={haut:'Côté HAUT',bas:'Côté BAS',gauche:'Côté GAUCHE',droite:'Côté DROITE'};
+        const modeLabel=orientationPlanches==='vertical'?'planches verticales':'planches horizontales';
+        const basLabel=isAccesPartielBas?'Côté BAS — ACCÈS PARTIEL (ouverture centrale)':labels[currentElevationSide];
+        ctxElev.fillText(`Vue de face — ${basLabel} (${modeLabel})`,10,20);
+
+        // Ouverture accès partiel : visuel dans l'élévation
+        if(isAccesPartielBas && sideData.ouverture>0){
+            const xOuvDebut=(oX+sideData.ouvertureStart*sc);
+            const wOuv=sideData.ouverture*sc;
+            // Zone ouverture (fond légèrement coloré)
+            ctxElev.fillStyle='rgba(39,174,96,0.08)';
+            ctxElev.fillRect(xOuvDebut,oY,wOuv,hClaustra*sc);
+            ctxElev.strokeStyle='#27ae60'; ctxElev.lineWidth=1.5; ctxElev.setLineDash([6,4]);
+            ctxElev.strokeRect(xOuvDebut,oY,wOuv,hClaustra*sc);
+            ctxElev.setLineDash([]);
+            // Flèches et texte
+            ctxElev.fillStyle='#27ae60'; ctxElev.font='bold 12px Arial'; ctxElev.textAlign='center';
+            ctxElev.fillText('↔ ACCÈS',xOuvDebut+wOuv/2,oY+hClaustra*sc/2-8);
+            ctxElev.font='11px Arial';
+            ctxElev.fillText(`${sideData.ouverture} cm`,xOuvDebut+wOuv/2,oY+hClaustra*sc/2+10);
+        }
+
+        // Segments widths
+        ctxElev.font='10px Arial'; ctxElev.fillStyle='#8b4513'; ctxElev.textAlign='center';
+        sideData.segments.forEach(seg=>{
+            if(seg.width>25){ ctxElev.fillText(`${seg.width}`,oX+(seg.start+seg.width/2)*sc, dalleTop+hDalle*sc+15); }
+        });
+
+        ctxElev.fillStyle='#999'; ctxElev.font='10px Arial'; ctxElev.textAlign='left';
+        ctxElev.fillText(`Échelle: 1cm = ${sc.toFixed(1)}px`,10,canvasElev.height-8);
+    }
+
+    function drawPlanchesVerticales(sideData, oX, oY, hClaustra, lPlanche, esp, sc, couleur){
+        sideData.segments.forEach(seg=>{
+            const segX=oX+seg.start*sc;
+            let nb; if(esp===0) nb=Math.floor(seg.width/lPlanche); else nb=Math.floor((seg.width+esp)/(lPlanche+esp));
+            const occupe=nb*lPlanche+(nb-1)*esp;
+            let off=(seg.width-occupe)/2; if(off<0) off=0;
+            for(let i=0;i<nb;i++){
+                const px=segX+(off+i*(lPlanche+esp))*sc, pw=lPlanche*sc;
+                ctxElev.fillStyle=couleur; ctxElev.fillRect(px,oY,pw,hClaustra*sc);
+                ctxElev.strokeStyle=darkenColor(couleur,.25); ctxElev.lineWidth=1; ctxElev.strokeRect(px,oY,pw,hClaustra*sc);
+                // Veinures verticales
+                ctxElev.strokeStyle='rgba(0,0,0,0.06)'; ctxElev.lineWidth=1;
+                for(let v=3;v<pw;v+=5){ ctxElev.beginPath(); ctxElev.moveTo(px+v,oY); ctxElev.lineTo(px+v,oY+hClaustra*sc); ctxElev.stroke(); }
+            }
+        });
+    }
+
+    function drawPlanchesHorizontales(sideData, oX, oY, hClaustra, lPlanche, esp, sc, couleur){
+        // Nombre de rangées horizontales
+        let nbRangees; if(esp===0) nbRangees=Math.floor(hClaustra/lPlanche); else nbRangees=Math.floor((hClaustra+esp)/(lPlanche+esp));
+        const hOccupee=nbRangees*lPlanche+(nbRangees-1)*esp;
+        let topOff=(hClaustra-hOccupee)/2; if(topOff<0) topOff=0;
+
+        sideData.segments.forEach(seg=>{
+            const segX=oX+seg.start*sc, segW=seg.width*sc;
+            for(let r=0;r<nbRangees;r++){
+                const py=oY+(topOff+r*(lPlanche+esp))*sc, ph=lPlanche*sc;
+                ctxElev.fillStyle=couleur; ctxElev.fillRect(segX,py,segW,ph);
+                ctxElev.strokeStyle=darkenColor(couleur,.25); ctxElev.lineWidth=1; ctxElev.strokeRect(segX,py,segW,ph);
+                // Veinures horizontales
+                ctxElev.strokeStyle='rgba(0,0,0,0.06)'; ctxElev.lineWidth=1;
+                for(let v=3;v<ph;v+=5){ ctxElev.beginPath(); ctxElev.moveTo(segX,py+v); ctxElev.lineTo(segX+segW,py+v); ctxElev.stroke(); }
+            }
+        });
+    }
+
+    // ================================================================
+    //  INTERACTIONS CANVAS
+    // ================================================================
+    canvas.addEventListener('mousedown',e=>{
+        const rect=canvas.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+        const d=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const pad=80, oc=(d+ep)*echelle, dX=pad+oc, dY=pad+oc;
+        for(let i=bacs.length-1;i>=0;i--){
+            const b=bacs[i],dims=getBacDimensions(b),x=dX+b.x*echelle,y=dY+b.y*echelle,w=dims.w*echelle,h=dims.h*echelle;
+            if(mx>=x&&mx<=x+w&&my>=y&&my<=y+h){selectedItem=b;selectedType='bac';offsetX=mx-x;offsetY=my-y;isDragging=true;bacs.splice(i,1);bacs.push(b);return;}
+        }
+        for(let i=poteaux.length-1;i>=0;i--){
+            const p=poteaux[i],x=dX+p.x*echelle,y=dY+p.y*echelle,s=p.section*echelle;
+            if(mx>=x&&mx<=x+s&&my>=y&&my<=y+s){selectedItem=p;selectedType='poteau';offsetX=mx-x;offsetY=my-y;isDragging=true;poteaux.splice(i,1);poteaux.push(p);return;}
+        }
+    });
+    canvas.addEventListener('mousemove',e=>{
+        if(!isDragging||!selectedItem)return;
+        const rect=canvas.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+        const d=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const pad=80, oc=(d+ep)*echelle, dX=pad+oc, dY=pad+oc;
+        const gs=parseInt(document.getElementById('gridSize').value)||10, snap=document.getElementById('snapToGrid').checked;
+        let nx=(mx-dX-offsetX)/echelle, ny=(my-dY-offsetY)/echelle;
+        if(snap){nx=Math.round(nx/gs)*gs;ny=Math.round(ny/gs)*gs;}
+        if(selectedType==='bac'){const dims=getBacDimensions(selectedItem);nx=Math.max(0,Math.min(dalle.longueur-dims.w,nx));ny=Math.max(0,Math.min(dalle.largeur-dims.h,ny));}
+        selectedItem.x=Math.round(nx); selectedItem.y=Math.round(ny); draw();
+    });
+    canvas.addEventListener('mouseup',()=>{if(selectedType==='poteau'){updatePoteauList();drawElevation();}isDragging=false;selectedItem=null;selectedType=null;});
+    canvas.addEventListener('mouseleave',()=>{isDragging=false;selectedItem=null;selectedType=null;});
+    canvas.addEventListener('contextmenu',e=>{
+        e.preventDefault();
+        const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+        const d=parseInt(document.getElementById('claustraDebord').value)||0,ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const pad=80,oc=(d+ep)*echelle,dX=pad+oc,dY=pad+oc;
+        for(let i=bacs.length-1;i>=0;i--){const b=bacs[i],dims=getBacDimensions(b),x=dX+b.x*echelle,y=dY+b.y*echelle,w=dims.w*echelle,h=dims.h*echelle;if(mx>=x&&mx<=x+w&&my>=y&&my<=y+h){rotateBac(b.id);break;}}
+    });
+    canvas.addEventListener('dblclick',e=>{
+        const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+        const d=parseInt(document.getElementById('claustraDebord').value)||0,ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const pad=80,oc=(d+ep)*echelle,dX=pad+oc,dY=pad+oc;
+        for(let i=bacs.length-1;i>=0;i--){const b=bacs[i],dims=getBacDimensions(b),x=dX+b.x*echelle,y=dY+b.y*echelle,w=dims.w*echelle,h=dims.h*echelle;if(mx>=x&&mx<=x+w&&my>=y&&my<=y+h){if(confirm(`Supprimer "${b.nom}" ?`))supprimerBac(b.id);return;}}
+        for(let i=poteaux.length-1;i>=0;i--){const p=poteaux[i],x=dX+p.x*echelle,y=dY+p.y*echelle,s=p.section*echelle;if(mx>=x&&mx<=x+s&&my>=y&&my<=y+s){if(confirm('Supprimer ce poteau ?'))supprimerPoteau(p.id);return;}}
+    });
+
+    // ================================================================
+    //  EXPORT / IMPORT
+    // ================================================================
+    function exportImage(canvasId){
+        const c=document.getElementById(canvasId);
+        const a=document.createElement('a');
+        a.download=canvasId==='canvas'?`dalle-${dalle.longueur}x${dalle.largeur}-${bacs.length}bacs.png`:`elevation-${currentElevationSide}-${orientationPlanches}.png`;
+        a.href=c.toDataURL(); a.click();
+    }
+    function exportConfig(){
+        const config={dalle,bacs,poteaux,colors,orientationPlanches,accesPartiel,
+            claustra:{haut:document.getElementById('claustraHaut').checked,bas:document.getElementById('claustraBas').checked,gauche:document.getElementById('claustraGauche').checked,droite:document.getElementById('claustraDroite').checked,epaisseur:parseInt(document.getElementById('claustraEpaisseur').value),debord:parseInt(document.getElementById('claustraDebord').value),couleur:document.getElementById('claustraCouleur').value,hauteur:parseInt(document.getElementById('claustraHauteur').value)},
+            planches:{largeur:parseInt(document.getElementById('plancheLargeur').value),epaisseur:parseFloat(document.getElementById('plancheEpaisseur').value),espacement:parseFloat(document.getElementById('plancheEspacement').value)},
+            grid:{show:document.getElementById('showGrid').checked,size:parseInt(document.getElementById('gridSize').value),snap:document.getElementById('snapToGrid').checked}
+        };
+        const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
+        const a=document.createElement('a'); a.download=`config-dalle-v5-${Date.now()}.json`; a.href=URL.createObjectURL(blob); a.click();
+    }
+    function importConfig(){document.getElementById('fileInput').click();}
+    function loadConfig(event){
+        const file=event.target.files[0]; if(!file)return;
+        const reader=new FileReader();
+        reader.onload=function(e){
+            try{
+                const c=JSON.parse(e.target.result);
+                dalle=c.dalle; bacs=c.bacs||[]; poteaux=c.poteaux||[]; colors=c.colors;
+                if(c.orientationPlanches) setOrientation(c.orientationPlanches);
+                // Accès partiel
+                if(c.accesPartiel){
+                    accesPartiel=c.accesPartiel;
+                    document.getElementById('accesPartielEnabled').checked=accesPartiel.enabled;
+                    document.getElementById('accesGauche').value=accesPartiel.gaucheLen;
+                    document.getElementById('acesDroite').value=accesPartiel.droiteLen;
+                    document.getElementById('accesPartielInputs').style.display=accesPartiel.enabled?'grid':'none';
+                }
+                document.getElementById('dalleLongueur').value=dalle.longueur;
+                document.getElementById('dalleLargeur').value=dalle.largeur;
+                document.getElementById('colorOMr').value=colors.OMr.base;
+                document.getElementById('colorEmballages').value=colors.Emballages.base;
+                if(c.claustra){
+                    document.getElementById('claustraHaut').checked=c.claustra.haut;
+                    document.getElementById('claustraBas').checked=c.claustra.bas;
+                    document.getElementById('claustraGauche').checked=c.claustra.gauche;
+                    document.getElementById('claustraDroite').checked=c.claustra.droite;
+                    document.getElementById('claustraEpaisseur').value=c.claustra.epaisseur;
+                    document.getElementById('claustraDebord').value=c.claustra.debord;
+                    document.getElementById('claustraCouleur').value=c.claustra.couleur;
+                    if(c.claustra.hauteur) document.getElementById('claustraHauteur').value=c.claustra.hauteur;
+                }
+                if(c.planches){
+                    document.getElementById('plancheLargeur').value=c.planches.largeur;
+                    document.getElementById('plancheEpaisseur').value=c.planches.epaisseur;
+                    document.getElementById('plancheEspacement').value=c.planches.espacement;
+                }
+                if(c.grid){
+                    document.getElementById('showGrid').checked=c.grid.show;
+                    document.getElementById('gridSize').value=c.grid.size;
+                    document.getElementById('snapToGrid').checked=c.grid.snap;
+                }
+                updateDalle(); updateLegend(); updateBacList(); updatePoteauList(); updateRecap(); updateElevationButtons(); drawElevation();
+                alert('Configuration chargée !');
+            }catch(err){alert('Erreur : '+err.message);}
+        };
+        reader.readAsText(file); event.target.value='';
+    }
+    function resetAll(){if(confirm('Tout effacer ?')){bacs=[];poteaux=[];updateBacList();updatePoteauList();draw();drawElevation();}}
+
+    // ================================================================
+    //  RÉCAPITULATIFS
+    // ================================================================
+    function updateRecap(){ updateRecapDalle(); updateRecapClaustra(); updateRecapPlanches(); }
+
+    function updateRecapDalle(){
+        const surf=(dalle.longueur*dalle.largeur/10000).toFixed(2);
+        const nO=bacs.filter(b=>b.type==='OMr').length, nE=bacs.filter(b=>b.type==='Emballages').length;
+        let sb=0; bacs.forEach(b=>{sb+=b.largeur*b.profondeur;}); sb=(sb/10000).toFixed(2);
+        const tx=dalle.longueur>0&&dalle.largeur>0?((sb/surf)*100).toFixed(1):0;
+        document.getElementById('recapDalle').innerHTML=`<table>
+            <tr><td>Dimensions dalle</td><td>${dalle.longueur} × ${dalle.largeur} cm</td></tr>
+            <tr><td>Surface dalle</td><td>${surf} m²</td></tr>
+            <tr><td>Bacs OMr</td><td>${nO}</td></tr>
+            <tr><td>Bacs Emballages</td><td>${nE}</td></tr>
+            <tr><td>Total bacs</td><td>${bacs.length}</td></tr>
+            <tr><td>Surface bacs</td><td>${sb} m²</td></tr>
+            <tr><td>Taux occupation</td><td>${tx} %</td></tr>
+        </table>`;
+    }
+
+    function updateRecapClaustra(){
+        const h=document.getElementById('claustraHaut').checked,b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked,dr=document.getElementById('claustraDroite').checked;
+        const deb=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const lH=dalle.longueur+(deb*2)+(g?ep:0)+(dr?ep:0), lV=dalle.largeur+(deb*2);
+        let lt=0,det=[];
+        if(h){lt+=lH;det.push(`Haut: ${lH} cm`);}
+        if(b){lt+=lH;det.push(`Bas: ${lH} cm`);}
+        if(g){lt+=lV;det.push(`Gauche: ${lV} cm`);}
+        if(dr){lt+=lV;det.push(`Droite: ${lV} cm`);}
+        // Accès partiel
+        if(accesPartiel.enabled&&!b){
+            const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
+            const apLin=gL+dR;
+            const s=parseInt(document.getElementById('poteauSection').value)||10;
+            const ouv=Math.max(0,lH-gL-dR-2*s);
+            lt+=apLin;
+            det.push(`Accès partiel: G=${gL} cm + D=${dR} cm (ouv.=${ouv} cm)`);
+        }
+        const nc=(h?1:0)+(b?1:0)+(g?1:0)+(dr?1:0)+(accesPartiel.enabled&&!b?1:0);
+        document.getElementById('recapClaustra').innerHTML=`<table>
+            <tr><td>Côtés</td><td>${nc} / 4</td></tr>
+            <tr><td>Détail</td><td>${det.length?det.join('<br>'):'-'}</td></tr>
+            <tr><td>Linéaire total</td><td>${lt} cm (${(lt/100).toFixed(2)} m)</td></tr>
+            <tr><td>Épaisseur</td><td>${ep} cm</td></tr>
+            <tr><td>Débord</td><td>${deb} cm</td></tr>
+            <tr><td>Poteaux</td><td>${poteaux.length}${accesPartiel.enabled&&!b?' + 2 (accès partiel)':''}</td></tr>
+            <tr><td>Orientation planches</td><td><strong>${orientationPlanches==='vertical'?'Verticales |||':'Horizontales ≡'}</strong></td></tr>
+        </table>`;
+    }
+
+    function updateRecapPlanches(){
+        const h=document.getElementById('claustraHaut').checked,b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked,dr=document.getElementById('claustraDroite').checked;
+        const hClaustra=parseInt(document.getElementById('claustraHauteur').value)||120;
+        const lP=parseInt(document.getElementById('plancheLargeur').value)||15;
+        const epP=parseFloat(document.getElementById('plancheEpaisseur').value)||2;
+        const espInput=document.getElementById('plancheEspacement').value;
+        const esp=espInput===''?3:parseFloat(espInput);
+
+        const sides=[];
+        if(h)sides.push('haut'); if(b)sides.push('bas'); if(g)sides.push('gauche'); if(dr)sides.push('droite');
+
+        // Segments accès partiel (planches gauche + droite)
+        const apSegs=[];
+        if(accesPartiel.enabled&&!b){
+            if(accesPartiel.gaucheLen>0) apSegs.push({width:accesPartiel.gaucheLen,label:'Accès G'});
+            if(accesPartiel.droiteLen>0) apSegs.push({width:accesPartiel.droiteLen,label:'Accès D'});
+        }
+
+        if(!sides.length && !apSegs.length){
+            document.getElementById('recapPlanches').innerHTML='<p style="color:#666;text-align:center;">Aucun claustra configuré</p>';
+            return;
+        }
+
+        if(orientationPlanches==='vertical'){
+            // Planches verticales : hauteur = hClaustra, nombre = f(largeur segment)
+            let totalPl=0, details=[];
+            sides.forEach(cote=>{
+                const sd=getSegmentsForSide(cote);
+                let cotePl=[];
+                sd.segments.forEach((seg,i)=>{
+                    let nb; if(esp===0)nb=Math.floor(seg.width/lP); else nb=Math.floor((seg.width+esp)/(lP+esp));
+                    totalPl+=nb;
+                    cotePl.push(`${nb} pl. dans ${seg.width} cm`);
+                });
+                details.push({cote:cote.charAt(0).toUpperCase()+cote.slice(1), tw:sd.totalWidth, segs:cotePl.join(' + ')});
+            });
+            // Accès partiel
+            if(apSegs.length){
+                let apPl=[];
+                apSegs.forEach(seg=>{
+                    let nb; if(esp===0)nb=Math.floor(seg.width/lP); else nb=Math.floor((seg.width+esp)/(lP+esp));
+                    totalPl+=nb;
+                    apPl.push(`${nb} pl. dans ${seg.width} cm (${seg.label})`);
+                });
+                const apTW=apSegs.reduce((s,x)=>s+x.width,0);
+                details.push({cote:'Accès partiel', tw:apTW, segs:apPl.join(' + ')});
+            }
+            const lin=totalPl*hClaustra;
+            document.getElementById('recapPlanches').innerHTML=`
+                <h4>📋 Estimation — Planches <strong>verticales</strong></h4>
+                <table>
+                    <tr><td>Hauteur claustra</td><td>${hClaustra} cm</td></tr>
+                    <tr><td>Section planche</td><td>${lP} × ${epP} cm</td></tr>
+                    <tr><td>Espacement</td><td>${esp} cm</td></tr>
+                    <tr><td>Hauteur de chaque planche</td><td>${hClaustra} cm</td></tr>
+                </table>
+                <h4 style="margin-top:15px;">📐 Détail par côté</h4>
+                <table>${details.map(d=>`<tr><td>${d.cote} (${d.tw} cm)</td><td>${d.segs}</td></tr>`).join('')}</table>
+                <h4 style="margin-top:15px;">🪵 Planches à commander</h4>
+                <div style="background:#fff;padding:10px;border-radius:5px;margin:10px 0;">
+                    <strong>${totalPl}</strong> planches de <strong>${hClaustra} cm</strong> (section ${lP}×${epP} cm)
+                </div>
+                <table style="border-top:2px solid #4caf50;padding-top:10px;">
+                    <tr><td><strong>Total planches</strong></td><td><strong>${totalPl}</strong></td></tr>
+                    <tr><td>Linéaire total</td><td>${(lin/100).toFixed(2)} m</td></tr>
+                    <tr><td>Poteaux</td><td>${poteaux.length}</td></tr>
+                </table>
+                <div class="recap-warning">⚠️ Estimation indicative. Prévoir 10-15% de marge.</div>`;
+        } else {
+            // Planches horizontales : longueur = largeur segment, nombre rangées = f(hauteur)
+            let nbRangees; if(esp===0)nbRangees=Math.floor(hClaustra/lP); else nbRangees=Math.floor((hClaustra+esp)/(lP+esp));
+            const hOcc=nbRangees*lP+(nbRangees-1)*esp;
+            let totalPl=0, lin=0, plParLongueur={}, details=[];
+            sides.forEach(cote=>{
+                const sd=getSegmentsForSide(cote);
+                let coteDet=[];
+                sd.segments.forEach((seg,i)=>{
+                    totalPl+=nbRangees;
+                    lin+=seg.width*nbRangees;
+                    plParLongueur[seg.width]=(plParLongueur[seg.width]||0)+nbRangees;
+                    coteDet.push(`${seg.width} cm`);
+                });
+                details.push({cote:cote.charAt(0).toUpperCase()+cote.slice(1), tw:sd.totalWidth, segs:coteDet.join(' + ')});
+            });
+            // Accès partiel
+            if(apSegs.length){
+                let apDet=[];
+                apSegs.forEach(seg=>{
+                    totalPl+=nbRangees; lin+=seg.width*nbRangees;
+                    plParLongueur[seg.width]=(plParLongueur[seg.width]||0)+nbRangees;
+                    apDet.push(`${seg.width} cm (${seg.label})`);
+                });
+                const apTW=apSegs.reduce((s,x)=>s+x.width,0);
+                details.push({cote:'Accès partiel', tw:apTW, segs:apDet.join(' + ')});
+            }
+            const recapLongueurs=Object.entries(plParLongueur).sort((a,b)=>parseInt(b[0])-parseInt(a[0])).map(([l,n])=>`${n} planches de ${l} cm`).join('<br>');
+            document.getElementById('recapPlanches').innerHTML=`
+                <h4>📋 Estimation — Planches <strong>horizontales</strong></h4>
+                <table>
+                    <tr><td>Hauteur claustra</td><td>${hClaustra} cm</td></tr>
+                    <tr><td>Section planche</td><td>${lP} × ${epP} cm</td></tr>
+                    <tr><td>Espacement</td><td>${esp} cm</td></tr>
+                    <tr><td>Nombre de rangées</td><td>${nbRangees}</td></tr>
+                    <tr><td>Hauteur occupée</td><td>${hOcc} cm <small>(${nbRangees}×${lP} + ${nbRangees-1}×${esp})</small></td></tr>
+                </table>
+                <h4 style="margin-top:15px;">📐 Découpe par côté</h4>
+                <table>${details.map(d=>`<tr><td>${d.cote} (${d.tw} cm)</td><td>${nbRangees} rangées × segments : ${d.segs}</td></tr>`).join('')}</table>
+                <h4 style="margin-top:15px;">🪵 Planches à commander</h4>
+                <div style="background:#fff;padding:10px;border-radius:5px;margin:10px 0;">${recapLongueurs}</div>
+                <table style="border-top:2px solid #4caf50;padding-top:10px;">
+                    <tr><td><strong>Total planches</strong></td><td><strong>${totalPl}</strong></td></tr>
+                    <tr><td>Linéaire total</td><td>${(lin/100).toFixed(2)} m</td></tr>
+                    <tr><td>Poteaux</td><td>${poteaux.length}</td></tr>
+                </table>
+                <div class="recap-warning">⚠️ Estimation indicative. Prévoir 10-15% de marge.</div>`;
+        }
+    }
+
+    // ================================================================
+    //  EXPORT DEVIS
+    // ================================================================
+    function exportDevis(){
+        const hClaustra=parseInt(document.getElementById('claustraHauteur').value)||120;
+        const lP=parseInt(document.getElementById('plancheLargeur').value)||15;
+        const epP=parseFloat(document.getElementById('plancheEpaisseur').value)||2;
+        const espInput=document.getElementById('plancheEspacement').value;
+        const esp=espInput===''?3:parseFloat(espInput);
+        const h=document.getElementById('claustraHaut').checked,b=document.getElementById('claustraBas').checked;
+        const g=document.getElementById('claustraGauche').checked,dr=document.getElementById('claustraDroite').checked;
+        const deb=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+        const modeLabel=orientationPlanches==='vertical'?'VERTICALES':'HORIZONTALES';
+
+        let t=`RÉCAPITULATIF POUR DEVIS — Point d'Apport Volontaire\n`;
+        t+=`Planches ${modeLabel}\n`;
+        t+=`${'='.repeat(65)}\n\n`;
+        t+=`Date: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+        t+=`DALLE BÉTON\n-----------\nDimensions: ${dalle.longueur} × ${dalle.largeur} cm\nSurface: ${(dalle.longueur*dalle.largeur/10000).toFixed(2)} m²\n\n`;
+        t+=`BACS\n----\nOMr: ${bacs.filter(x=>x.type==='OMr').length}\nEmballages: ${bacs.filter(x=>x.type==='Emballages').length}\nTotal: ${bacs.length}\n\n`;
+        t+=`CLAUSTRA (planches ${modeLabel.toLowerCase()})\n${'─'.repeat(40)}\n`;
+        t+=`Hauteur: ${hClaustra} cm\n`;
+        t+=`Côtés: ${[h?'Haut':'',b?'Bas':'',g?'Gauche':'',dr?'Droite':''].filter(x=>x).join(', ')}\n`;
+        t+=`Épaisseur claustra: ${ep} cm\nDébord: ${deb} cm\n\n`;
+        t+=`POTEAUX\n-------\nNombre: ${poteaux.length}\n`;
+        if(poteaux.length>0) t+=`Section: ${poteaux[0].section}×${poteaux[0].section} cm\nHauteur recommandée: ${hClaustra+20} cm (avec ancrage)\n`;
+        t+=`\nPLANCHES ${modeLabel}\n${'─'.repeat(30)}\nSection: ${lP} × ${epP} cm\nEspacement: ${esp} cm\n\n`;
+
+        const sides=[]; if(h)sides.push('haut'); if(b)sides.push('bas'); if(g)sides.push('gauche'); if(dr)sides.push('droite');
+        let totalPl=0;
+
+        // Segments accès partiel
+        const apSegsD=[];
+        if(accesPartiel.enabled&&!b){
+            if(accesPartiel.gaucheLen>0) apSegsD.push({width:accesPartiel.gaucheLen,label:'Accès G'});
+            if(accesPartiel.droiteLen>0) apSegsD.push({width:accesPartiel.droiteLen,label:'Accès D'});
+        }
+
+        if(orientationPlanches==='vertical'){
+            t+=`Hauteur planche: ${hClaustra} cm\n\nDétail par côté:\n`;
+            sides.forEach(cote=>{
+                const sd=getSegmentsForSide(cote);
+                t+=`  ${cote.toUpperCase()} (${sd.totalWidth} cm):\n`;
+                sd.segments.forEach((seg,i)=>{
+                    let nb; if(esp===0)nb=Math.floor(seg.width/lP); else nb=Math.floor((seg.width+esp)/(lP+esp));
+                    t+=`    - Segment ${i+1} (${seg.width} cm): ${nb} planches\n`;
+                    totalPl+=nb;
+                });
+            });
+            // Accès partiel
+            if(apSegsD.length){
+                t+=`  ACCÈS PARTIEL:\n`;
+                apSegsD.forEach(seg=>{
+                    let nb; if(esp===0)nb=Math.floor(seg.width/lP); else nb=Math.floor((seg.width+esp)/(lP+esp));
+                    t+=`    - ${seg.label} (${seg.width} cm): ${nb} planches\n`;
+                    totalPl+=nb;
+                });
+                const s=parseInt(document.getElementById('poteauSection').value)||10;
+                const deb2=parseInt(document.getElementById('claustraDebord').value)||0, ep2=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+                const gAP=document.getElementById('claustraGauche').checked, drAP=document.getElementById('claustraDroite').checked;
+                const totalWap=dalle.longueur+deb2*2+(gAP?ep2:0)+(drAP?ep2:0);
+                const ouv=Math.max(0,totalWap-accesPartiel.gaucheLen-accesPartiel.droiteLen-2*s);
+                t+=`    → Ouverture : ${ouv} cm — 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
+            }
+            t+=`\n${'='.repeat(65)}\nRÉSUMÉ COMMANDE\n${'='.repeat(65)}\n\n`;
+            t+=`  ${totalPl} planches de ${hClaustra} cm (${lP}×${epP} cm)\n`;
+            t+=`  Linéaire: ${(totalPl*hClaustra/100).toFixed(2)} m\n`;
+        } else {
+            let nbR; if(esp===0)nbR=Math.floor(hClaustra/lP); else nbR=Math.floor((hClaustra+esp)/(lP+esp));
+            t+=`Nombre de rangées: ${nbR}\n\nDétail par côté:\n`;
+            let plParLongueur={};
+            sides.forEach(cote=>{
+                const sd=getSegmentsForSide(cote);
+                t+=`  ${cote.toUpperCase()} (${sd.totalWidth} cm):\n`;
+                sd.segments.forEach((seg,i)=>{
+                    t+=`    - Segment ${i+1}: ${nbR} planches de ${seg.width} cm\n`;
+                    plParLongueur[seg.width]=(plParLongueur[seg.width]||0)+nbR;
+                    totalPl+=nbR;
+                });
+            });
+            // Accès partiel
+            if(apSegsD.length){
+                t+=`  ACCÈS PARTIEL:\n`;
+                apSegsD.forEach(seg=>{
+                    t+=`    - ${seg.label}: ${nbR} planches de ${seg.width} cm\n`;
+                    plParLongueur[seg.width]=(plParLongueur[seg.width]||0)+nbR;
+                    totalPl+=nbR;
+                });
+                const s=parseInt(document.getElementById('poteauSection').value)||10;
+                const deb2=parseInt(document.getElementById('claustraDebord').value)||0, ep2=parseInt(document.getElementById('claustraEpaisseur').value)||15;
+                const gAP=document.getElementById('claustraGauche').checked, drAP=document.getElementById('claustraDroite').checked;
+                const totalWap=dalle.longueur+deb2*2+(gAP?ep2:0)+(drAP?ep2:0);
+                const ouv=Math.max(0,totalWap-accesPartiel.gaucheLen-accesPartiel.droiteLen-2*s);
+                t+=`    → Ouverture : ${ouv} cm — 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
+            }
+            t+=`\n${'='.repeat(65)}\nRÉSUMÉ COMMANDE\n${'='.repeat(65)}\n\n`;
+            Object.entries(plParLongueur).sort((a,b2)=>parseInt(b2[0])-parseInt(a[0])).forEach(([l,n])=>{
+                t+=`  ${n} planches de ${l} cm (${lP}×${epP} cm)\n`;
+            });
+            t+=`  Linéaire: ${(Object.entries(plParLongueur).reduce((s,[l,n])=>s+parseInt(l)*n,0)/100).toFixed(2)} m\n`;
+        }
+        t+=`\n  TOTAL: ${totalPl} planches\n\n${'='.repeat(65)}\n⚠️ Estimation indicative — Prévoir 10-15% de marge\n`;
+
+        const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
+        const a=document.createElement('a'); a.download=`devis-PAV-${orientationPlanches}-${dalle.longueur}x${dalle.largeur}-${Date.now()}.txt`; a.href=URL.createObjectURL(blob); a.click();
+    }
+
+    // ================================================================
+    //  EXPORT EXCEL (DQE — Détail Quantitatif Estimatif)
+    // ================================================================
+    function exportExcel(){
+        if(typeof XLSX==='undefined'){
+            alert('La librairie SheetJS n\'a pas pu être chargée. Vérifiez votre connexion internet.');
+            return;
+        }
+
+        // -------- RÉCUPÉRATION DE L'ÉTAT --------
+        const hClaustra = parseInt(document.getElementById('claustraHauteur').value) || 160;
+        const lP = parseInt(document.getElementById('plancheLargeur').value) || 15;
+        const epP = parseFloat(document.getElementById('plancheEpaisseur').value) || 2;
+        const espInput = document.getElementById('plancheEspacement').value;
+        const esp = espInput === '' ? 2 : parseFloat(espInput);
+        const poteauSec = parseInt(document.getElementById('poteauSection').value) || 10;
+        const deb = parseInt(document.getElementById('claustraDebord').value) || 0;
+        const ep = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+
+        const h = document.getElementById('claustraHaut').checked;
+        const b = document.getElementById('claustraBas').checked;
+        const g = document.getElementById('claustraGauche').checked;
+        const dr = document.getElementById('claustraDroite').checked;
+
+        const surf = dalle.longueur * dalle.largeur / 10000;  // m²
+        const nO = bacs.filter(x => x.type === 'OMr').length;
+        const nE = bacs.filter(x => x.type === 'Emballages').length;
+        const nbPlaques = poteaux.length;  // nb poteaux principaux
+
+        // -------- LINÉAIRE CLAUSTRA (cm) --------
+        const lH = dalle.longueur + (deb*2) + (g?ep:0) + (dr?ep:0);
+        const lV = dalle.largeur + (deb*2);
+        let ltClaustra = 0;
+        if(h) ltClaustra += lH;
+        if(b) ltClaustra += lH;
+        if(g) ltClaustra += lV;
+        if(dr) ltClaustra += lV;
+        if(accesPartiel.enabled && !b){
+            ltClaustra += accesPartiel.gaucheLen + accesPartiel.droiteLen;
+        }
+
+        // -------- CÔTÉS ACTIFS & SEGMENTS ACCÈS PARTIEL --------
+        const sides = [];
+        if(h) sides.push('haut');
+        if(b) sides.push('bas');
+        if(g) sides.push('gauche');
+        if(dr) sides.push('droite');
+
+        const apSegs = [];
+        if(accesPartiel.enabled && !b){
+            if(accesPartiel.gaucheLen > 0) apSegs.push({width: accesPartiel.gaucheLen, label:'Accès G'});
+            if(accesPartiel.droiteLen > 0) apSegs.push({width: accesPartiel.droiteLen, label:'Accès D'});
+        }
+
+        // -------- CALCUL PLANCHES, TRAVÉES, LISSES --------
+        let totalPl = 0;
+        let linPlanches = 0;   // ml
+        let totalTravees = 0;
+        let linLisses = 0;     // ml
+        let nbPoteauxAcces = (accesPartiel.enabled && !b && apSegs.length) ? 2 : 0;
+
+        if(orientationPlanches === 'vertical'){
+            // Côtés
+            sides.forEach(cote => {
+                const sd = getSegmentsForSide(cote);
+                totalTravees += sd.segments.length;
+                sd.segments.forEach(seg => {
+                    let nb;
+                    if(esp === 0) nb = Math.floor(seg.width / lP);
+                    else nb = Math.floor((seg.width + esp) / (lP + esp));
+                    totalPl += nb;
+                });
+            });
+            // Accès partiel
+            apSegs.forEach(seg => {
+                let nb;
+                if(esp === 0) nb = Math.floor(seg.width / lP);
+                else nb = Math.floor((seg.width + esp) / (lP + esp));
+                totalPl += nb;
+                totalTravees += 1;
+            });
+            linPlanches = totalPl * hClaustra / 100;
+            // 3 lisses par travée, chacune = hauteur claustra
+            linLisses = 3 * totalTravees * hClaustra / 100;
+        } else {
+            // Horizontales
+            let nbR;
+            if(esp === 0) nbR = Math.floor(hClaustra / lP);
+            else nbR = Math.floor((hClaustra + esp) / (lP + esp));
+            let sommeLargSegments = 0;
+            sides.forEach(cote => {
+                const sd = getSegmentsForSide(cote);
+                totalTravees += sd.segments.length;
+                sd.segments.forEach(seg => {
+                    totalPl += nbR;
+                    linPlanches += seg.width * nbR;
+                    sommeLargSegments += seg.width;
+                });
+            });
+            apSegs.forEach(seg => {
+                totalPl += nbR;
+                linPlanches += seg.width * nbR;
+                sommeLargSegments += seg.width;
+                totalTravees += 1;
+            });
+            linPlanches = linPlanches / 100;   // → ml
+            // 3 lisses par travée, courant sur la longueur du segment
+            linLisses = 3 * sommeLargSegments / 100;
+        }
+
+        // -------- QUANTITÉS PRINCIPALES --------
+        const volBeton = surf * 0.125;   // m³ (ép. 12,5 cm)
+        const volTV = surf * 0.10;       // m³ (ép. 10 cm)
+        const totalPoteaux = nbPlaques + nbPoteauxAcces;
+        const linCouvertines = ltClaustra / 100;   // ml
+
+        // -------- ARRONDIS --------
+        const round2 = v => Math.round(v * 100) / 100;
+        const round1 = v => Math.round(v * 10) / 10;
+        const ceilN = v => Math.ceil(v);
+        const ceilDiz = v => Math.ceil(v / 10) * 10;
+        const ceilCinq = v => Math.ceil(v / 5) * 5;
+        const ceilCent = v => Math.ceil(v / 100) * 100;
+
+        // -------- STYLES (xlsx-js-style) --------
+        const sTitre = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+            fill: { fgColor: { rgb: "1F4E79" } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+        const sLotHeader = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            fill: { fgColor: { rgb: "2E75B6" } },
+            alignment: { horizontal: "left", vertical: "center" }
+        };
+        const sColHeader = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            fill: { fgColor: { rgb: "404040" } },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        };
+        const sCell = {
+            font: { sz: 10 },
+            alignment: { vertical: "center", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "BFBFBF" } },
+                bottom: { style: "thin", color: { rgb: "BFBFBF" } },
+                left: { style: "thin", color: { rgb: "BFBFBF" } },
+                right: { style: "thin", color: { rgb: "BFBFBF" } }
+            }
+        };
+        const sCellCentre = Object.assign({}, sCell, { alignment: { horizontal:"center", vertical:"center" } });
+        const sCellRight = Object.assign({}, sCell, { alignment: { horizontal:"right", vertical:"center" } });
+        const sInfoHeader = {
+            font: { bold: true, sz: 10 },
+            fill: { fgColor: { rgb: "D9E1F2" } },
+            alignment: { vertical: "center" }
+        };
+        const sNote = {
+            font: { italic: true, sz: 10, color: { rgb: "C00000" } },
+            alignment: { vertical: "center", wrapText: true }
+        };
+
+        // -------- CONSTRUCTION FEUILLE --------
+        const dateStr = new Date().toLocaleDateString('fr-FR');
+        const modeLabel = orientationPlanches === 'vertical' ? 'Verticales' : 'Horizontales';
+        const sectionPlancheStr = `${lP}×${epP} cm`;
+        const sectionPoteauStr = `${poteauSec}×${poteauSec} cm`;
+
+        // Tableau de lignes (chaque ligne = tableau de cellules ou objet {v, s})
+        // On utilise une approche par cellules : un tableau aoa enrichi avec styles via XLSX.utils.aoa_to_sheet puis affectation des styles
+        const aoa = [];
+
+        // Ligne 1 : Titre (fusionné A1:F1)
+        aoa.push(["DÉTAIL QUANTITATIF ESTIMATIF — Dalle PDR", "", "", "", "", ""]);
+        // Ligne 2 : infos dalle
+        aoa.push([
+            "Dalle :", `${dalle.longueur} × ${dalle.largeur} cm`,
+            "Surface :", `${surf.toFixed(2)} m²`,
+            "Date :", dateStr
+        ]);
+        // Ligne 3 : infos bacs/poteaux
+        aoa.push([
+            "Bacs OMr :", nO,
+            "Bacs Emb. :", nE,
+            "Poteaux :", totalPoteaux
+        ]);
+        aoa.push([
+            "Planches :", totalPl,
+            "Orientation :", modeLabel,
+            "Hauteur claustra :", `${hClaustra} cm`
+        ]);
+        // Ligne 5 : vide
+        aoa.push(["", "", "", "", "", ""]);
+        // Ligne 6 : en-têtes colonnes
+        aoa.push(["Réf.", "Désignation", "Unité", "Qté brute", "Qté + marge", "Remarques"]);
+
+        // ----- LOT 1 BÉTON -----
+        aoa.push(["LOT 1 — BÉTON", "", "", "", "", ""]);
+        aoa.push([
+            "1.1", "Béton C25/30 livré — dalle PDR", "m³",
+            round2(volBeton), round2(volBeton * 1.10),
+            "Épaisseur 12,5 cm — C25/30"
+        ]);
+
+        // ----- LOT 2 BOIS -----
+        aoa.push(["LOT 2 — BOIS ET CLAUSTRA", "", "", "", "", ""]);
+        const remPlanches = orientationPlanches==='vertical'
+            ? `Verticales — hauteur ${hClaustra} cm`
+            : `Horizontales — longueurs variables selon segments`;
+        aoa.push([
+            "2.1", `Planches pin traité cl.4 — ${sectionPlancheStr}`, "ml",
+            round2(linPlanches), round1(linPlanches * 1.05),
+            remPlanches
+        ]);
+        aoa.push([
+            "2.2", "Lisses intermédiaires pin cl.4 (3/travée)", "ml",
+            round2(linLisses), round1(linLisses * 1.05),
+            `3 lisses par travée — ${totalTravees} travées`
+        ]);
+        aoa.push([
+            "2.3", `Poteaux pin traité cl.4 — ${sectionPoteauStr} H=190`, "u",
+            totalPoteaux, ceilN(totalPoteaux * 1.05),
+            "160 cm hors sol + 30 cm ancrage"
+        ]);
+        aoa.push([
+            "2.4", `Chapeaux poteau galvanisés ${sectionPoteauStr}`, "u",
+            totalPoteaux, ceilN(totalPoteaux * 1.05),
+            "1 chapeau / poteau"
+        ]);
+
+        // ----- LOT 3 QUINCAILLERIE -----
+        aoa.push(["LOT 3 — QUINCAILLERIE", "", "", "", "", ""]);
+        const visPlanches = totalPl * 2;
+        const visPoteaux = totalPoteaux * 4;
+        const equerres = totalPoteaux * 2;
+        const platines = totalPoteaux * 1;
+        const chevilles = totalPoteaux * 2;
+        aoa.push([
+            "3.1", "Vis inox 6×40 — fixation planches", "u",
+            visPlanches, ceilCent(visPlanches * 1.05),
+            "2 vis / planche"
+        ]);
+        aoa.push([
+            "3.2", "Vis inox 6×80 — fixation poteaux/platines", "u",
+            visPoteaux, ceilDiz(visPoteaux * 1.05),
+            "4 vis / poteau"
+        ]);
+        aoa.push([
+            "3.3", "Équerres galva renforcées", "u",
+            equerres, ceilCinq(equerres * 1.05),
+            "2 / poteau"
+        ]);
+        aoa.push([
+            "3.4", `Platines ancrage galva ${sectionPoteauStr}`, "u",
+            platines, ceilN(platines * 1.05),
+            "1 / poteau"
+        ]);
+        aoa.push([
+            "3.5", "Chevilles chimiques + tiges filetées M12×300", "u",
+            chevilles, ceilN(chevilles * 1.05),
+            "2 / poteau"
+        ]);
+        aoa.push([
+            "3.6", "Couvertines alu laqué — sommet claustra", "ml",
+            round2(linCouvertines), round1(linCouvertines * 1.05),
+            "Linéaire total claustra"
+        ]);
+
+        // ----- LOT 4 FERRAILLE -----
+        aoa.push(["LOT 4 — FERRAILLE", "", "", "", "", ""]);
+        const nbTreillis = Math.ceil(surf / 14.4);
+        aoa.push([
+            "4.1", "Treillis soudé ST25 — panneaux 2,4×6 m", "u",
+            nbTreillis, ceilN(nbTreillis * 1.05),
+            "1 panneau = 14,4 m²"
+        ]);
+
+        // ----- LOT 5 TOUT-VENANT -----
+        aoa.push(["LOT 5 — TOUT-VENANT", "", "", "", "", ""]);
+        aoa.push([
+            "5.1", "Gravier tout-venant 20/40 — fondation 10 cm", "m³",
+            round2(volTV), round2(volTV * 1.10),
+            "Sous la dalle, épaisseur 10 cm"
+        ]);
+
+        // Ligne vide puis note
+        aoa.push(["", "", "", "", "", ""]);
+        aoa.push([
+            "⚠ Estimation indicative — Prévoir les marges réglementaires avant commande. Hypothèses : dalle C25/30 ép.12,5 cm, TV ép.10 cm, pin cl.4 autoclavé.",
+            "", "", "", "", ""
+        ]);
+
+        // -------- CRÉATION DE LA FEUILLE --------
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // -------- LARGEURS DE COLONNES --------
+        ws['!cols'] = [
+            { wch: 8 },   // A
+            { wch: 52 },  // B
+            { wch: 8 },   // C
+            { wch: 14 },  // D
+            { wch: 14 },  // E
+            { wch: 40 }   // F
+        ];
+
+        // -------- FUSIONS --------
+        ws['!merges'] = ws['!merges'] || [];
+        // Ligne 1 : titre A1:F1
+        ws['!merges'].push({ s:{r:0,c:0}, e:{r:0,c:5} });
+        // Dernière ligne : note de bas de page (fusionnée)
+        const lastRow = aoa.length - 1;
+        ws['!merges'].push({ s:{r:lastRow,c:0}, e:{r:lastRow,c:5} });
+
+        // -------- HAUTEURS DE LIGNE --------
+        ws['!rows'] = [];
+        ws['!rows'][0] = { hpt: 24 };      // titre plus haut
+        ws['!rows'][5] = { hpt: 22 };      // header colonnes
+        ws['!rows'][lastRow] = { hpt: 30 }; // note
+
+        // -------- APPLICATION DES STYLES --------
+        // Helper pour fixer le style d'une cellule
+        function setStyle(r, c, style){
+            const ref = XLSX.utils.encode_cell({r:r, c:c});
+            if(!ws[ref]) ws[ref] = { v: "", t: "s" };
+            ws[ref].s = style;
+        }
+        function setNumFmt(r, c, fmt){
+            const ref = XLSX.utils.encode_cell({r:r, c:c});
+            if(ws[ref]) ws[ref].z = fmt;
+        }
+
+        // Ligne 1 : titre
+        for(let c=0; c<6; c++) setStyle(0, c, sTitre);
+        // Lignes 2-4 : infos (alterner header/valeur)
+        for(let r=1; r<=3; r++){
+            for(let c=0; c<6; c++){
+                setStyle(r, c, c%2===0 ? sInfoHeader : sCell);
+            }
+        }
+        // Ligne 6 (index 5) : en-têtes colonnes
+        for(let c=0; c<6; c++) setStyle(5, c, sColHeader);
+
+        // Lignes du tableau : à partir de la ligne 7 (index 6) jusqu'à lastRow-2
+        // On détecte les lignes "lot header" (col B vide ET col A commence par "LOT ")
+        for(let r=6; r<lastRow-1; r++){
+            const refA = XLSX.utils.encode_cell({r:r, c:0});
+            const valA = ws[refA] ? String(ws[refA].v) : "";
+            if(valA.startsWith("LOT ")){
+                for(let c=0; c<6; c++) setStyle(r, c, sLotHeader);
+                // Fusion du titre de lot sur A:F
+                ws['!merges'].push({ s:{r:r,c:0}, e:{r:r,c:5} });
+            } else {
+                // Ligne de données
+                setStyle(r, 0, sCellCentre);   // Réf.
+                setStyle(r, 1, sCell);          // Désignation
+                setStyle(r, 2, sCellCentre);    // Unité
+                setStyle(r, 3, sCellRight);     // Qté brute
+                setStyle(r, 4, sCellRight);     // Qté + marge
+                setStyle(r, 5, sCell);          // Remarques
+                // Format numérique pour D et E selon unité
+                const unite = ws[XLSX.utils.encode_cell({r:r,c:2})] ? ws[XLSX.utils.encode_cell({r:r,c:2})].v : "";
+                if(unite === "m³"){
+                    setNumFmt(r, 3, "0.00");
+                    setNumFmt(r, 4, "0.00");
+                } else if(unite === "ml"){
+                    setNumFmt(r, 3, "0.00");
+                    setNumFmt(r, 4, "0.0");
+                } else {
+                    setNumFmt(r, 3, "0");
+                    setNumFmt(r, 4, "0");
+                }
+            }
+        }
+        // Note de fin
+        setStyle(lastRow, 0, sNote);
+
+        // -------- CRÉATION DU CLASSEUR --------
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DQE — Dalle PDR");
+
+        // -------- ÉCRITURE & TÉLÉCHARGEMENT --------
+        const dateFn = new Date().toISOString().slice(0,10);
+        const filename = `DQE-PDR-${dalle.longueur}x${dalle.largeur}-${dateFn}.xlsx`;
+        XLSX.writeFile(wb, filename);
+    }
+
+    // ================================================================
+    //  INIT
+    // ================================================================
+    updateDalle(); updateLegend(); updateRecap(); updateElevationButtons(); drawElevation();
+    </script>
+</body>
+</html>
