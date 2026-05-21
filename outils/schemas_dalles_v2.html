@@ -623,6 +623,47 @@
             infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>➡ Droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
         }
 
+        // ACCÈS PARTIEL : section gauche + section droite du côté bas (avec ouverture centrale)
+        // Actif uniquement quand "Bas complet" n'est pas coché et accès partiel activé
+        if (accesPartiel.enabled && !b) {
+            const gL = accesPartiel.gaucheLen;
+            const dR = accesPartiel.droiteLen;
+            const totalW = xEnd - xStart; // longueur totale du côté bas
+            const ouverture = totalW - gL - dR - 2 * s;
+
+            if (ouverture > 0) {
+                // Section gauche : du début du côté bas jusqu'au poteau encadrant l'ouverture (inclus)
+                // Le segment va de xStart à (xStart + gL + s), avec un poteau à chaque extrémité
+                if (gL > 0) {
+                    const segStart = xStart;
+                    const segEnd = xStart + gL + s;
+                    const res = computePostPositions(segStart, segEnd, s, maxPlanche);
+                    res.positions.forEach(px => addPost(px, yBas));
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                } else {
+                    // Pas de planches gauches, mais on place quand même le poteau encadrant gauche de l'ouverture
+                    addPost(xStart, yBas);
+                }
+
+                // Section droite : du poteau encadrant droit jusqu'à la fin du côté bas
+                // Le segment va de (xEnd - dR - s) à xEnd, avec un poteau à chaque extrémité
+                if (dR > 0) {
+                    const segStart = xEnd - dR - s;
+                    const segEnd = xEnd;
+                    const res = computePostPositions(segStart, segEnd, s, maxPlanche);
+                    res.positions.forEach(px => addPost(px, yBas));
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                } else {
+                    // Pas de planches droites, mais on place quand même le poteau encadrant droit de l'ouverture
+                    addPost(xEnd - s, yBas);
+                }
+
+                infoHtml += `<div style="font-size:11px;color:#27ae60;margin:2px 0;">↕ Ouverture conservée : <strong>${ouverture} cm</strong></div>`;
+            } else {
+                infoHtml += `<div style="font-size:12px;color:#c0392b;margin:2px 0;">⚠️ Accès partiel : ouverture nulle ou négative, poteaux non placés.</div>`;
+            }
+        }
+
         document.getElementById('autoEspacementInfo').innerHTML = infoHtml || '<span style="font-size:12px;color:#999;">Aucun côté sélectionné</span>';
         updatePoteauList(); draw(); drawElevation();
     }
@@ -699,14 +740,29 @@
             // Poteaux encadrant l'ouverture
             const ouverture=cW-gL-dR-2*s;
             if(ouverture>0){
+                // Position en cm (système dalle) des poteaux d'encadrement
+                const xStartCm = -deb - (g ? ep : 0);
+                const yBasCm = dalle.largeur + deb + ep - s;
+                const xPGcm = xStartCm + gL;
+                const xPDcm = xStartCm + gL + s + ouverture;
+                // Détecter si un poteau existe déjà à ces positions (placé via "Placer poteaux auto")
+                const tol = 1;
+                const hasPG = poteaux.some(p => Math.abs(p.x - xPGcm) <= tol && Math.abs(p.y - yBasCm) <= tol);
+                const hasPD = poteaux.some(p => Math.abs(p.x - xPDcm) <= tol && Math.abs(p.y - yBasCm) <= tol);
+
                 ctx.fillStyle='#5d4e37';
-                // Poteau gauche (bord droit des planches G)
-                const xPG=xBase+gL*echelle, pW=s*echelle;
-                ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2; ctx.strokeRect(xPG,yAcc,pW,hh);
-                // Poteau droit (bord gauche des planches D)
-                const xPD=xBase+(gL+s+ouverture)*echelle;
-                ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
-                // Flèche ouverture
+                ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2;
+                // Poteau gauche (bord droit des planches G) — seulement si pas déjà dans poteaux[]
+                if(!hasPG){
+                    const xPG=xBase+gL*echelle, pW=s*echelle;
+                    ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeRect(xPG,yAcc,pW,hh);
+                }
+                // Poteau droit (bord gauche des planches D) — seulement si pas déjà dans poteaux[]
+                if(!hasPD){
+                    const xPD=xBase+(gL+s+ouverture)*echelle, pW=s*echelle;
+                    ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
+                }
+                // Flèche ouverture (toujours affichée)
                 ctx.fillStyle='#27ae60'; ctx.font='11px Arial'; ctx.textAlign='center';
                 const xOuvCentre=xBase+(gL+s+ouverture/2)*echelle;
                 ctx.fillText(`↕ ouv. ${ouverture} cm`,xOuvCentre,yAcc+hh+14);
@@ -820,8 +876,42 @@
             const sAP=parseInt(document.getElementById('poteauSection').value)||10;
             const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
             const ouv=Math.max(0,totalWap-gL-dR-2*sAP);
-            const segs=[]; if(gL>0)segs.push({start:0,width:gL}); if(dR>0)segs.push({start:totalWap-dR,width:dR});
-            const posts=[]; if(ouv>0){posts.push({start:gL,width:sAP});posts.push({start:gL+sAP+ouv,width:sAP});}
+
+            // Récupérer les poteaux placés sur le côté bas (depuis poteaux[]) — même filtre que getSegmentsForSide('bas')
+            const xStartAP = -debAP - (gAP ? epAP : 0);
+            const bY = dalle.largeur + debAP + epAP;
+            const postsFromList = poteaux
+                .filter(p => (p.y + p.section) >= dalle.largeur + debAP && p.y <= bY)
+                .map(p => ({start: p.x - xStartAP, width: p.section}))
+                .sort((a,b) => a.start - b.start);
+
+            let segs = [];
+            let posts;
+            if(postsFromList.length > 0){
+                // Mode auto : utiliser les poteaux placés (encadrement + éventuels intermédiaires)
+                // et découper les segments de planches autour de chaque poteau dans les zones gauche/droite
+                posts = postsFromList;
+                const zones = [];
+                if(gL > 0) zones.push({start: 0, end: gL});
+                if(dR > 0) zones.push({start: totalWap - dR, end: totalWap});
+                zones.forEach(zone => {
+                    const zonePosts = postsFromList
+                        .filter(p => p.start + p.width > zone.start && p.start < zone.end)
+                        .sort((a,b) => a.start - b.start);
+                    let cur = zone.start;
+                    zonePosts.forEach(p => {
+                        if(p.start > cur) segs.push({start: cur, width: Math.round(p.start - cur)});
+                        cur = p.start + p.width;
+                    });
+                    if(cur < zone.end) segs.push({start: cur, width: Math.round(zone.end - cur)});
+                });
+            } else {
+                // Fallback : segments bruts + 2 poteaux d'encadrement par défaut
+                if(gL > 0) segs.push({start: 0, width: gL});
+                if(dR > 0) segs.push({start: totalWap - dR, width: dR});
+                posts = [];
+                if(ouv > 0){ posts.push({start: gL, width: sAP}); posts.push({start: gL + sAP + ouv, width: sAP}); }
+            }
             sideData={totalWidth:totalWap,segments:segs.length?segs:[{start:0,width:totalWap}],poteaux:posts,ouverture:ouv,ouvertureStart:gL+sAP};
         } else {
             sideData=getSegmentsForSide(currentElevationSide);
