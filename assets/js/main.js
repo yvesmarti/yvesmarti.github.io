@@ -460,7 +460,7 @@
         var scrollMultiplier = 1.5;
         // Extra scroll distance (in viewport-heights) during which the track stays
         // fully scrolled on the last item before vertical scrolling resumes.
-        var endPauseVh = 1.5;
+        var endPauseVh = 1.2;
         var maxDuree = 1;
         var segData  = [];
         var mobileObserver = null;
