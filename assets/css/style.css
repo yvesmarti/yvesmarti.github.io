@@ -2190,6 +2190,58 @@ body,
 
 .htl-year-end { font-size: 0.53rem; }
 
+/* -----------------------------------------------
+   Marqueur "Aujourd'hui" (--now)
+   Dot pulsant orange — positionné après le dernier
+   item pour indiquer la date courante (mi-2026).
+   Largeur : ~280 px assure que :
+     • le segment "2015-2025 → 2025-Présent" = 100 % rempli
+     • le segment "2025-Présent → aujourd'hui" = ~23 % rempli
+       (ligne qui s'élance vers "aujourd'hui" sans l'atteindre,
+        métaphore du parcours en cours)
+----------------------------------------------- */
+.htl-item--now {
+    flex: 0 0 280px;
+}
+
+.htl-item--now .htl-dot {
+    width: 18px;
+    height: 18px;
+}
+
+/* Pulsation orange quand le marqueur est visible */
+.htl-item.is-visible.htl-item--now .htl-dot {
+    animation: htl-now-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes htl-now-pulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 4px  rgba(217, 85, 33, 0.35),
+            0 0 16px   rgba(217, 85, 33, 0.30);
+    }
+    50% {
+        box-shadow:
+            0 0 0 12px rgba(217, 85, 33, 0.0),
+            0 0 28px   rgba(217, 85, 33, 0.55);
+    }
+}
+
+/* Libellés du marqueur "Aujourd'hui" */
+.htl-item--now .htl-year-start {
+    color: rgba(217, 85, 33, 1);
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+}
+
+.htl-item--now .htl-year-end {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(247, 249, 248, 0.45);
+}
+
 /* Segment progress bar on the axis — between consecutive dots */
 .htl-seg-bar {
     position: absolute;
