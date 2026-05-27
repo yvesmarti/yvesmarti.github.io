@@ -2144,8 +2144,13 @@ body,
 }
 
 .htl-end-spacer {
-    flex: 0 0 22vw;
-    min-width: 160px;
+    /* 48vw assure que maxScrollX > seg.end pour tout écran jusqu'à ~7000 px.
+       Avec l'espace de 22vw, à V≥1700 px le maxScrollX était inférieur à
+       seg.start du dernier segment → la barre ne se remplissait jamais.
+       Formule : condition 100% ⟺ V ≤ W_today/(2*(0.5-k))
+       → k=0.48, W_today=280px → V ≤ 7000 px ✓ */
+    flex: 0 0 48vw;
+    min-width: 280px;
 }
 
 /* Year labels near dots on the axis */
