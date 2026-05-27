@@ -458,6 +458,9 @@
 
         var maxScrollX = 0;
         var scrollMultiplier = 1.5;
+        // Extra scroll distance (in viewport-heights) during which the track stays
+        // fully scrolled on the last item before vertical scrolling resumes.
+        var endPauseVh = 1.8;
         var maxDuree = 1;
         var segData  = [];
         var mobileObserver = null;
@@ -531,7 +534,8 @@
             }
             if (mobileObserver) { mobileObserver.disconnect(); mobileObserver = null; }
             maxScrollX = Math.max(0, track.scrollWidth - window.innerWidth);
-            section.style.height = 'calc(100vh + ' + (maxScrollX * scrollMultiplier) + 'px)';
+            var endPausePx = window.innerHeight * endPauseVh;
+            section.style.height = 'calc(100vh + ' + (maxScrollX * scrollMultiplier + endPausePx) + 'px)';
             var items = track.querySelectorAll('.htl-item');
             setupSegBars(items);
         }
