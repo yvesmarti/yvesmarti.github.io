@@ -509,6 +509,14 @@ body {
     line-height: 1;
 }
 
+.quote-author {
+    display: block;
+    margin-top: 0.75rem;
+    margin-left: 1.5rem;
+    font-size: 1.1rem;
+    font-style: normal;
+}
+
 .section-dark .quote-block {
     color: white;
 }
