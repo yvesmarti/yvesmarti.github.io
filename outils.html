@@ -10,7 +10,7 @@ description: "Outils web développés par Yves Marti : isochrones, géocodage, e
     <h2 class="outils-categorie">{{ categorie.categorie }}</h2>
     <div class="outils-grid">
         {% for outil in categorie.outils %}
-        <a href="{% if outil.actif %}{{ outil.lien | relative_url }}{% else %}#{% endif %}" 
+        <a href="{% if outil.actif %}{{ outil.lien | relative_url }}{% else %}#{% endif %}"
            class="outil-card {% unless outil.actif %}inactive{% endunless %}">
             <h3>{{ outil.nom }}</h3>
             <p>{{ outil.description }}</p>
@@ -22,3 +22,43 @@ description: "Outils web développés par Yves Marti : isochrones, géocodage, e
     </div>
 </section>
 {% endfor %}
+
+<section class="recommandes-section">
+    <div class="recommandes-header">
+        <div class="recommandes-header-content">
+            <h2 class="recommandes-title">Sites et outils recommandés</h2>
+            <p class="recommandes-subtitle">Logiciels et ressources web que j'utilise et recommande</p>
+        </div>
+    </div>
+    <div class="recommandes-body">
+        <div class="recommandes-filters">
+            <button class="rec-filter-btn active" data-filter="Tous">Tous</button>
+            <button class="rec-filter-btn" data-filter="Logiciel">Logiciel</button>
+            <button class="rec-filter-btn" data-filter="Site internet">Site internet</button>
+            <button class="rec-filter-btn" data-filter="Gratuit">Gratuit</button>
+            <button class="rec-filter-btn" data-filter="SIG & Géo">SIG &amp; Géo</button>
+            <button class="rec-filter-btn" data-filter="Productivité">Productivité</button>
+        </div>
+        <div class="recommandes-grid">
+            {% for outil in site.data.outils_recommandes %}
+            <a href="{{ outil.url }}" target="_blank" rel="noopener noreferrer"
+               class="rec-card"
+               data-tags="{{ outil.tags | join: ',' }}">
+                <div class="rec-card-top">
+                    <h3 class="rec-card-title">{{ outil.nom }}</h3>
+                    <svg class="rec-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                        <polyline points="7 7 17 7 17 17"></polyline>
+                    </svg>
+                </div>
+                <p class="rec-card-desc">{{ outil.description }}</p>
+                <div class="rec-card-tags">
+                    {% for tag in outil.tags %}
+                    <span class="rec-tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>

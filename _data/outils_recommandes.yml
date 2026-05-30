@@ -1,0 +1,15 @@
+# Outils et sites recommandés par Yves Marti
+# tags possibles : Logiciel, Site internet, Gratuit, SIG & Géo, Productivité
+
+- nom: Recordly
+  description: Enregistrez votre écran simplement et rapidement, sans configuration lourde — idéal pour créer des tutoriels ou documenter une démarche.
+  url: https://recordly.dev
+  tags:
+    - Logiciel
+
+- nom: Caesium
+  description: Compressez vos photos en lot sans perte de qualité visible. Open source, disponible sur Windows, macOS et Linux.
+  url: https://caesium.app/fr-FR
+  tags:
+    - Logiciel
+    - Gratuit
