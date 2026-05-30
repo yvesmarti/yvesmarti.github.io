@@ -469,6 +469,33 @@
     }
 
     /* ------------------------------------------
+       FILTRES OUTILS RECOMMANDÉS
+    ------------------------------------------ */
+    function initRecommandedFilters() {
+        var buttons = document.querySelectorAll('.rec-filter-btn');
+        var cards   = document.querySelectorAll('.rec-card[data-tags]');
+        if (!buttons.length || !cards.length) return;
+
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var filter = btn.getAttribute('data-filter');
+
+                buttons.forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+
+                cards.forEach(function (card) {
+                    var tags = card.getAttribute('data-tags').split(',');
+                    if (filter === 'Tous' || tags.indexOf(filter) !== -1) {
+                        card.classList.remove('dimmed');
+                    } else {
+                        card.classList.add('dimmed');
+                    }
+                });
+            });
+        });
+    }
+
+    /* ------------------------------------------
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
@@ -483,6 +510,7 @@
         initAnimatedTimeline();
         initHorizontalTimeline();
         initSkillFilters();
+        initRecommandedFilters();
     });
 
 }());

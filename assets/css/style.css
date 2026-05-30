@@ -2426,4 +2426,177 @@ body,
     }
 }
 
+/* ===========================================
+   SECTION OUTILS RECOMMANDÉS
+   =========================================== */
+
+.recommandes-header {
+    background: var(--color-primary);
+    padding: 3rem 5%;
+    color: white;
+}
+
+.recommandes-header-content {
+    max-width: 1200px;
+}
+
+.recommandes-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    color: white;
+    margin-bottom: 0.75rem;
+}
+
+.recommandes-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+}
+
+.recommandes-body {
+    padding: 3rem 5%;
+    background: var(--color-light);
+    max-width: 100%;
+}
+
+.recommandes-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.rec-filter-btn {
+    padding: 0.35rem 1.1rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    letter-spacing: 0.02em;
+}
+
+.rec-filter-btn:hover {
+    background: rgba(61, 139, 110, 0.1);
+}
+
+.rec-filter-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.recommandes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.rec-card {
+    display: block;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.25s ease;
+}
+
+.rec-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-accent);
+}
+
+.rec-card.dimmed {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.rec-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rec-card-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--color-primary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.rec-card-arrow {
+    flex-shrink: 0;
+    color: var(--color-accent);
+    margin-top: 0.15rem;
+    transition: transform 0.2s ease;
+}
+
+.rec-card:hover .rec-card-arrow {
+    transform: translate(2px, -2px);
+}
+
+.rec-card-desc {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+.rec-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.rec-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.2rem 0.65rem;
+    background: var(--color-warm);
+    color: var(--color-muted);
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* Dark mode */
+[data-theme="dark"] .recommandes-body {
+    background: #131e17;
+}
+
+[data-theme="dark"] .rec-card {
+    background: #1a2e24;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .rec-card-title {
+    color: #b8d8c8;
+}
+
+[data-theme="dark"] .rec-tag {
+    background: #253c2e;
+    color: #8aaa9a;
+}
+
+@media (max-width: 768px) {
+    .recommandes-header {
+        padding: 2rem 5%;
+    }
+
+    .recommandes-body {
+        padding: 2rem 5%;
+    }
+}
+
 /* Dark mode — no changes needed (section is already dark) */
