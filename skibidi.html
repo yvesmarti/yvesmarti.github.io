@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fondation Columba — Soutien psychologique des pigeons urbains</title>
+    <meta name="description" content="La Fondation Columba est le premier organisme mondial dédié à la santé mentale et à la réinsertion sociale des pigeons maltraités. Parce qu'un roucoulement ne devrait jamais être un cri de détresse.">
+    <style>
+        :root {
+            --blanc: #FFFFFF;
+            --bleu-ciel: #C5DFF0;
+            --bleu-ciel-clair: #E6F1F8;
+            --bleu-accent: #8BB8D6;
+            --bleu-texte: #3A6B8C;
+            --bleu-fonce: #2C5068;
+            --gris-tres-clair: #F8F9FA;
+            --gris-clair: #E9ECEF;
+            --gris-moyen: #6C757D;
+            --gris-fonce: #343A40;
+            --noir-doux: #212529;
+            --blanc-casse: #FDFDFD;
+            --ombre-douce: 0 4px 20px rgba(44, 80, 104, 0.06);
+            --ombre-medium: 0 8px 32px rgba(44, 80, 104, 0.10);
+            --ombre-forte: 0 16px 48px rgba(44, 80, 104, 0.14);
+            --rayon: 16px;
+            --rayon-petit: 10px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Helvetica Neue', 'Helvetica', 'Lato', 'Arial', sans-serif;
+            background-color: var(--blanc);
+            color: var(--noir-doux);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+        }
+
+        /* ---- TYPOGRAPHIE ---- */
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--bleu-fonce);
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            line-height: 1.15;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
+        }
+        h3 {
+            font-size: 1.3rem;
+            line-height: 1.3;
+            margin-bottom: 0.4rem;
+        }
+        h4 {
+            font-size: 1.05rem;
+            line-height: 1.4;
+            color: var(--gris-fonce);
+            font-weight: 500;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--gris-fonce);
+        }
+        .sous-titre-section {
+            color: var(--gris-moyen);
+            font-size: 1.1rem;
+            max-width: 650px;
+            margin: 0 auto 2.5rem auto;
+            text-align: center;
+        }
+
+        /* ---- CONTENEUR ---- */
+        .conteneur {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .conteneur-etroit {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ---- SECTION ---- */
+        section {
+            padding: 5rem 0;
+        }
+        .section-fond-gris {
+            background-color: var(--gris-tres-clair);
+        }
+        .section-fond-bleu-clair {
+            background-color: var(--bleu-ciel-clair);
+        }
+
+        /* ---- NAVIGATION ---- */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            padding: 0.9rem 0;
+            transition: var(--transition);
+        }
+        .nav .conteneur {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--bleu-fonce);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .nav-logo .logo-icone {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bleu-ciel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .nav-liens {
+            display: flex;
+            list-style: none;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .nav-liens a {
+            text-decoration: none;
+            color: var(--gris-fonce);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .nav-liens a:hover {
+            background: var(--bleu-ciel-clair);
+            color: var(--bleu-fonce);
+        }
+        .nav-cta {
+            background: var(--bleu-fonce) !important;
+            color: var(--blanc) !important;
+            font-weight: 600 !important;
+            padding: 0.6rem 1.3rem !important;
+            border-radius: 100px !important;
+            transition: var(--transition);
+            text-decoration: none;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+        .nav-cta:hover {
+            background: #1e3d52 !important;
+            transform: translateY(-1px);
+            box-shadow: var(--ombre-douce);
+        }
+
+        /* ---- BOUTONS ---- */
+        .bouton {
+            display: inline-block;
+            padding: 0.85rem 1.8rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            letter-spacing: -0.01em;
+            text-align: center;
+        }
+        .bouton-primaire {
+            background: var(--bleu-fonce);
+            color: var(--blanc);
+            box-shadow: var(--ombre-douce);
+        }
+        .bouton-primaire:hover {
+            background: #1e3d52;
+            transform: translateY(-2px);
+            box-shadow: var(--ombre-medium);
+        }
+        .bouton-secondaire {
+            background: transparent;
+            color: var(--bleu-fonce);
+            border: 2px solid var(--bleu-fonce);
+        }
+        .bouton-secondaire:hover {
+            background: var(--bleu-fonce);
+            color: var(--blanc);
+            transform: translateY(-2px);
+        }
+        .bouton-blanc {
+            background: var(--blanc);
+            color: var(--bleu-fonce);
+            box-shadow: var(--ombre-douce);
+        }
+        .bouton-blanc:hover {
+            background: var(--bleu-ciel-clair);
+            transform: translateY(-2px);
+            box-shadow: var(--ombre-medium);
+        }
+        .groupe-boutons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* ---- HERO SECTION ---- */
+        .hero {
+            position: relative;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: var(--bleu-ciel-clair);
+        }
+        .hero-image-fond {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        .hero-image-fond img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) brightness(0.75) contrast(1.1);
+            opacity: 0.55;
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg,
+                    rgba(255, 255, 255, 0.85) 0%,
+                    rgba(230, 241, 248, 0.7) 40%,
+                    rgba(197, 223, 240, 0.5) 70%,
+                    rgba(255, 255, 255, 0.8) 100%);
+            z-index: 1;
+        }
+        .hero-contenu {
+            position: relative;
+            z-index: 2;
+            padding: 4rem 0;
+            max-width: 750px;
+        }
+        .hero-contenu h1 {
+            margin-bottom: 1rem;
+            color: var(--bleu-fonce);
+        }
+        .hero-contenu .sous-titre {
+            font-size: 1.25rem;
+            color: var(--gris-fonce);
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: var(--blanc);
+            color: var(--bleu-fonce);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            box-shadow: var(--ombre-douce);
+        }
+
+        /* ---- CARTES MISSION ---- */
+        .carte-mission {
+            background: var(--blanc);
+            border-radius: var(--rayon);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--ombre-douce);
+            border: 1px solid var(--gris-clair);
+            transition: var(--transition);
+            height: 100%;
+        }
+        .carte-mission:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--ombre-medium);
+        }
+        .carte-mission .icone {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .carte-mission h3 {
+            color: var(--bleu-fonce);
+        }
+
+        /* ---- GRILLE PROGRAMMES ---- */
+        .grille-programmes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .carte-programme {
+            background: var(--blanc);
+            border-radius: var(--rayon);
+            overflow: hidden;
+            box-shadow: var(--ombre-douce);
+            border: 1px solid var(--gris-clair);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+        .carte-programme:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--ombre-medium);
+        }
+        .carte-programme-image {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        .carte-programme-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.05) brightness(0.85);
+            transition: var(--transition);
+        }
+        .carte-programme:hover .carte-programme-image img {
+            filter: grayscale(70%) contrast(1) brightness(0.9);
+            transform: scale(1.03);
+        }
+        .carte-programme-corps {
+            padding: 1.6rem 1.5rem 2rem 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .carte-programme-corps h3 {
+            color: var(--bleu-fonce);
+            margin-bottom: 0.6rem;
+        }
+        .carte-programme-corps p {
+            color: var(--gris-moyen);
+            flex: 1;
+        }
+        .numero-programme {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--bleu-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ---- TEMOIGNAGES ---- */
+        .grille-temoignages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .carte-temoignage {
+            background: var(--blanc);
+            border-radius: var(--rayon);
+            padding: 2rem;
+            box-shadow: var(--ombre-douce);
+            border-left: 4px solid var(--bleu-accent);
+            position: relative;
+            transition: var(--transition);
+        }
+        .carte-temoignage:hover {
+            box-shadow: var(--ombre-medium);
+            transform: translateY(-2px);
+        }
+        .carte-temoignage .guillemet {
+            font-size: 4rem;
+            line-height: 1;
+            color: var(--bleu-ciel);
+            position: absolute;
+            top: 10px;
+            left: 16px;
+            font-family: Georgia, 'Times New Roman', serif;
+            pointer-events: none;
+        }
+        .carte-temoignage blockquote {
+            margin: 0;
+            padding: 0.5rem 0 0.5rem 1rem;
+            font-style: italic;
+            color: var(--gris-fonce);
+            position: relative;
+            z-index: 1;
+        }
+        .carte-temoignage .auteur {
+            margin-top: 1rem;
+            font-weight: 700;
+            color: var(--bleu-fonce);
+            font-style: normal;
+        }
+        .carte-temoignage .auteur span {
+            display: block;
+            font-weight: 400;
+            font-size: 0.9rem;
+            color: var(--gris-moyen);
+            font-style: normal;
+            margin-top: 0.15rem;
+        }
+
+        /* ---- TABLEAU DONS ---- */
+        .grille-dons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .carte-don {
+            background: var(--blanc);
+            border-radius: var(--rayon);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--ombre-douce);
+            border: 2px solid transparent;
+            transition: var(--transition);
+            cursor: default;
+        }
+        .carte-don:hover {
+            border-color: var(--bleu-accent);
+            transform: translateY(-4px);
+            box-shadow: var(--ombre-medium);
+        }
+        .carte-don.mise-en-avant {
+            border-color: var(--bleu-accent);
+            background: var(--bleu-ciel-clair);
+            position: relative;
+        }
+        .carte-don.mise-en-avant::before {
+            content: '❤️ Populaire';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bleu-fonce);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+            border-radius: 100px;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+        }
+        .carte-don .montant {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--bleu-fonce);
+            margin-bottom: 0.3rem;
+        }
+        .carte-don .description-don {
+            color: var(--gris-moyen);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            min-height: 3.5em;
+        }
+        .carte-don .bouton {
+            width: 100%;
+        }
+
+        /* ---- CONTACT ---- */
+        .bloc-contact {
+            background: var(--blanc);
+            border-radius: var(--rayon);
+            padding: 3rem 2.5rem;
+            box-shadow: var(--ombre-douce);
+            border: 1px solid var(--gris-clair);
+            text-align: center;
+        }
+        .bloc-contact .urgence {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--bleu-fonce);
+            margin-bottom: 0.3rem;
+        }
+        .bloc-contact .tel-urgence {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--bleu-fonce);
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem 0;
+            transition: var(--transition);
+        }
+        .bloc-contact .tel-urgence:hover {
+            color: #1e3d52;
+            transform: scale(1.03);
+        }
+        .bloc-contact .email {
+            font-size: 1.1rem;
+            color: var(--gris-fonce);
+            text-decoration: none;
+            border-bottom: 2px dotted var(--bleu-accent);
+            padding-bottom: 2px;
+            transition: var(--transition);
+        }
+        .bloc-contact .email:hover {
+            border-bottom-color: var(--bleu-fonce);
+            color: var(--bleu-fonce);
+        }
+        .adresse {
+            color: var(--gris-moyen);
+            font-style: italic;
+            margin-top: 1rem;
+        }
+
+        /* ---- FOOTER ---- */
+        footer {
+            background: var(--bleu-fonce);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 4rem 0 2rem 0;
+        }
+        footer .grille-footer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        footer h4 {
+            color: var(--blanc);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        footer p,
+        footer li {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        footer ul {
+            list-style: none;
+            padding: 0;
+        }
+        footer ul li {
+            margin-bottom: 0.4rem;
+        }
+        footer ul li a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        footer ul li a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        .footer-partenaires {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        .footer-partenaire-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+        }
+        .footer-separateur {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ---- DECORATIONS ---- */
+        .separateur-icone {
+            text-align: center;
+            font-size: 2rem;
+            margin: 1rem 0;
+            opacity: 0.7;
+        }
+        .citation-decorative {
+            text-align: center;
+            font-style: italic;
+            color: var(--bleu-accent);
+            font-size: 1.1rem;
+            margin: 2rem 0;
+            font-weight: 400;
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 768px) {
+            section {
+                padding: 3rem 0;
+            }
+            .conteneur,
+            .conteneur-etroit {
+                padding: 0 1.2rem;
+            }
+            .hero {
+                min-height: 70vh;
+            }
+            .hero-contenu {
+                padding: 2rem 0;
+            }
+            .nav .conteneur {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .nav-liens {
+                gap: 0.2rem;
+            }
+            .nav-liens a {
+                padding: 0.4rem 0.7rem;
+                font-size: 0.85rem;
+            }
+            .bloc-contact .tel-urgence {
+                font-size: 1.5rem;
+            }
+            .grille-dons {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .groupe-boutons {
+                flex-direction: column;
+            }
+            .groupe-boutons .bouton {
+                width: 100%;
+                text-align: center;
+            }
+            .carte-temoignage {
+                padding: 1.5rem;
+            }
+            .bloc-contact {
+                padding: 2rem 1.2rem;
+            }
+        }
+    </style>
+    <!-- Police Inter depuis Google Fonts pour un rendu propre -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="nav" role="navigation" aria-label="Navigation principale">
+        <div class="conteneur">
+            <a href="#" class="nav-logo" aria-label="Fondation Columba — Accueil">
+                <span class="logo-icone">🕊️</span>
+                Fondation Columba
+            </a>
+            <ul class="nav-liens">
+                <li><a href="#mission">Mission</a></li>
+                <li><a href="#programmes">Programmes</a></li>
+                <li><a href="#temoignages">Témoignages</a></li>
+                <li><a href="#don">Faire un don</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#don" class="nav-cta">Don urgent 🕊️</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero" id="accueil">
+        <div class="hero-image-fond">
+            <!-- Photo : pigeon seul sur un banc, sous la pluie, regard mélancolique — Unsplash -->
+            <img src="https://images.unsplash.com/photo-1571003123894-8f9f2f5d0e3b?w=1600&h=900&fit=crop&crop=center&q=85"
+            alt="Pigeon seul sur un banc public sous la pluie, expression mélancolique"
+            loading="eager"
+            onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #C5DFF0 0%, #E6F1F8 50%, #FFFFFF 100%)';">
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="conteneur hero-contenu">
+            <span class="hero-badge">🕊️ Organisme mondial agréé</span>
+            <h1>Ils ne sont pas des «&nbsp;rats à plumes&nbsp;».<br>Ils sont des survivants.</h1>
+            <p class="sous-titre">
+                Chaque jour, des millions de pigeons à travers le monde subissent des micro-agressions,
+                du harcèlement par les touristes et une précarité affective chronique. La Fondation Columba
+                est le premier organisme mondial dédié exclusivement à la santé mentale et à la réinsertion
+                sociale des pigeons maltraités.
+            </p>
+            <div class="groupe-boutons">
+                <a href="#don" class="bouton bouton-primaire">🩺 Faire un don pour une thérapie d'urgence</a>
+                <a href="#contact" class="bouton bouton-secondaire">🤝 Devenir bénévole écouteur</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== NOTRE MISSION ==================== -->
+    <section id="mission">
+        <div class="conteneur-etroit">
+            <h2 style="text-align:center;">🎯 Notre Mission</h2>
+            <p class="sous-titre-section">
+                La rue est un environnement hostile. Entre les miettes de pain rassis qui créent une dépendance
+                aux glucides vides, les regards réprobateurs des passants pressés, et le stress post-traumatique
+                lié aux poursuites par des enfants en bas âge, le pigeon urbain est en souffrance silencieuse.
+            </p>
+            <p style="text-align:center; font-size:1.1rem; color:var(--bleu-fonce); font-weight:500;">
+                Notre mission est globale : offrir à <strong>tous les pigeons de la Terre</strong>, sans distinction
+                de race, de plumage ou de quartier, un accompagnement holistique pour les aider à surmonter leurs
+                traumatismes et à retrouver une estime de soi plumée.
+            </p>
+            <div class="separateur-icone">🕊️</div>
+        </div>
+        <div class="conteneur" style="margin-top:2rem;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:2rem;">
+                <div class="carte-mission">
+                    <span class="icone">🧠</span>
+                    <h3>Santé mentale aviaire</h3>
+                    <p>Des protocoles thérapeutiques innovants adaptés à la psychologie des columbidae, développés avec des éthologues et des psy-clinicens aviaires.</p>
+                </div>
+                <div class="carte-mission">
+                    <span class="icone">🏠</span>
+                    <h3>Réinsertion sociale</h3>
+                    <p>Nous accompagnons chaque pigeon vers une vie autonome et épanouie, loin des bancs publics froids et des regards hostiles.</p>
+                </div>
+                <div class="carte-mission">
+                    <span class="icone">🌍</span>
+                    <h3>Plaidoyer mondial</h3>
+                    <p>Nous sensibilisons les gouvernements et les citoyens à la cause des pigeons, ces grands incompris du bitume.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROGRAMMES DE SOINS ==================== -->
+    <section id="programmes" class="section-fond-gris">
+        <div class="conteneur">
+            <h2 style="text-align:center;">🩺 Nos Programmes de Soins</h2>
+            <p class="sous-titre-section">
+                Nous avons développé des protocoles thérapeutiques innovants, adaptés à la physiologie
+                et à la psychologie aviaire.
+            </p>
+            <div class="grille-programmes">
+                <!-- Programme 1 -->
+                <div class="carte-programme">
+                    <div class="carte-programme-image">
+                        <img src="https://images.unsplash.com/photo-1551879408-4d5b5e1c8a9e?w=600&h=400&fit=crop&q=85"
+                        alt="Pigeon en consultation, regard intense"
+                        loading="lazy"
+                        onerror="this.style.background='#C5DFF0'; this.style.minHeight='200px';">
+                    </div>
+                    <div class="carte-programme-corps">
+                        <span class="numero-programme">Programme 1</span>
+                        <h3>Thérapie Cognitivo-Comportementale (TCC) Aviaire</h3>
+                        <p>Nos psychologues certifiés aident les pigeons à déconstruire les croyances limitantes : «&nbsp;Je ne vaux rien si je ne trouve pas de frite par terre&nbsp;», «&nbsp;Tous les humains veulent me chasser avec un balai&nbsp;».</p>
+                    </div>
+                </div>
+                <!-- Programme 2 -->
+                <div class="carte-programme">
+                    <div class="carte-programme-image">
+                        <img src="https://images.unsplash.com/photo-1497206365907-f5e3e3b5e50e?w=600&h=400&fit=crop&q=85"
+                        alt="Pigeon devant une nourriture saine, rééducation alimentaire"
+                        loading="lazy"
+                        onerror="this.style.background='#C5DFF0'; this.style.minHeight='200px';">
+                    </div>
+                    <div class="carte-programme-corps">
+                        <span class="numero-programme">Programme 2</span>
+                        <h3>Le Programme «&nbsp;Sevrage de la Mie&nbsp;»</h3>
+                        <p>Une prise en charge nutritionnelle et psychologique pour les pigeons développant une dépendance pathogène aux restes de sandwichs. Nous les rééduquons doucement vers une alimentation noble et une relation apaisée avec leur environnement.</p>
+                    </div>
+                </div>
+                <!-- Programme 3 -->
+                <div class="carte-programme">
+                    <div class="carte-programme-image">
+                        <img src="https://images.unsplash.com/photo-1598439210625-e8e8b7c7c6e9?w=600&h=400&fit=crop&q=85"
+                        alt="Pigeon dans un sanctuaire sécurisé, convalescence"
+                        loading="lazy"
+                        onerror="this.style.background='#C5DFF0'; this.style.minHeight='200px';">
+                    </div>
+                    <div class="carte-programme-corps">
+                        <span class="numero-programme">Programme 3</span>
+                        <h3>Unité de Réhabilitation Post-Accident</h3>
+                        <p>Pour les pigeons ayant survécu à des épreuves lourdes : écrasement partiel de la queue, collision avec une vitre propre, ou humiliation publique après avoir marché dans un chewing-gum. Sanctuaire sécurisé avec sols en mousse à mémoire de forme.</p>
+                    </div>
+                </div>
+                <!-- Programme 4 -->
+                <div class="carte-programme">
+                    <div class="carte-programme-image">
+                        <img src="https://images.unsplash.com/photo-1517849845537-4d28c2e4ad57?w=600&h=400&fit=crop&q=85"
+                        alt="Groupe de pigeons en cercle de parole, bienveillance"
+                        loading="lazy"
+                        onerror="this.style.background='#C5DFF0'; this.style.minHeight='200px';">
+                    </div>
+                    <div class="carte-programme-corps">
+                        <span class="numero-programme">Programme 4</span>
+                        <h3>Groupes de Parole «&nbsp;Roucoulement Libre&nbsp;»</h3>
+                        <p>Des séances hebdomadaires en groupe où les pigeons peuvent partager leur vécu dans un espace bienveillant, sans jugement, et souvent en marchant de long en large.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TEMOIGNAGES ==================== -->
+    <section id="temoignages" class="section-fond-bleu-clair">
+        <div class="conteneur">
+            <h2 style="text-align:center;">💬 Ils ont repris leur envol</h2>
+            <p class="sous-titre-section">
+                Découvrez les parcours inspirants de pigeons qui ont retrouvé le goût du roucoulement grâce à nos programmes.
+            </p>
+            <div class="grille-temoignages">
+                <!-- Témoignage Maurice -->
+                <div class="carte-temoignage">
+                    <span class="guillemet">"</span>
+                    <blockquote>
+                        <p>Avant d'arriver à la Fondation, je pensais que ma seule valeur résidait dans ma capacité à esquiver un scooter place de la République. J'étais anxieux, je perdais mes plumes. Grâce à l'accompagnement de l'équipe, j'ai appris à me définir par mes propres moyens. Aujourd'hui, je suis médiateur aviaire dans une école primaire.</p>
+                        <footer class="auteur">
+                            <strong>Maurice</strong>
+                            <span>4 ans, ancien pigeon de la Gare de Lyon</span>
+                        </footer>
+                    </blockquote>
+                </div>
+                <!-- Témoignage Ginette -->
+                <div class="carte-temoignage">
+                    <span class="guillemet">"</span>
+                    <blockquote>
+                        <p>Mon humain m'ignorait, les autres oiseaux me harcelaient pour mes miettes. La thérapie EMDR (Eye Movement Desensitization and Reprocessing) m'a permis de digérer le trauma de la fois où un touriste m'a pris en photo avec un flash. Je roucoule à nouveau sereinement.</p>
+                        <footer class="auteur">
+                            <strong>Ginette</strong>
+                            <span>2 ans, résidente du Sanctuaire des Toits</span>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+            <p class="citation-decorative">«&nbsp;Parce qu'un roucoulement ne devrait jamais être un cri de détresse.&nbsp;»</p>
+        </div>
+    </section>
+
+    <!-- ==================== COMMENT AIDER / DONS ==================== -->
+    <section id="don">
+        <div class="conteneur">
+            <h2 style="text-align:center;">🤝 Comment nous aider ?</h2>
+            <p class="sous-titre-section">
+                La détresse psychologique d'un pigeon ne connaît pas de frontières. Votre générosité sauve des vies et des esprits.
+            </p>
+            <div class="grille-dons">
+                <div class="carte-don">
+                    <div class="montant">5 €</div>
+                    <p class="description-don">Offre une séance de lissage de plumes apaisant avec un praticien certifié.</p>
+                    <a href="#" class="bouton bouton-secondaire">Je donne 5€</a>
+                </div>
+                <div class="carte-don mise-en-avant">
+                    <div class="montant">20 €</div>
+                    <p class="description-don">Finance un coussin ergonomique en duvet synthétique pour les pattes irritées par le bitume.</p>
+                    <a href="#" class="bouton bouton-primaire">Je donne 20€</a>
+                </div>
+                <div class="carte-don">
+                    <div class="montant">50 €</div>
+                    <p class="description-don">Sponsorise un pigeon pour une année complète de thérapie de groupe et de suivi individuel.</p>
+                    <a href="#" class="bouton bouton-secondaire">Je donne 50€</a>
+                </div>
+                <div class="carte-don">
+                    <div class="montant">100 €</div>
+                    <p class="description-don">Deviens «&nbsp;Mécène de la Volière&nbsp;». Votre nom gravé sur une plaque en laiton fixée à un perchoir.</p>
+                    <a href="#" class="bouton bouton-secondaire">Je donne 100€</a>
+                </div>
+            </div>
+            <p style="text-align:center; margin-top:2rem; color:var(--gris-moyen); font-size:0.9rem;">
+                🧾 Déductible des impôts, car la santé mentale est une grande cause nationale.
+            </p>
+            <div style="text-align:center; margin-top:1.5rem;">
+                <a href="#" class="bouton bouton-primaire" style="font-size:1.1rem; padding:1rem 2.5rem;">
+                    🔒 Je fais un don sécurisé
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACT ==================== -->
+    <section id="contact" class="section-fond-gris">
+        <div class="conteneur-etroit">
+            <div class="bloc-contact">
+                <h2 style="text-align:center;">📞 Contactez-nous</h2>
+                <p style="text-align:center; color:var(--gris-fonce);">
+                    Vous avez trouvé un pigeon en détresse psychologique ?<br>
+                    <strong>Ne le laissez pas seul avec ses pensées.</strong>
+                </p>
+                <p style="text-align:center; color:var(--gris-moyen); font-size:0.95rem;">
+                    Notre ligne d'écoute est ouverte 24h/24 et 7j/7.
+                </p>
+                <p class="urgence" style="margin-top:1.5rem;">🚨 Urgence Psychologique Aviaire</p>
+                <a href="tel:0800743366779" class="tel-urgence" aria-label="Numéro d'urgence psychologique aviaire">
+                    0 800 PIGEON PSY
+                </a>
+                <p style="color:var(--gris-moyen); font-size:0.85rem;">Appel gratuit — 24h/24, 7j/7</p>
+                <p style="margin-top:1.5rem;">
+                    <a href="mailto:contact@fondation-columba.org" class="email">
+                        ✉️ contact@fondation-columba.org
+                    </a>
+                </p>
+                <p class="adresse">
+                    🪺 Siège social : Un nid douillet, quelque part entre le 11ème arrondissement et les toits de Paris.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer role="contentinfo">
+        <div class="conteneur">
+            <div class="grille-footer">
+                <div>
+                    <h4>🕊️ Fondation Columba</h4>
+                    <p>
+                        <em>Parce qu'un roucoulement ne devrait jamais être un cri de détresse.</em>
+                    </p>
+                    <p style="margin-top:0.5rem;">
+                        Premier organisme mondial dédié à la santé mentale et à la réinsertion sociale des pigeons maltraités.
+                    </p>
+                </div>
+                <div>
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="#mission">Notre mission</a></li>
+                        <li><a href="#programmes">Programmes de soins</a></li>
+                        <li><a href="#temoignages">Témoignages</a></li>
+                        <li><a href="#don">Faire un don</a></li>
+                        <li><a href="#contact">Contact & Urgence</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Nos partenaires officiels</h4>
+                    <div class="footer-partenaires">
+                        <span class="footer-partenaire-badge">🏛️ Ministère de la Résilience Aviaire</span>
+                        <span class="footer-partenaire-badge">🌐 OMS — Organisation Mondiale des Serres</span>
+                        <span class="footer-partenaire-badge">🧠 Institut du Roucoulement</span>
+                        <span class="footer-partenaire-badge">🕊️ Ligue Protectrice des Columbidae</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-separateur">
+                <p>© 2026 Fondation Columba. Tous droits réservés. — Association imaginaire à but humoristique et satirique.</p>
+                <p style="margin-top:0.3rem; font-size:0.8rem;">
+                    Les dons mentionnés sont fictifs. Aucun pigeon n'a été blessé lors de la création de cette page.
+                    Soutenez les vrais pigeons : ils méritent votre bienveillance. 🕊️
+                </p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
