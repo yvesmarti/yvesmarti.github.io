@@ -73,3 +73,8 @@
       description: Créez des QR codes (URL, contact vCard, WiFi) directement dans le navigateur, sans serveur ni transfert de données.
       lien: outils/qr-code.html
       actif: true
+
+    - nom: Annotateur de carte
+      description: Annotez vos captures satellite pour délimiter les zones de présentation des bacs, puis exportez en PNG.
+      lien: outils/annotateur-carte.html
+      actif: true
