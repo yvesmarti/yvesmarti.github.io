@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tableau de bord suivi du déploiement des équipements de collecte · NCPA — Yves Marti</title>
+    <meta name="description" content="Dashboard interactif HTML pour suivre le déploiement des bacs, colonnes d'apport volontaire et PDR sur 39 communes. Glisser-déposer un Excel, piloter en direct, exporter en PDF.">
+    <meta property="og:title" content="Tableau de bord suivi du déploiement des équipements de collecte · NCPA">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yvesmarti.github.io/realisations/dashboard-deploiement-equipements-collecte.html">
+    <meta property="og:image" content="https://yvesmarti.github.io/assets/images/og-dashboard-ncpa.jpg">
+    <meta property="og:description" content="Un tableau de bord clé en main pour les collectivités : visualisez commune par commune l'état d'avancement de la dotation en bacs, des PAV et des PDR, sans base de données ni serveur.">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            scroll-behavior: smooth;
+            line-height: 1.5;
+        }
+
+        /* conteneur principal avec largeur contenue */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ===== EN-TÊTE STICKY (navigation ancres) ===== */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+            transition: all 0.2s ease;
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .logo-area a {
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            color: #0f172a;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .logo-area a i {
+            margin-right: 6px;
+            color: #2c7a4d;
+        }
+        .logo-area a:hover {
+            background: #e2e8f0;
+        }
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #1e293b;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 4px;
+        }
+        .nav-links a:hover {
+            color: #2c7a4d;
+            border-bottom-color: #2c7a4d;
+        }
+        .btn-outline-nav {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+        .btn-outline-nav:hover {
+            background: #f1f5f9;
+            border-color: #2c7a4d;
+        }
+
+        /* HERO */
+        .hero {
+            padding: 3rem 0 2rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(120deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        .hero-badge {
+            display: inline-block;
+            background: #e6f7ec;
+            color: #166534;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 30px;
+            margin-bottom: 1.2rem;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #0f172a, #2d4a3b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: #334155;
+            max-width: 780px;
+            margin-bottom: 1.8rem;
+        }
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-top: 24px;
+        }
+        .stat-item {
+            background: white;
+            padding: 6px 16px 6px 12px;
+            border-radius: 60px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-number {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #0c4e2c;
+        }
+
+        /* sections générales */
+        section {
+            padding: 3rem 0 3rem 0;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+        .section-sub {
+            color: #475569;
+            max-width: 720px;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        .card-feature {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            border: 1px solid #eef2ff;
+        }
+        .card-feature i {
+            font-size: 2rem;
+            color: #2c7a4d;
+            margin-bottom: 1rem;
+        }
+        .card-feature h3 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.6rem;
+        }
+        .tech-badge {
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .mockup-placeholder {
+            background: #eef2ff;
+            border-radius: 28px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #e0e7ff;
+            color: #1e3a5f;
+            font-weight: 500;
+        }
+        .mockup-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2c7a4d;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+        }
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #2c7a4d;
+        }
+        footer {
+            padding: 2rem 0 3rem;
+            text-align: center;
+            color: #5b6e8c;
+            font-size: 0.85rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        @media (max-width: 800px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 1.5rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .nav-links { gap: 16px; }
+        }
+        .highlight {
+            background: linear-gradient(120deg, #d9f0e6 0%, #d9f0e6 40%, transparent 80%);
+            padding: 0.2rem 0;
+            font-weight: 500;
+        }
+        .screenshot-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .screen-card {
+            background: #ffffffdd;
+            border-radius: 32px;
+            backdrop-filter: blur(2px);
+            padding: 1rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            border: 1px solid #e2edf2;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.03);
+        }
+        hr {
+            margin: 1rem 0;
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- navigation sticky ancres -->
+<div class="sticky-nav">
+    <div class="nav-container">
+        <div class="logo-area">
+            <a href="https://yvesmarti.github.io">
+                <i class="fas fa-charging-station"></i> Yves Marti
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="#contexte">Contexte</a>
+            <a href="#fonctions">Fonctions</a>
+            <a href="#fonctionnement">Fonctionnement</a>
+            <a href="#extensible">Extensible</a>
+            <a href="#captures" style="display:none;" id="screenshotLink">Captures</a>
+            <a href="https://github.com/yvesmarti/dashboard-suivi-dechets" target="_blank" class="btn-outline-nav"><i class="fab fa-github"></i> Code</a>
+        </div>
+    </div>
+</div>
+
+<main>
+    <div class="hero">
+        <div class="container">
+            <span class="hero-badge"><i class="fas fa-chart-line"></i> Dashboard opérationnel · collectivités</span>
+            <h1>Suivi du déploiement des équipements de collecte<br> NCPA — 39 communes</h1>
+            <p>Un tableau de bord HTML autonome qui transforme un fichier Excel en pilotage interactif : cartographie, indicateurs par commune, avancement par zone, export PDF prêt pour les élus. <span class="highlight">Glissez votre Excel, lisez vos données, pilotez en temps réel</span>.</p>
+            <div class="stats-row">
+                <div class="stat-item"><span class="stat-number">39</span> communes</div>
+                <div class="stat-item"><i class="fas fa-trash-alt"></i> OMR · TRI · verre · textiles</div>
+                <div class="stat-item"><i class="fas fa-download"></i> Export PDF fiche / toutes communes</div>
+                <div class="stat-item"><i class="fas fa-globe"></i> Carte interactive PDR / PAV / Non-conteneurisables</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- section : pourquoi -->
+        <section id="contexte">
+            <div class="grid-2">
+                <div>
+                    <div class="section-title">Pourquoi ce tableau de bord ?</div>
+                    <p class="section-sub" style="margin-bottom:1rem;">Suivre le déploiement des bacs individuels, des colonnes d’apport volontaire (aériennes/enterrées) et des points de regroupement (PDR) sur 39 communes est un casse‑tête sans outil adapté. Ce dashboard centralise tout :</p>
+                    <ul style="list-style-type: none; margin-top: 1rem;">
+                        <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> État d’avancement commune par commune</li>
+                        <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> Taux de dotation réel (bacs distribués / adresses dotables)</li>
+                        <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> Visualisation des PAV à créer (OMR, emballages, verre) avec géolocalisation</li>
+                        <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> Points non conteneurisables et marges de manœuvre</li>
+                        <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> Synthèse pour élus, DGS et techniciens</li>
+                    </ul>
+                </div>
+                <div class="mockup-placeholder" style="background: linear-gradient(145deg, #f1f5fc, #ffffff);">
+                    <div class="mockup-icon"><i class="fas fa-chart-pie"></i><i class="fas fa-map-marked-alt" style="margin-left: 12px;"></i></div>
+                    <p><strong>Fiche commune interactive</strong><br>KPI, tableau d'équipements triable et carte mini.<br><span style="font-size:0.8rem;">Exemple : Cabourg · Dives-sur-Mer · Houlgate</span></p>
+                    <div style="background:#e9eef5; border-radius: 20px; padding: 12px; margin-top: 12px;">
+                        <i class="fas fa-file-excel"></i> <strong>Donnée source :</strong> BASE_POUR_BILAN_INTERACTIF.xlsx<br>
+                        <span class="tech-badge">glisser-déposer</span> <span class="tech-badge">pas de serveur</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. fonctions principales (visuelles) -->
+        <section id="fonctions">
+            <div class="section-title">Ce que l'outil permet de faire</div>
+            <div class="grid-3">
+                <div class="card-feature">
+                    <i class="fas fa-upload"></i>
+                    <h3>Glisser-déposer Excel</h3>
+                    <p>Chargez le classeur <code>BASEPOURBILANINTERACTIF.xlsx</code> (6 onglets). L'outil parse automatiquement toutes les données sans aucune intervention.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-id-card"></i>
+                    <h3>Fiche commune détaillée</h3>
+                    <p>Infrastructure actuelle (PDR, PAV, compostage), déploiement prévu, tableau triable des nouvelles colonnes, particularités terrain.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-table-list"></i>
+                    <h3>Tableau synthétique toutes communes</h3>
+                    <p>Classement par zone, population, taux de dotation, nombre de cabanes, PDR à créer/agrandir. Clic ligne = bascule sur la fiche.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-chart-simple"></i>
+                    <h3>Avancement par zone</h3>
+                    <p>KPI globaux + classement par zone littorale / périurbaine / rurale. Barre de progression, actions recensées.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-map"></i>
+                    <h3>Carte interactive dynamique</h3>
+                    <p>Fond CartoDB / satellite. Couches : PDR (violets), nouveaux équipements PAV (couleurs selon flux OMR/EMB/VERRE), adresses non conteneurisables. Clic → popup info et accès fiche.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-file-pdf"></i>
+                    <h3>Export PDF professionnel</h3>
+                    <p>Fiche unique ou toutes communes en un clic. Mise en page A4 avec en‑tête, KPIs, tableau équipements et plan d’actions — prêt pour les réunions de pilotage.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. fonctionnement simple / stack -->
+        <section id="fonctionnement">
+            <div class="grid-2">
+                <div>
+                    <div class="section-title">Comment ça marche (en bref)</div>
+                    <p>Fichier HTML unique, aucune base de données, aucun serveur. Les librairies (XLSX.js, Leaflet, Chart.js, html2canvas) tournent dans votre navigateur. <strong>Le fichier Excel reste chez vous</strong>, les données ne sont jamais transmises.</p>
+                    <ul style="margin-top: 1.2rem; list-style-type: none;">
+                        <li><i class="fas fa-angle-right"></i> Lecture des onglets <code>01_Identité_Démographie</code>, <code>02_Collecte_Infrastructure</code>, <code>03_Déploiement_Prévu</code>, <code>04_PDR</code>, <code>05_Nouveauxequip</code>, <code>06_Nonconteneurisables</code></li>
+                        <li><i class="fas fa-angle-right"></i> Assemblage des données par commune (code INSEE, jointure par position)</li>
+                        <li><i class="fas fa-angle-right"></i> Affichage dynamique dans 4 vues (fiche, tableau, avancement, carte)</li>
+                        <li><i class="fas fa-angle-right"></i> Génération des PDF avec html2canvas + jsPDF (qualité 300 dpi)</li>
+                    </ul>
+                    <div style="margin-top: 1.2rem;"><span class="tech-badge"><i class="fab fa-js"></i> vanilla JS</span> <span class="tech-badge"><i class="fas fa-draw-polygon"></i> Leaflet</span> <span class="tech-badge"><i class="fas fa-chart-line"></i> Chart.js</span> <span class="tech-badge"><i class="fas fa-file-excel"></i> XLSX</span></div>
+                    <p style="margin-top: 1.2rem; font-size: 0.9rem;"><i class="fas fa-sync"></i> L’actualisation se résume à remplacer l’Excel source : la structure du classeur doit respecter les colonnes attendues (documentation intégrée).</p>
+                </div>
+                <div class="mockup-placeholder">
+                    <i class="fas fa-cogs" style="font-size: 2.5rem;"></i>
+                    <p><strong>Flux de données local</strong><br>📂 Excel (glisser) → <strong>XLSX.js</strong> → état JavaScript → rendu Dashboard complet & PDF</p>
+                    <hr style="margin: 1rem 0;">
+                    <i class="fas fa-code-branch"></i> Modularité : ajout d’un indicateur ou nouveau flux = modification du code de parsing.
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. extensibilité (déclinable) -->
+        <section id="extensible">
+            <div class="section-title">Une méthode déclinable à d’autres suivis</div>
+            <div class="grid-2">
+                <div class="card-feature" style="background: #fefce8;">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Suivi de n’importe quel déploiement</h3>
+                    <p>Ce socle technique permet de suivre des chantiers voirie, des subventions, des équipements sportifs, des bornes de recharge… Il suffit d’adapter le parsing Excel et les indicateurs métier.</p>
+                    <p style="margin-top: 10px;"><i class="fas fa-check"></i> Pas de refonte de l’interface : fiches, carte, export PDF sont réutilisables.</p>
+                </div>
+                <div class="card-feature">
+                    <i class="fas fa-palette"></i>
+                    <h3>Paramétrage sans serveur</h3>
+                    <p>Le dashboard peut être dupliqué pour chaque projet, hébergé sur GitHub Pages ou partagé en intranet. Chaque version garde son propre Excel, son propre jeu de données.<br><span class="tech-badge">100% client‑side</span> <span class="tech-badge">open source</span></p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; background: #ecfdf5; border-radius: 40px; padding: 1.2rem 1.8rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-database"></i> <strong>Environ 70 colonnes Excel exploitées</strong> · jointures démographie, infrastructure, déploiement, PDR, PAV, non-conteneurisables.</span>
+                <a href="#" id="demoFakeBtn" style="background: white; border-radius: 60px; padding: 8px 20px; text-decoration: none; font-weight: 500; color:#2c7a4d; border:1px solid #2c7a4d;"><i class="fas fa-play"></i> Aperçu vidéo (bientôt)</a>
+            </div>
+        </section>
+
+        <!-- 5. espace réservé pour captures (ajout ultérieur) -->
+        <section id="captures" style="border-bottom: none; padding-top: 1rem;">
+            <div class="section-title">Aperçu visuel (captures d’écran)</div>
+            <p class="section-sub">Les images ci-dessous seront remplacées par des captures réelles du tableau de bord. Illustration des vues principales : fiche commune, tableau croisé, vue cartographique avec couches.</p>
+            <div class="screenshot-grid">
+                <div class="screen-card"><i class="fas fa-city" style="font-size: 2rem;"></i><br><strong>Vue fiche Cabourg</strong><br>Taux dotation + PAV à créer + carte miniature</div>
+                <div class="screen-card"><i class="fas fa-map-marker-alt" style="font-size: 2rem;"></i><br><strong>Carte interactive</strong><br>PDR, projets PAV, adresses non livrables</div>
+                <div class="screen-card"><i class="fas fa-file-pdf" style="font-size: 2rem;"></i><br><strong>Export PDF 2 pages</strong><br>Fiche prête pour élus/DGS</div>
+            </div>
+            <p style="margin-top: 1rem; font-size:0.85rem; background:#f9f9ff; padding: 10px; border-radius: 32px;"><i class="fas fa-image"></i> <em>Placeholder – des captures réelles viendront illustrer l’interface complète dans la version finale du portfolio.</em></p>
+        </section>
+
+        <!-- CTA final -->
+        <div style="margin: 2rem 0 3rem 0; background:#f1f5fe; border-radius: 48px; padding: 2rem; text-align: center;">
+            <h3 style="font-weight: 700;">Prêt à piloter votre déploiement autrement ?</h3>
+            <p style="margin: 10px 0 20px;">Le tableau de bord est intégralement utilisable sur votre poste de travail. Contactez-moi pour un partage de code ou une adaptation à votre territoire.</p>
+            <a href="https://yvesmarti.github.io" class="btn"><i class="fas fa-arrow-right"></i> yvesmarti.github.io</a>
+            <a href="mailto:yves.marti@example.com" class="btn btn-outline" style="margin-left: 12px;"><i class="fas fa-envelope"></i> Échanger</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>Tableau de bord suivi déploiement collecte · NCPA · Conçu par Yves Marti — <i class="fas fa-chart-line"></i> données territoriales au service de la décision</p>
+        <p style="margin-top: 12px;"><i class="fab fa-github"></i> <a href="https://github.com/yvesmarti/dashboard-suivi-dechets" target="_blank" style="color:#2c7a4d;">Dépôt GitHub (en cours de documentation)</a></p>
+    </div>
+</footer>
+
+<script>
+    // Simple comportement de navigation ancres + smooth scroll
+    document.querySelectorAll('.nav-links a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if(targetId === '#') return;
+            const targetEl = document.querySelector(targetId);
+            if(targetEl) {
+                e.preventDefault();
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    // placeholder pour le bouton aperçu (aucune action réelle mais amusant)
+    const fakeBtn = document.getElementById('demoFakeBtn');
+    if(fakeBtn) {
+        fakeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert("Captures d'écran en cours de préparation. L'interface réelle sera bientôt illustrée.");
+        });
+    }
+    // éventuellement afficher le lien capture si l'utilisateur le souhaite (non forcé)
+    console.log("Page de présentation du dashboard NCPA — Suivi déploiement équipements");
+</script>
+</body>
+</html>
