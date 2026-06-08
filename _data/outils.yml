@@ -78,3 +78,8 @@
       description: Annotez vos captures satellite pour délimiter les zones de présentation des bacs, puis exportez en PNG.
       lien: outils/annotateur-carte.html
       actif: true
+
+    - nom: Encart GPS pour photos
+      description: Générez un encart de localisation précis pour vos photos, à partir des données GPS EXIF du fichier ou de coordonnées saisies manuellement.
+      lien: outils/encart-gps.html
+      actif: true
