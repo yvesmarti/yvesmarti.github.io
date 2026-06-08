@@ -283,7 +283,29 @@ input[type=color] {
 #mi .leaflet-container { cursor: grab; }
 #mi .leaflet-container.leaflet-drag-target { cursor: grabbing; }
 
-/* Modal diagnostic */
+/* Saisie manuelle — champ unique */
+#mcoords {
+  width: 100%; background: var(--bg); border: 1px solid var(--bd);
+  color: var(--text); padding: 8px 10px; border-radius: 4px;
+  font-size: 11px; font-family: var(--mono);
+  margin-bottom: 6px; transition: border-color .15s;
+}
+#mcoords:focus { outline: none; border-color: var(--acc); }
+#mcoords::placeholder { color: var(--text3); }
+
+/* Sélecteur de style d'épingle */
+.pin-grid {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+.psbtn {
+  width: 36px; height: 36px;
+  background: var(--bg); border: 1.5px solid var(--bd);
+  border-radius: 5px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .15s; flex-shrink: 0;
+}
+.psbtn:hover { border-color: var(--acc); background: var(--acc-bg); }
+.psbtn.on   { border-color: var(--acc); background: var(--acc-bg); }
 #diag-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.4); z-index: 9000;
@@ -365,16 +387,12 @@ input[type=color] {
 
     <div id="manual-block">
       <div class="mlbl" style="margin-top:10px">▸ Saisie manuelle</div>
-      <div class="mrow">
-        <input type="number" id="mlat" placeholder="Latitude (ex: 49.1234)"
-               step="0.000001" min="-90" max="90">
-        <input type="number" id="mlon" placeholder="Longitude (ex: 0.1234)"
-               step="0.000001" min="-180" max="180">
-      </div>
-      <button id="mbtn">Appliquer ces coordonnées</button>
+      <input type="text" id="mcoords"
+             placeholder="Ex : 49.154750, -0.362163">
+      <button id="mbtn">Appliquer</button>
       <div class="mhint">
-        💡 Disponibles via Google Maps (clic droit)<br>
-        Format décimal — ex : 49.162471 / 0.041230
+        💡 Copier-coller directement depuis Google Maps<br>
+        <span style="opacity:.7">clic droit sur la carte → coordonnées</span>
       </div>
     </div>
 
@@ -386,6 +404,32 @@ input[type=color] {
     <div class="brow">
       <button class="tbtn on" data-bm="carto">📋 Plan</button>
       <button class="tbtn"    data-bm="sat">🛰 Satellite</button>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Style de l'épingle</div>
+    <div class="pin-grid">
+      <!-- Punaise classique -->
+      <button class="psbtn on" data-pin="pin" title="Punaise">
+        <svg width="13" height="20" viewBox="0 0 13 20"><polygon points="6.5,20 1,12 12,12" fill="#c0392b"/><circle cx="6.5" cy="6.5" r="5.8" fill="#c0392b" stroke="#fff" stroke-width="1.8"/><circle cx="6.5" cy="6.5" r="1.8" fill="#fff"/></svg>
+      </button>
+      <!-- Point simple -->
+      <button class="psbtn" data-pin="dot" title="Point">
+        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#c0392b" stroke="#fff" stroke-width="2"/><circle cx="8" cy="8" r="2.2" fill="#fff"/></svg>
+      </button>
+      <!-- Croix -->
+      <button class="psbtn" data-pin="cross" title="Croix">
+        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.5" fill="#c0392b" stroke="#fff" stroke-width="1.5"/><line x1="8" y1="3" x2="8" y2="13" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/><line x1="3" y1="8" x2="13" y2="8" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg>
+      </button>
+      <!-- Cible -->
+      <button class="psbtn" data-pin="target" title="Cible">
+        <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="8" fill="rgba(255,255,255,.7)" stroke="#c0392b" stroke-width="2.5"/><circle cx="9" cy="9" r="4" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="9" cy="9" r="1.5" fill="#c0392b"/></svg>
+      </button>
+      <!-- Losange -->
+      <button class="psbtn" data-pin="diamond" title="Losange">
+        <svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="#c0392b" stroke="#fff" stroke-width="2"/><circle cx="8" cy="8" r="1.8" fill="#fff"/></svg>
+      </button>
     </div>
   </div>
 
@@ -498,14 +542,15 @@ let photoW = 0, photoH = 0;
 let currentFile = null;
 
 const S = {
-  bm:   'carto',
-  pos:  'br',
-  size: 220,
-  zoom: 15,
-  bw:   3,
-  bc:   '#ffffff',
-  mg:   12,
-  showCoords: false
+  bm:       'carto',
+  pos:      'br',
+  size:     220,
+  zoom:     15,
+  bw:       3,
+  bc:       '#ffffff',
+  mg:       12,
+  showCoords: false,
+  pinStyle: 'pin'
 };
 
 const BM_URL = {
@@ -594,15 +639,30 @@ async function loadPhoto(file) {
   img.src = url;
 }
 
+// ── Parsing coordonnées Google Maps ─────────────────────────
+// Accepte : "49.1547, -0.3621"  ou  "49.1547 -0.3621"  ou  "49.1547;-0.3621"
+function parseCoords(str) {
+  const parts = str.trim().replace(/[;\s]+/g, ',').split(',').map(p => p.trim()).filter(Boolean);
+  if (parts.length < 2) return null;
+  const lt = parseFloat(parts[0]), ln = parseFloat(parts[1]);
+  if (isNaN(lt) || isNaN(ln) || lt < -90 || lt > 90 || ln < -180 || ln > 180) return null;
+  return { lat: lt, lon: ln };
+}
+
 // ── Saisie manuelle ─────────────────────────────────────────
-document.getElementById('mbtn').addEventListener('click', () => {
-  const mlat = parseFloat(document.getElementById('mlat').value);
-  const mlon = parseFloat(document.getElementById('mlon').value);
-  if (isNaN(mlat) || isNaN(mlon) || mlat < -90 || mlat > 90 || mlon < -180 || mlon > 180) {
-    toast('⚠ Coordonnées invalides — format décimal requis (ex: 49.1234)', true);
+document.getElementById('mbtn').addEventListener('click', applyManualCoords);
+document.getElementById('mcoords').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyManualCoords();
+});
+
+function applyManualCoords() {
+  const raw = document.getElementById('mcoords').value;
+  const parsed = parseCoords(raw);
+  if (!parsed) {
+    toast('⚠ Format invalide — ex : 49.154750, -0.362163', true);
     return;
   }
-  lat = mlat; lon = mlon;
+  lat = parsed.lat; lon = parsed.lon;
   gps.className = 'ok';
   gps.innerHTML =
     `Latitude&nbsp;: <span class="gv">${lat.toFixed(6)}°</span><br>` +
@@ -615,9 +675,19 @@ document.getElementById('mbtn').addEventListener('click', () => {
     mi.style.display = 'block';
     setTimeout(initMap, 80);
     eb.disabled = false;
-    toast('📍 Coordonnées manuelles appliquées');
+    toast('📍 Coordonnées appliquées');
   }
-});
+}
+
+// ── Styles d'épingle ─────────────────────────────────────────
+document.querySelectorAll('[data-pin]').forEach(b =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-pin]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    S.pinStyle = b.dataset.pin;
+    if (lmarker) lmarker.setIcon(makeDivIcon(S.pinStyle));
+  })
+);
 
 // ── Diagnostic EXIF ──────────────────────────────────────────
 document.getElementById('dbtn').addEventListener('click', async () => {
@@ -820,6 +890,20 @@ function dumpTiffTags(view, base) {
 }
 
 // ── Carte Leaflet ────────────────────────────────────────────
+// ── Icônes Leaflet — miroir des styles canvas ────────────────
+function makeDivIcon(style) {
+  const SH = 'overflow:visible;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.38))';
+  const D = {
+    pin:     { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="28" style="${SH}"><polygon points="9,28 2,17 16,17" fill="#c0392b"/><circle cx="9" cy="9" r="8.5" fill="#c0392b" stroke="#fff" stroke-width="2.5"/><circle cx="9" cy="9" r="2.5" fill="#fff"/></svg>`, size:[18,28], anc:[9,28] },
+    dot:     { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="${SH}"><circle cx="10" cy="10" r="9" fill="#c0392b" stroke="#fff" stroke-width="2.5"/><circle cx="10" cy="10" r="3" fill="#fff"/></svg>`, size:[20,20], anc:[10,10] },
+    cross:   { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="${SH}"><circle cx="11" cy="11" r="10" fill="#c0392b" stroke="#fff" stroke-width="2"/><line x1="11" y1="4" x2="11" y2="18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><line x1="4" y1="11" x2="18" y2="11" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>`, size:[22,22], anc:[11,11] },
+    target:  { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="overflow:visible;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.28))"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.85)" stroke="#c0392b" stroke-width="2.5"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#c0392b"/></svg>`, size:[24,24], anc:[12,12] },
+    diamond: { svg:`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="${SH}"><polygon points="10,1 19,10 10,19 1,10" fill="#c0392b" stroke="#fff" stroke-width="2.5"/><circle cx="10" cy="10" r="2.5" fill="#fff"/></svg>`, size:[20,20], anc:[10,10] }
+  };
+  const cfg = D[style] || D.pin;
+  return L.divIcon({ className:'', html:cfg.svg, iconSize:cfg.size, iconAnchor:cfg.anc });
+}
+
 function initMap() {
   if (!lmap) {
     lmap = L.map(mi, {
@@ -828,9 +912,7 @@ function initMap() {
       scrollWheelZoom: 'center', keyboard: false, tap: false
     });
     ltile = L.tileLayer(BM_URL[S.bm], { crossOrigin: 'anonymous', maxZoom: 20 }).addTo(lmap);
-    lmarker = L.circleMarker([lat, lon], {
-      radius: 7, fillColor: '#c0392b', color: '#fff', weight: 2.5, fillOpacity: 1
-    }).addTo(lmap);
+    lmarker = L.marker([lat, lon], { icon: makeDivIcon(S.pinStyle) }).addTo(lmap);
     lmap.setView([lat, lon], S.zoom);
     lmap.on('zoomend', () => {
       S.zoom = lmap.getZoom();
@@ -839,7 +921,7 @@ function initMap() {
       document.getElementById('zlevel').textContent = 'z ' + S.zoom;
     });
   } else {
-    if (lmarker) lmarker.setLatLng([lat, lon]);
+    if (lmarker) { lmarker.setLatLng([lat, lon]); lmarker.setIcon(makeDivIcon(S.pinStyle)); }
     lmap.setView([lat, lon], S.zoom);
     lmap.invalidateSize();
   }
@@ -933,11 +1015,34 @@ async function doExport() {
     const bwPx    = Math.round(S.bw   * scale);
     setProgress(0.2);
 
+    // ── Zoom d'export calé sur l'aperçu ───────────────────────
+    // Problème : la photo native est scale× plus grande que l'affichage.
+    // Si on garde S.zoom avec un canvas insetPx, on couvre scale× plus de
+    // territoire qu'à l'écran → la carte paraît dézoomée à l'export.
+    //
+    // Correction : monter le zoom de floor(log2(scale)) niveaux et réduire
+    // proportionnellement la taille du canvas de rendu, de sorte que
+    // l'étendue géographique coïncide exactement avec l'aperçu Leaflet.
+    //
+    //   renderSize / 2^exportZoom  =  S.size / 2^S.zoom
+    //   avec exportZoom = S.zoom + adjZoomAdd
+    //        renderSize = S.size  × 2^adjZoomAdd   (≤ insetPx)
+    //
+    // ctx.drawImage effectue ensuite un léger agrandissement renderSize→insetPx
+    // (facteur < 2, toujours net car les tuiles sont à résolution suffisante).
+
+    let adjZoomAdd = Math.max(0, Math.round(Math.log2(insetPx / S.size)));
+    const exportZoom = Math.min(19, S.zoom + adjZoomAdd);
+    adjZoomAdd = exportZoom - S.zoom;                          // réajuste si plafonné à 19
+    const renderSize = Math.round(S.size * Math.pow(2, adjZoomAdd)); // toujours ≤ insetPx
+
     const mapCenter = lmap ? lmap.getCenter() : { lat, lng: lon };
     const mapCv = await renderMap(
       mapCenter.lat, mapCenter.lng,
-      S.zoom, insetPx, insetPx, S.bm, setProgress, lat, lon
+      exportZoom, renderSize, renderSize, S.bm, setProgress, lat, lon
     );
+    // drawImage effectue le passage renderSize → insetPx (légère montée en échelle)
+
     setProgress(0.9);
 
     let ix, iy;
@@ -1053,28 +1158,92 @@ function loadImg(url) {
   });
 }
 
-// Marqueur de localisation
+// Marqueur de localisation — 5 styles
 function drawPin(ctx, cx, cy, sz) {
-  const s = Math.max(0.9, Math.min(4.5, sz / 170));
-  const r  = 9 * s, hh = 22 * s;
-  const circY = cy - hh;
+  const s   = Math.max(0.9, Math.min(4.5, sz / 170));
+  const r   = 9 * s;
+  const COL = '#c0392b';
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,.4)';
-  ctx.shadowBlur  = 5 * s; ctx.shadowOffsetX = 1 * s; ctx.shadowOffsetY = 2.5 * s;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(cx - r * .7, circY + r * .85);
-  ctx.lineTo(cx + r * .7, circY + r * .85);
-  ctx.closePath();
-  ctx.fillStyle = '#c0392b'; ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx, circY, r, 0, Math.PI * 2);
-  ctx.fillStyle = '#c0392b'; ctx.fill();
-  ctx.shadowColor = 'transparent';
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5 * s; ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx, circY, r * .3, 0, Math.PI * 2);
-  ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.shadowBlur  = 5 * s;
+  ctx.shadowOffsetX = 1 * s;
+  ctx.shadowOffsetY = 2.5 * s;
+
+  switch (S.pinStyle) {
+
+    case 'pin': default: {
+      // Punaise classique — triangle + cercle
+      const hh = 22 * s, circY = cy - hh;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - r * .7, circY + r * .85);
+      ctx.lineTo(cx + r * .7, circY + r * .85);
+      ctx.closePath();
+      ctx.fillStyle = COL; ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, circY, r, 0, Math.PI*2);
+      ctx.fillStyle = COL; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5*s; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, circY, r*.3, 0, Math.PI*2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      break;
+    }
+
+    case 'dot': {
+      // Point simple
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.fillStyle = COL; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5*s; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r*.3, 0, Math.PI*2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      break;
+    }
+
+    case 'cross': {
+      // Croix dans cercle
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.fillStyle = COL; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2*s; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r*.72); ctx.lineTo(cx, cy + r*.72);
+      ctx.moveTo(cx - r*.72, cy); ctx.lineTo(cx + r*.72, cy);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 3*s;
+      ctx.lineCap = 'round'; ctx.stroke();
+      break;
+    }
+
+    case 'target': {
+      // Cible / bullseye
+      ctx.shadowColor = 'transparent';
+      ctx.beginPath(); ctx.arc(cx, cy, r*1.2, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.fill();
+      ctx.strokeStyle = COL; ctx.lineWidth = 2.5*s; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r*.55, 0, Math.PI*2);
+      ctx.strokeStyle = COL; ctx.lineWidth = 2*s; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r*.18, 0, Math.PI*2);
+      ctx.fillStyle = COL; ctx.fill();
+      break;
+    }
+
+    case 'diamond': {
+      // Losange
+      ctx.beginPath();
+      ctx.moveTo(cx,        cy - r*1.15);
+      ctx.lineTo(cx + r*1.15, cy);
+      ctx.lineTo(cx,        cy + r*1.15);
+      ctx.lineTo(cx - r*1.15, cy);
+      ctx.closePath();
+      ctx.fillStyle = COL; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5*s; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r*.28, 0, Math.PI*2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      break;
+    }
+  }
   ctx.restore();
 }
 </script>
