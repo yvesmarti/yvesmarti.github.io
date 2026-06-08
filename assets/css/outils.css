@@ -1,0 +1,501 @@
+/* ===========================================
+   PAGE OUTILS — DESIGN UNIFIÉ
+   =========================================== */
+
+body.ot-page {
+  background: #fff;
+  color: #111;
+}
+
+/* ── Hero ── */
+.ot-hero {
+  padding: 3.5rem 2.5rem 2.5rem;
+  border-bottom: 1px solid #ece9e3;
+}
+
+.ot-hero-eyebrow {
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: .6rem;
+  font-family: 'Space Mono', monospace;
+}
+
+.ot-hero-title {
+  font-size: 2.4rem;
+  font-weight: 400;
+  color: #111;
+  line-height: 1.1;
+  margin-bottom: .7rem;
+  letter-spacing: -.01em;
+  font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.ot-hero-sub {
+  font-size: .95rem;
+  color: #666;
+  max-width: 560px;
+  line-height: 1.65;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+/* ── Barre de filtres ── */
+.ot-filter-section {
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid #f0ede8;
+}
+
+.ot-filter-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.ot-filter-count {
+  margin-left: auto;
+  font-size: .78rem;
+  color: #999;
+  font-family: 'Space Mono', monospace;
+}
+
+.ot-pill {
+  padding: .38rem .9rem;
+  border-radius: 99px;
+  font-size: .78rem;
+  letter-spacing: .02em;
+  cursor: pointer;
+  border: 1.5px solid #e5e2dc;
+  background: #f4f2ee;
+  color: #555;
+  font-weight: 500;
+  font-family: 'Source Sans 3', sans-serif;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.ot-pill:hover {
+  background: #e8f4f0;
+  border-color: #6abfaa;
+  color: #2a7a65;
+}
+
+.ot-pill.active {
+  background: var(--color-accent, #3d8b6e);
+  border-color: var(--color-accent, #3d8b6e);
+  color: #fff;
+}
+
+/* ── Sections ── */
+.ot-sections-wrapper {
+  padding: 0 2.5rem 2rem;
+}
+
+.ot-section {
+  margin-top: 2.5rem;
+}
+
+.ot-categorie {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: var(--color-primary, #1a3a32);
+  margin-bottom: 1.25rem;
+  padding-bottom: .6rem;
+  border-bottom: 2px solid var(--color-accent, #3d8b6e);
+  letter-spacing: -.01em;
+}
+
+/* ── Grille ── */
+.ot-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 960px) {
+  .ot-card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 580px) {
+  .ot-card-grid { grid-template-columns: 1fr; }
+  .ot-hero { padding: 2.5rem 1.25rem 1.75rem; }
+  .ot-filter-section { padding: 1.25rem; }
+  .ot-sections-wrapper { padding: 0 1.25rem 2rem; }
+  .ot-recommandes-header { padding: 2rem 1.25rem; }
+  .ot-recommandes-body { padding: 1.5rem 1.25rem 3rem; }
+}
+
+/* ── Card ── */
+.ot-card {
+  border: 1.5px solid #ece9e3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ot-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.09);
+  border-color: #6abfaa;
+}
+
+.ot-card--inactive {
+  opacity: .55;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Thumbnail */
+.ot-card-thumb {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  border-bottom: 1.5px solid #ece9e3;
+  position: relative;
+  overflow: hidden;
+}
+
+.ot-card-thumb--geo    { background: #f0faf6; }
+.ot-card-thumb--analyse { background: #f0f4ff; }
+.ot-card-thumb--env    { background: #f2f9f0; }
+.ot-card-thumb--autres { background: #fdf8f0; }
+
+.ot-card-thumb-emoji {
+  position: relative;
+  z-index: 1;
+}
+
+/* Corps */
+.ot-card-body {
+  padding: 1.1rem 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ot-card-tags {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: .55rem;
+  flex-wrap: wrap;
+}
+
+/* Badges de catégorie */
+.ot-badge {
+  font-size: .65rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: .2rem .55rem;
+  border-radius: 4px;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.ot-badge--geo     { background: #f0faf6; color: #2a7a65; }
+.ot-badge--analyse { background: #f0f4ff; color: #4060c0; }
+.ot-badge--env     { background: #f2f9f0; color: #3a7a30; }
+.ot-badge--autres  { background: #fdf8f0; color: #a06020; }
+
+.ot-card-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--color-primary, #1a3a32);
+  margin-bottom: .38rem;
+  line-height: 1.3;
+}
+
+.ot-card-desc {
+  font-size: .82rem;
+  color: #666;
+  line-height: 1.58;
+  flex: 1;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.ot-card-footer {
+  margin-top: .85rem;
+  padding-top: .7rem;
+  border-top: 1px solid #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ot-card-link {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--color-accent, #3d8b6e);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  white-space: nowrap;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.ot-card-arrow {
+  display: inline-block;
+  transition: transform .18s ease;
+}
+
+.ot-card:hover .ot-card-arrow {
+  transform: translateX(3px);
+}
+
+.ot-badge-soon {
+  font-size: .7rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #aaa;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+/* ── Section recommandés ── */
+.ot-recommandes-section {
+  margin-top: 3rem;
+  border-top: 1px solid #ece9e3;
+}
+
+.ot-recommandes-header {
+  padding: 2.5rem 2.5rem 2rem;
+  border-bottom: 1px solid #f0ede8;
+}
+
+.ot-recommandes-eyebrow {
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: .5rem;
+  font-family: 'Space Mono', monospace;
+}
+
+.ot-recommandes-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #111;
+  margin-bottom: .4rem;
+  letter-spacing: -.01em;
+}
+
+.ot-recommandes-subtitle {
+  font-size: .9rem;
+  color: #777;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.ot-recommandes-body {
+  padding: 2rem 2.5rem 4rem;
+}
+
+.ot-recommandes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.75rem;
+}
+
+.ot-recommandes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Recommandés cards */
+.ot-rec-card {
+  display: block;
+  padding: 1.4rem;
+  background: #fff;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid #ece9e3;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, opacity .2s ease;
+}
+
+.ot-rec-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.08);
+  border-color: #6abfaa;
+}
+
+.ot-rec-card.dimmed {
+  opacity: .2;
+  pointer-events: none;
+}
+
+.ot-rec-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+
+.ot-rec-card-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.08rem;
+  font-weight: 400;
+  color: var(--color-primary, #1a3a32);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ot-rec-card-arrow {
+  flex-shrink: 0;
+  color: var(--color-accent, #3d8b6e);
+  margin-top: .15rem;
+  transition: transform .18s ease;
+}
+
+.ot-rec-card:hover .ot-rec-card-arrow {
+  transform: translate(2px, -2px);
+}
+
+.ot-rec-card-desc {
+  font-size: .84rem;
+  color: #666;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.ot-rec-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.ot-rec-tag {
+  display: inline-block;
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .2rem .6rem;
+  background: #f4f2ee;
+  color: #888;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+/* ── Mode sombre ── */
+[data-theme="dark"] body.ot-page,
+[data-theme="dark"] .ot-page {
+  background: #131e17;
+}
+
+[data-theme="dark"] .ot-hero {
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-hero-eyebrow { color: #6a9a7a; }
+[data-theme="dark"] .ot-hero-title   { color: #d4e8dc; }
+[data-theme="dark"] .ot-hero-sub     { color: #8aaa9a; }
+
+[data-theme="dark"] .ot-filter-section {
+  border-bottom-color: #1c2a20;
+}
+
+[data-theme="dark"] .ot-pill {
+  background: #1c2a20;
+  border-color: #2a3d30;
+  color: #8aaa9a;
+}
+
+[data-theme="dark"] .ot-pill:hover {
+  background: #1a3028;
+  border-color: #4a9d7a;
+  color: #6ecba0;
+}
+
+[data-theme="dark"] .ot-pill.active {
+  background: #1D9E75;
+  border-color: #1D9E75;
+  color: #fff;
+}
+
+[data-theme="dark"] .ot-filter-count { color: #6a9a7a; }
+
+[data-theme="dark"] .ot-categorie {
+  color: #b8d8c8;
+  border-bottom-color: #2a7a65;
+}
+
+[data-theme="dark"] .ot-card {
+  background: #1a2e24;
+  border-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-card:hover {
+  border-color: #4a9d7a;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+}
+
+[data-theme="dark"] .ot-card-thumb {
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-card-thumb--geo    { background: #0f2018; }
+[data-theme="dark"] .ot-card-thumb--analyse { background: #0f1428; }
+[data-theme="dark"] .ot-card-thumb--env    { background: #0d1e0d; }
+[data-theme="dark"] .ot-card-thumb--autres { background: #1e1608; }
+
+[data-theme="dark"] .ot-card-title { color: #d4e8dc; }
+[data-theme="dark"] .ot-card-desc  { color: #8aaa9a; }
+
+[data-theme="dark"] .ot-card-footer {
+  border-top-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-card-link { color: #5aad8a; }
+
+[data-theme="dark"] .ot-badge-soon { color: #5a7a6a; }
+
+[data-theme="dark"] .ot-badge--geo     { background: #0f2018; color: #5aad8a; }
+[data-theme="dark"] .ot-badge--analyse { background: #0f1428; color: #7090d8; }
+[data-theme="dark"] .ot-badge--env     { background: #0d1e0d; color: #5aad60; }
+[data-theme="dark"] .ot-badge--autres  { background: #1e1608; color: #c8962e; }
+
+[data-theme="dark"] .ot-recommandes-section {
+  border-top-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-recommandes-header {
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-recommandes-eyebrow { color: #6a9a7a; }
+[data-theme="dark"] .ot-recommandes-title   { color: #d4e8dc; }
+[data-theme="dark"] .ot-recommandes-subtitle { color: #8aaa9a; }
+
+[data-theme="dark"] .ot-rec-card {
+  background: #1a2e24;
+  border-color: #2a3d30;
+}
+
+[data-theme="dark"] .ot-rec-card:hover {
+  border-color: #4a9d7a;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+}
+
+[data-theme="dark"] .ot-rec-card-title { color: #d4e8dc; }
+[data-theme="dark"] .ot-rec-card-desc  { color: #8aaa9a; }
+[data-theme="dark"] .ot-rec-card-arrow { color: #5aad8a; }
+
+[data-theme="dark"] .ot-rec-tag {
+  background: #253c2e;
+  color: #8aaa9a;
+}

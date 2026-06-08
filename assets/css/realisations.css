@@ -20,17 +20,17 @@
   text-transform: uppercase;
   color: #888;
   margin-bottom: .6rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Space Mono', monospace;
 }
 
 .rl-hero-title {
   font-size: 2.4rem;
-  font-weight: 700;
+  font-weight: 400;
   color: #111;
   line-height: 1.1;
   margin-bottom: .7rem;
-  letter-spacing: -.02em;
-  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: -.01em;
+  font-family: 'DM Serif Display', Georgia, serif;
 }
 
 .rl-hero-sub {
@@ -38,7 +38,7 @@
   color: #666;
   max-width: 520px;
   line-height: 1.65;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 /* ── Barre de filtres ── */
@@ -58,7 +58,7 @@
   margin-left: auto;
   font-size: .78rem;
   color: #999;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Space Mono', monospace;
 }
 
 .rl-pill {
@@ -71,7 +71,7 @@
   background: #f4f2ee;
   color: #555;
   font-weight: 500;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
   transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
 
@@ -171,7 +171,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .rl-card-tags {
@@ -189,7 +189,7 @@
   font-weight: 700;
   padding: .22rem .6rem;
   border-radius: 4px;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .rl-badge--etude  { background: #f0faf6; color: #2a7a65; }
@@ -198,18 +198,20 @@
 .rl-badge--site   { background: #fdf0f8; color: #9040a0; }
 
 .rl-card-title {
-  font-size: .95rem;
-  font-weight: 700;
-  color: #111;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--color-primary, #1a3a32);
   margin-bottom: .38rem;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .rl-card-desc {
-  font-size: .8rem;
+  font-size: .82rem;
   color: #666;
   line-height: 1.58;
   flex: 1;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .rl-card-footer {
@@ -231,6 +233,7 @@
   font-size: .65rem;
   color: #aaa;
   font-weight: 500;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .rl-card-meta-tag::before {
@@ -239,13 +242,14 @@
 
 .rl-card-link {
   font-size: .78rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #2a7a65;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: .25rem;
   white-space: nowrap;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .rl-card-arrow {
@@ -264,7 +268,7 @@
   text-align: center;
   color: #999;
   font-size: .9rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 /* ── Nav : lien actif Réalisations ── */
