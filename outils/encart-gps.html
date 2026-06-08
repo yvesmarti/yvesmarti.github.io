@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GéoPhoto — Encart cartographique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* ── Variables ─────────────────────────────── */
+:root {
+  --bg:       #f4f2ed;
+  --sb:       #ffffff;
+  --bd:       #e6e3db;
+  --bd2:      #f0ede7;
+  --acc:      #2d7db3;
+  --acc-h:    #1e5f8a;
+  --acc-bg:   #eaf3fb;
+  --text:     #1c1c1c;
+  --text2:    #5a5a5a;
+  --text3:    #a0a0a0;
+  --ok:       #2a7a4e;
+  --ok-bg:    #eaf5ef;
+  --err:      #c0392b;
+  --err-bg:   #fdf0ee;
+  --pin:      #c0392b;
+  --mono:     'JetBrains Mono', 'Fira Mono', monospace;
+}
+
+/* ── Reset ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px; color: var(--text);
+  background: var(--bg);
+  height: 100vh; overflow: hidden;
+  display: flex;
+}
+
+/* ── SIDEBAR ────────────────────────────────── */
+#sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--sb);
+  border-right: 1px solid var(--bd);
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin; scrollbar-color: #ddd transparent;
+}
+
+/* En-tête */
+.sh {
+  padding: 14px 18px 13px;
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+.sh .back {
+  font-size: 11px; color: var(--text3);
+  text-decoration: none; letter-spacing: .2px;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-bottom: 10px;
+  transition: color .15s;
+}
+.sh .back:hover { color: var(--acc); }
+.sh h1 {
+  font-size: 16px; font-weight: 600;
+  color: var(--text); letter-spacing: -.2px;
+}
+.sh .tag {
+  font-size: 11px; color: var(--text3);
+  margin-top: 2px; letter-spacing: .1px;
+}
+
+/* Sections */
+.blk {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--bd2);
+}
+.lbl {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 8px;
+}
+
+/* Zone de dépôt */
+#dz {
+  border: 1.5px dashed var(--bd);
+  border-radius: 6px; padding: 16px 12px;
+  text-align: center; cursor: pointer;
+  transition: .18s; color: var(--text3);
+  font-size: 11.5px; line-height: 1.65;
+  background: var(--bg);
+}
+#dz:hover, #dz.ov {
+  border-color: var(--acc);
+  background: var(--acc-bg); color: var(--acc);
+}
+#dz .ic { font-size: 20px; margin-bottom: 5px; display: block; }
+#dz .lnk { color: var(--acc); text-decoration: underline; cursor: pointer; }
+#fi { display: none; }
+#pnfo { font-size: 10px; color: var(--text3); margin-top: 7px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* GPS badge */
+#gps {
+  background: var(--bg); border: 1px solid var(--bd);
+  border-radius: 5px; padding: 8px 11px;
+  font-size: 11px; color: var(--text2); line-height: 1.85;
+}
+#gps .gv  { font-family: var(--mono); color: var(--ok); font-size: 11px; }
+#gps .src { font-size: 9.5px; color: var(--text3); display: block; margin-top: 2px; }
+#gps.ng   { color: var(--err); background: var(--err-bg); border-color: #f5c5c1; }
+#gps.ok   { background: var(--ok-bg); border-color: #b7e0cb; }
+
+/* Saisie manuelle */
+#manual-block { display: none; margin-top: 10px; }
+#manual-block .mlbl {
+  font-size: 9.5px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--err); margin-bottom: 7px;
+}
+.mrow { display: flex; gap: 5px; margin-bottom: 6px; }
+.mrow input[type=number] {
+  flex: 1; background: var(--bg); border: 1px solid var(--bd);
+  color: var(--text); padding: 7px 8px; border-radius: 4px;
+  font-size: 11px; font-family: var(--mono);
+  -moz-appearance: textfield; min-width: 0;
+  transition: border-color .15s;
+}
+.mrow input[type=number]::-webkit-outer-spin-button,
+.mrow input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.mrow input[type=number]:focus { outline: none; border-color: var(--acc); }
+#mbtn {
+  width: 100%; padding: 7px; background: #fff; border: 1px solid var(--bd);
+  color: var(--text2); border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif;
+  transition: .15s;
+}
+#mbtn:hover { border-color: var(--acc); color: var(--acc); background: var(--acc-bg); }
+.mhint { font-size: 10px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+
+/* Bouton diagnostic */
+#dbtn {
+  width: 100%; padding: 6px; background: transparent;
+  border: 1px solid var(--bd2); color: var(--text3);
+  border-radius: 4px; cursor: pointer; font-size: 10px;
+  font-family: 'Inter', sans-serif; margin-top: 8px;
+  transition: .15s; text-align: center;
+}
+#dbtn:hover { border-color: var(--bd); color: var(--text2); }
+
+/* Boutons toggle (fond de carte) */
+.brow { display: flex; gap: 5px; }
+.tbtn {
+  flex: 1; padding: 7px 6px;
+  background: var(--bg); border: 1px solid var(--bd);
+  color: var(--text2); border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif;
+  transition: .15s; text-align: center; white-space: nowrap;
+}
+.tbtn:hover { border-color: var(--acc); color: var(--acc); }
+.tbtn.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+
+/* Grille position */
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.pbtn {
+  padding: 9px; background: var(--bg); border: 1px solid var(--bd);
+  color: var(--text3); border-radius: 4px; cursor: pointer;
+  font-size: 17px; transition: .15s; text-align: center; line-height: 1;
+}
+.pbtn:hover { border-color: var(--acc); color: var(--acc); }
+.pbtn.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+
+/* Sliders */
+.sr { display: flex; align-items: center; gap: 9px; margin-top: 3px; }
+.sr input[type=range] {
+  flex: 1; height: 3px; accent-color: var(--acc); cursor: pointer;
+}
+.sv {
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  min-width: 38px; text-align: right; flex-shrink: 0;
+}
+
+/* Couleur bordure */
+.crow { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+.crow span { font-size: 11px; color: var(--text2); flex: 1; }
+input[type=color] {
+  width: 28px; height: 24px; padding: 2px;
+  border: 1px solid var(--bd); border-radius: 3px;
+  background: var(--bg); cursor: pointer;
+}
+
+/* Checkbox */
+.tog { display: flex; align-items: center; gap: 7px; cursor: pointer;
+       font-size: 11px; color: var(--text2); }
+.tog input { accent-color: var(--acc); cursor: pointer; width: 14px; height: 14px; }
+
+/* Bouton export */
+.exwrap { padding: 12px 18px 14px; }
+#ebtn {
+  width: 100%; padding: 10px;
+  background: var(--acc); color: #fff;
+  border: none; border-radius: 5px;
+  font-size: 12px; font-weight: 600; letter-spacing: .5px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: background .15s, transform .1s;
+}
+#ebtn:hover:not(:disabled) { background: var(--acc-h); }
+#ebtn:active:not(:disabled) { transform: scale(.98); }
+#ebtn:disabled { background: var(--bd); color: var(--text3); cursor: not-allowed; }
+
+/* Pied de sidebar */
+.sfooter {
+  margin-top: auto; padding: 11px 18px 14px;
+  border-top: 1px solid var(--bd2);
+  font-size: 10px; color: var(--text3);
+  line-height: 1.6;
+}
+
+/* ── MAIN ───────────────────────────────────── */
+#main {
+  flex: 1; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; background: var(--bg);
+  background-image: radial-gradient(circle, rgba(0,0,0,.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+#pholder { text-align: center; pointer-events: none; user-select: none; }
+#pholder .pi { font-size: 48px; opacity: .15; display: block; margin-bottom: 12px; }
+#pholder p   { font-size: 14px; color: var(--text2); font-weight: 500; }
+#pholder sm  { font-size: 11px; color: var(--text3); display: block; margin-top: 5px; }
+
+#pc { display: none; position: relative; box-shadow: 0 4px 24px rgba(0,0,0,.14); }
+#img {
+  display: block;
+  max-width: calc(100vw - 260px - 40px);
+  max-height: calc(100vh - 40px);
+}
+
+/* Encart carte */
+#mi {
+  position: absolute; z-index: 500; display: none;
+  border-radius: 3px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+.leaflet-control-attribution,
+.leaflet-control-zoom { display: none !important; }
+
+/* Boutons sur l'encart */
+#zbtns {
+  position: absolute; bottom: 6px; right: 6px;
+  z-index: 1000; display: none;
+  flex-direction: column; gap: 3px; pointer-events: auto;
+}
+#mi:hover #zbtns { display: flex; }
+#rcwrap {
+  position: absolute; top: 6px; left: 6px;
+  z-index: 1000; display: none; pointer-events: auto;
+}
+#mi:hover #rcwrap { display: block; }
+#rcbtn { font-size: 13px; }
+.zbtn {
+  width: 23px; height: 23px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,0,0,.14);
+  border-radius: 3px; cursor: pointer;
+  font-size: 15px; font-weight: 700; line-height: 1;
+  color: #333; display: flex; align-items: center; justify-content: center;
+  transition: background .1s, color .1s; font-family: sans-serif;
+  user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+.zbtn:hover { background: #fff; color: var(--acc); }
+.zbtn:active { transform: scale(.9); }
+#zlevel {
+  position: absolute; bottom: 6px; left: 6px;
+  z-index: 1000;
+  background: rgba(255,255,255,.82);
+  color: #444; font-size: 10px;
+  font-family: var(--mono); padding: 2px 6px;
+  border-radius: 3px; display: none; pointer-events: none;
+  border: 1px solid rgba(0,0,0,.08);
+}
+#mi:hover #zlevel { display: block; }
+#mi .leaflet-container { cursor: grab; }
+#mi .leaflet-container.leaflet-drag-target { cursor: grabbing; }
+
+/* Modal diagnostic */
+#diag-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 9000;
+  align-items: center; justify-content: center;
+}
+#diag-overlay.open { display: flex; }
+#diag-box {
+  background: #fff; border: 1px solid var(--bd);
+  border-radius: 8px; width: 520px; max-height: 70vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+#diag-head {
+  padding: 14px 18px; border-bottom: 1px solid var(--bd);
+  display: flex; justify-content: space-between; align-items: center;
+}
+#diag-head span { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: .5px; }
+#diag-close {
+  background: none; border: none; color: var(--text3);
+  font-size: 18px; cursor: pointer; padding: 0 4px;
+}
+#diag-close:hover { color: var(--text); }
+#diag-content {
+  padding: 14px 18px; overflow-y: auto; flex: 1;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text2); line-height: 1.7;
+  scrollbar-width: thin; scrollbar-color: #ddd transparent;
+  white-space: pre;
+}
+#diag-content .tag  { color: var(--ok); }
+#diag-content .val  { color: var(--text); }
+#diag-content .sect { color: var(--acc); font-weight: 600; }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 18px; left: 50%;
+  transform: translateX(-50%) translateY(55px);
+  background: rgba(28,28,28,.92); color: #f0f0f0;
+  padding: 7px 18px; border-radius: 20px; font-size: 11.5px;
+  transition: transform .25s ease; z-index: 9999;
+  white-space: nowrap; pointer-events: none;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.err  { background: rgba(160,30,20,.93); }
+
+/* Barre de progression */
+#prog {
+  position: fixed; bottom: 0; left: 260px; right: 0;
+  height: 2px; background: var(--acc);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s ease; z-index: 9999;
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div id="sidebar">
+  <div class="sh">
+    <a class="back" href="https://yvesmarti.github.io/outils.html">← Retour aux outils</a>
+    <h1>GéoPhoto</h1>
+    <div class="tag">Encart cartographique · Traitement local</div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Photo</div>
+    <div id="dz">
+      <span class="ic">📷</span>
+      Glisser une photo ici<br>
+      ou <span class="lnk" onclick="document.getElementById('fi').click()">choisir un fichier</span>
+    </div>
+    <input type="file" id="fi" accept="image/*">
+    <div id="pnfo"></div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Géolocalisation GPS</div>
+    <div id="gps">—</div>
+
+    <div id="manual-block">
+      <div class="mlbl" style="margin-top:10px">▸ Saisie manuelle</div>
+      <div class="mrow">
+        <input type="number" id="mlat" placeholder="Latitude (ex: 49.1234)"
+               step="0.000001" min="-90" max="90">
+        <input type="number" id="mlon" placeholder="Longitude (ex: 0.1234)"
+               step="0.000001" min="-180" max="180">
+      </div>
+      <button id="mbtn">Appliquer ces coordonnées</button>
+      <div class="mhint">
+        💡 Disponibles via Google Maps (clic droit)<br>
+        Format décimal — ex : 49.162471 / 0.041230
+      </div>
+    </div>
+
+    <button id="dbtn">🔍 Inspecter les métadonnées EXIF</button>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Fond de carte</div>
+    <div class="brow">
+      <button class="tbtn on" data-bm="carto">📋 Plan</button>
+      <button class="tbtn"    data-bm="sat">🛰 Satellite</button>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Position</div>
+    <div class="pgrid">
+      <button class="pbtn" data-pos="tl">↖</button>
+      <button class="pbtn" data-pos="tr">↗</button>
+      <button class="pbtn" data-pos="bl">↙</button>
+      <button class="pbtn on" data-pos="br">↘</button>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Taille de l'encart</div>
+    <div class="sr">
+      <input type="range" id="sz" min="80" max="500" value="220" step="5">
+      <span class="sv" id="szv">220 px</span>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Zoom</div>
+    <div class="sr">
+      <input type="range" id="zm" min="10" max="19" value="15" step="1">
+      <span class="sv" id="zmv">z 15</span>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Bordure</div>
+    <div class="sr">
+      <input type="range" id="bw" min="0" max="14" value="3" step="1">
+      <span class="sv" id="bwv">3 px</span>
+    </div>
+    <div class="crow">
+      <span>Couleur</span>
+      <input type="color" id="bc" value="#ffffff">
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Marge du bord</div>
+    <div class="sr">
+      <input type="range" id="mg" min="0" max="80" value="12" step="2">
+      <span class="sv" id="mgv">12 px</span>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="lbl">Options d'export</div>
+    <label class="tog">
+      <input type="checkbox" id="sc"> Afficher les coordonnées GPS
+    </label>
+  </div>
+
+  <div class="exwrap">
+    <button id="ebtn" disabled>⬇ Exporter en JPEG</button>
+  </div>
+
+  <div class="sfooter">
+    GéoPhoto · Traitement local<br>
+    Aucune donnée envoyée · Fonctionne hors ligne
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="main">
+  <div id="pholder">
+    <span class="pi">🗺️</span>
+    <p>Importez une photo géolocalisée</p>
+    <sm>JPEG avec données GPS · glisser-déposer ou clic</sm>
+  </div>
+  <div id="pc">
+    <img id="img" alt="Photo terrain">
+    <div id="mi">
+      <div id="rcwrap">
+        <button class="zbtn" id="rcbtn" title="Re-centrer sur le point GPS">⊕</button>
+      </div>
+      <div id="zbtns">
+        <button class="zbtn" id="zin"  title="Zoomer (molette ↑)">+</button>
+        <button class="zbtn" id="zout" title="Dézoomer (molette ↓)">−</button>
+      </div>
+      <span id="zlevel">z 15</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal diagnostic EXIF -->
+<div id="diag-overlay">
+  <div id="diag-box">
+    <div id="diag-head">
+      <span>Métadonnées EXIF</span>
+      <button id="diag-close" onclick="document.getElementById('diag-overlay').classList.remove('open')">✕</button>
+    </div>
+    <div id="diag-content">Chargez une photo pour inspecter ses métadonnées.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="prog"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.cjs"></script>
+<script>
+// ── État global ──────────────────────────────────────────────
+let lat = null, lon = null;
+let lmap = null, lmarker = null, ltile = null;
+let photoW = 0, photoH = 0;
+let currentFile = null;
+
+const S = {
+  bm:   'carto',
+  pos:  'br',
+  size: 220,
+  zoom: 15,
+  bw:   3,
+  bc:   '#ffffff',
+  mg:   12,
+  showCoords: false
+};
+
+const BM_URL = {
+  carto: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  sat:   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+};
+
+// ── DOM ──────────────────────────────────────────────────────
+const dz   = document.getElementById('dz');
+const fi   = document.getElementById('fi');
+const gps  = document.getElementById('gps');
+const pnfo = document.getElementById('pnfo');
+const pc   = document.getElementById('pc');
+const img  = document.getElementById('img');
+const mi   = document.getElementById('mi');
+const ph   = document.getElementById('pholder');
+const eb   = document.getElementById('ebtn');
+const prog = document.getElementById('prog');
+
+// ── Toast ────────────────────────────────────────────────────
+const $toast = document.getElementById('toast');
+let tT;
+function toast(msg, err = false) {
+  $toast.textContent = msg;
+  $toast.className = 'show' + (err ? ' err' : '');
+  clearTimeout(tT);
+  tT = setTimeout(() => $toast.className = '', 3200);
+}
+
+// ── Chargement de la photo ───────────────────────────────────
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('ov'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('ov'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('ov');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadPhoto(f);
+});
+fi.addEventListener('change', e => { if (e.target.files[0]) loadPhoto(e.target.files[0]); });
+
+async function loadPhoto(file) {
+  currentFile = file;
+  lat = null; lon = null;
+  gps.className = '';
+  gps.innerHTML = '<span style="color:#aaa">Lecture des métadonnées…</span>';
+  document.getElementById('manual-block').style.display = 'none';
+
+  const result = await extractGPS(file);
+
+  if (result) {
+    lat = result.latitude; lon = result.longitude;
+    gps.className = 'ok';
+    gps.innerHTML =
+      `Latitude&nbsp;: <span class="gv">${lat.toFixed(6)}°</span><br>` +
+      `Longitude : <span class="gv">${lon.toFixed(6)}°</span>` +
+      `<span class="src">${result.source}</span>`;
+    document.getElementById('manual-block').style.display = 'none';
+  } else {
+    gps.className = 'ng';
+    gps.textContent = '⚠ GPS non détecté dans cette photo';
+    document.getElementById('manual-block').style.display = 'block';
+  }
+
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    photoW = img.naturalWidth;
+    photoH = img.naturalHeight;
+    const name = file.name.length > 30 ? file.name.substring(0, 27) + '…' : file.name;
+    pnfo.textContent = `${name} · ${photoW}×${photoH} px`;
+
+    ph.style.display = 'none';
+    pc.style.display = 'block';
+
+    if (lat !== null) {
+      applyInset();
+      mi.style.display = 'block';
+      setTimeout(initMap, 80);
+      eb.disabled = false;
+      toast('📍 Photo chargée · GPS détecté');
+    } else {
+      mi.style.display = 'none';
+      eb.disabled = true;
+      toast('Photo chargée · Pas de GPS → saisie manuelle disponible', true);
+    }
+  };
+  img.src = url;
+}
+
+// ── Saisie manuelle ─────────────────────────────────────────
+document.getElementById('mbtn').addEventListener('click', () => {
+  const mlat = parseFloat(document.getElementById('mlat').value);
+  const mlon = parseFloat(document.getElementById('mlon').value);
+  if (isNaN(mlat) || isNaN(mlon) || mlat < -90 || mlat > 90 || mlon < -180 || mlon > 180) {
+    toast('⚠ Coordonnées invalides — format décimal requis (ex: 49.1234)', true);
+    return;
+  }
+  lat = mlat; lon = mlon;
+  gps.className = 'ok';
+  gps.innerHTML =
+    `Latitude&nbsp;: <span class="gv">${lat.toFixed(6)}°</span><br>` +
+    `Longitude : <span class="gv">${lon.toFixed(6)}°</span>` +
+    `<span class="src">Saisie manuelle</span>`;
+  document.getElementById('manual-block').style.display = 'none';
+
+  if (pc.style.display === 'block') {
+    applyInset();
+    mi.style.display = 'block';
+    setTimeout(initMap, 80);
+    eb.disabled = false;
+    toast('📍 Coordonnées manuelles appliquées');
+  }
+});
+
+// ── Diagnostic EXIF ──────────────────────────────────────────
+document.getElementById('dbtn').addEventListener('click', async () => {
+  const diagContent = document.getElementById('diag-content');
+  if (!currentFile) {
+    diagContent.textContent = 'Chargez d\'abord une photo.';
+    document.getElementById('diag-overlay').classList.add('open');
+    return;
+  }
+  diagContent.innerHTML = '<span style="color:#aaa">Analyse en cours…</span>';
+  document.getElementById('diag-overlay').classList.add('open');
+  let html = '';
+
+  try {
+    const buf = await currentFile.arrayBuffer();
+    const raw = inspectJpegExif(buf);
+    if (raw) {
+      html += `<span class="sect">── EXIF (parseur natif) ──</span>\n`;
+      for (const [k, v] of Object.entries(raw)) {
+        html += `<span class="tag">${k}</span> : <span class="val">${v}</span>\n`;
+      }
+    } else {
+      html += `<span style="color:#c07070">Parseur natif : aucune section EXIF trouvée.</span>\n`;
+    }
+  } catch (e) {
+    html += `<span style="color:#c07070">Parseur natif erreur : ${e.message}</span>\n`;
+  }
+
+  if (typeof exifr !== 'undefined') {
+    try {
+      const data = await exifr.parse(currentFile);
+      if (data && Object.keys(data).length) {
+        html += `\n<span class="sect">── exifr (toutes balises) ──</span>\n`;
+        for (const [k, v] of Object.entries(data)) {
+          const vs = Array.isArray(v) ? `[${v.join(', ')}]` : String(v);
+          html += `<span class="tag">${k}</span> : <span class="val">${vs.substring(0, 80)}</span>\n`;
+        }
+      } else {
+        html += `\n<span style="color:#c07070">exifr : aucune balise trouvée.</span>\n`;
+      }
+    } catch (e) {
+      html += `\n<span style="color:#c07070">exifr erreur : ${e.message}</span>\n`;
+    }
+  } else {
+    html += `\n<span style="color:#aaa">exifr : non chargé (CDN inaccessible).</span>\n`;
+  }
+  diagContent.innerHTML = html || 'Aucune métadonnée trouvée.';
+});
+
+// ── Extraction GPS multi-stratégie ───────────────────────────
+async function extractGPS(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const r = parseJpegExifGPS(buf);
+    if (r) { r.source = 'Parseur natif EXIF'; return r; }
+  } catch (e) { console.warn('[GPS] natif:', e.message); }
+
+  if (typeof exifr !== 'undefined') {
+    try {
+      const g = await exifr.gps(file);
+      if (g?.latitude != null) return { latitude: g.latitude, longitude: g.longitude, source: 'exifr.gps()' };
+    } catch (e) { console.warn('[GPS] exifr.gps:', e.message); }
+    try {
+      const d = await exifr.parse(file, { gps: true, mergeOutput: true });
+      if (d?.latitude != null) return { latitude: d.latitude, longitude: d.longitude, source: 'exifr.parse()' };
+    } catch (e) { console.warn('[GPS] exifr.parse:', e.message); }
+  }
+  return null;
+}
+
+// ── Parseur EXIF JPEG binaire natif ─────────────────────────
+function parseJpegExifGPS(buffer) {
+  const view = new DataView(buffer);
+  if (view.getUint16(0) !== 0xFFD8) return null;
+  let offset = 2;
+  while (offset < view.byteLength - 4) {
+    const marker = view.getUint16(offset);
+    if (marker === 0xFFE1) {
+      const segLen = view.getUint16(offset + 2);
+      if (offset + 9 < view.byteLength &&
+        view.getUint8(offset + 4) === 0x45 && view.getUint8(offset + 5) === 0x78 &&
+        view.getUint8(offset + 6) === 0x69 && view.getUint8(offset + 7) === 0x66 &&
+        view.getUint8(offset + 8) === 0x00 && view.getUint8(offset + 9) === 0x00) {
+        return parseTiffGPS(view, offset + 10);
+      }
+      offset += 2 + segLen;
+    } else if (marker === 0xFFDA) { break;
+    } else if ((marker & 0xFF00) === 0xFF00 && marker !== 0xFFFF) {
+      offset += 2 + view.getUint16(offset + 2);
+    } else { offset++; }
+  }
+  return null;
+}
+
+function parseTiffGPS(view, tiffBase) {
+  const le  = view.getUint16(tiffBase) === 0x4949;
+  const r16 = (abs) => view.getUint16(abs, le);
+  const r32 = (abs) => view.getUint32(abs, le);
+  if (r16(tiffBase + 2) !== 42) return null;
+  const ifd0Off  = r32(tiffBase + 4);
+  const nEntries = r16(tiffBase + ifd0Off);
+  let gpsOff = null;
+  for (let i = 0; i < nEntries; i++) {
+    const ea = tiffBase + ifd0Off + 2 + i * 12;
+    if (r16(ea) === 0x8825) { gpsOff = r32(ea + 8); break; }
+  }
+  if (gpsOff == null) return null;
+  const nGps = r16(tiffBase + gpsOff);
+  let latRef = 'N', lonRef = 'E', lat = null, lon = null;
+  for (let i = 0; i < nGps; i++) {
+    const ea  = tiffBase + gpsOff + 2 + i * 12;
+    const tag = r16(ea);
+    if (tag === 0x0001) latRef = String.fromCharCode(view.getUint8(ea + 8));
+    else if (tag === 0x0003) lonRef = String.fromCharCode(view.getUint8(ea + 8));
+    else if (tag === 0x0002) lat = dmsRatToDD(view, tiffBase + r32(ea + 8), le);
+    else if (tag === 0x0004) lon = dmsRatToDD(view, tiffBase + r32(ea + 8), le);
+  }
+  if (lat == null || lon == null) return null;
+  return { latitude: latRef === 'S' ? -lat : lat, longitude: lonRef === 'W' ? -lon : lon };
+}
+
+function dmsRatToDD(view, abs, le) {
+  const rat = (off) => {
+    const n = view.getUint32(off, le), d = view.getUint32(off + 4, le);
+    return d === 0 ? 0 : n / d;
+  };
+  return rat(abs) + rat(abs + 8) / 60 + rat(abs + 16) / 3600;
+}
+
+function inspectJpegExif(buffer) {
+  const view = new DataView(buffer);
+  if (view.getUint16(0) !== 0xFFD8) return null;
+  let offset = 2;
+  while (offset < view.byteLength - 4) {
+    const marker = view.getUint16(offset);
+    if (marker === 0xFFE1) {
+      const segLen = view.getUint16(offset + 2);
+      if (offset + 9 < view.byteLength &&
+        view.getUint8(offset + 4) === 0x45 && view.getUint8(offset + 6) === 0x69 &&
+        view.getUint8(offset + 8) === 0x00) {
+        return dumpTiffTags(view, offset + 10);
+      }
+      offset += 2 + segLen;
+    } else if (marker === 0xFFDA) { break;
+    } else if ((marker & 0xFF00) === 0xFF00 && marker !== 0xFFFF) {
+      offset += 2 + view.getUint16(offset + 2);
+    } else { offset++; }
+  }
+  return null;
+}
+
+function dumpTiffTags(view, base) {
+  const le  = view.getUint16(base) === 0x4949;
+  const r16 = (a) => view.getUint16(a, le);
+  const r32 = (a) => view.getUint32(a, le);
+  const TAG_NAMES = {
+    0x010E:'ImageDescription',0x010F:'Make',0x0110:'Model',0x0112:'Orientation',
+    0x011A:'XResolution',0x011B:'YResolution',0x0128:'ResolutionUnit',
+    0x0131:'Software',0x0132:'DateTime',0x013B:'Artist',
+    0x8769:'ExifIFD',0x8825:'GPSIFD',0x8298:'Copyright',
+    0x0001:'GPSLatitudeRef',0x0002:'GPSLatitude',0x0003:'GPSLongitudeRef',
+    0x0004:'GPSLongitude',0x0005:'GPSAltitudeRef',0x0006:'GPSAltitude',
+    0x0007:'GPSTimeStamp',0x001D:'GPSDateStamp'
+  };
+  if (r16(base + 2) !== 42) return null;
+  const out = {};
+  const readIfd = (ifdOff, prefix) => {
+    const n = r16(base + ifdOff);
+    for (let i = 0; i < Math.min(n, 64); i++) {
+      const ea = base + ifdOff + 2 + i * 12;
+      const tag = r16(ea), type = r16(ea + 2), cnt = r32(ea + 4);
+      const name = TAG_NAMES[tag] || `0x${tag.toString(16).toUpperCase()}`;
+      const key = prefix ? `${prefix}/${name}` : name;
+      if (tag === 0x8769 || tag === 0x8825) {
+        readIfd(r32(ea + 8), name);
+      } else if (type === 2) {
+        const bytes = cnt <= 4 ? (ea + 8) : (base + r32(ea + 8));
+        let s = '';
+        for (let b = 0; b < Math.min(cnt, 40); b++) {
+          const c = view.getUint8(bytes + b);
+          if (c === 0) break;
+          s += String.fromCharCode(c);
+        }
+        out[key] = s || '(vide)';
+      } else if (type === 5) {
+        const off = base + r32(ea + 8);
+        const vals = [];
+        for (let r = 0; r < Math.min(cnt, 3); r++) {
+          const n2 = r32(off + r * 8), d = r32(off + r * 8 + 4);
+          vals.push(d > 0 ? `${(n2/d).toFixed(4)}` : '0');
+        }
+        out[key] = vals.join(', ');
+      } else if (type === 3) { out[key] = r16(ea + 8);
+      } else if (type === 4 || type === 9) { out[key] = r32(ea + 8);
+      } else { out[key] = `(type ${type}, count ${cnt})`; }
+    }
+  };
+  readIfd(r32(base + 4), '');
+  return out;
+}
+
+// ── Carte Leaflet ────────────────────────────────────────────
+function initMap() {
+  if (!lmap) {
+    lmap = L.map(mi, {
+      zoomControl: false, attributionControl: false,
+      dragging: true, touchZoom: false, doubleClickZoom: false,
+      scrollWheelZoom: 'center', keyboard: false, tap: false
+    });
+    ltile = L.tileLayer(BM_URL[S.bm], { crossOrigin: 'anonymous', maxZoom: 20 }).addTo(lmap);
+    lmarker = L.circleMarker([lat, lon], {
+      radius: 7, fillColor: '#c0392b', color: '#fff', weight: 2.5, fillOpacity: 1
+    }).addTo(lmap);
+    lmap.setView([lat, lon], S.zoom);
+    lmap.on('zoomend', () => {
+      S.zoom = lmap.getZoom();
+      document.getElementById('zm').value = S.zoom;
+      document.getElementById('zmv').textContent = 'z ' + S.zoom;
+      document.getElementById('zlevel').textContent = 'z ' + S.zoom;
+    });
+  } else {
+    if (lmarker) lmarker.setLatLng([lat, lon]);
+    lmap.setView([lat, lon], S.zoom);
+    lmap.invalidateSize();
+  }
+}
+
+function syncZoom(delta) {
+  S.zoom = Math.min(19, Math.max(10, S.zoom + delta));
+  document.getElementById('zm').value = S.zoom;
+  document.getElementById('zmv').textContent = 'z ' + S.zoom;
+  document.getElementById('zlevel').textContent = 'z ' + S.zoom;
+  if (lmap) lmap.setZoom(S.zoom);
+}
+document.getElementById('zin').addEventListener('click',  e => { e.stopPropagation(); syncZoom(+1); });
+document.getElementById('zout').addEventListener('click', e => { e.stopPropagation(); syncZoom(-1); });
+document.getElementById('rcbtn').addEventListener('click', e => {
+  e.stopPropagation();
+  if (lmap && lat !== null) lmap.setView([lat, lon], S.zoom, { animate: true });
+});
+
+function refreshBasemap() {
+  if (!lmap) return;
+  if (ltile) lmap.removeLayer(ltile);
+  ltile = L.tileLayer(BM_URL[S.bm], { crossOrigin: 'anonymous', maxZoom: 20 }).addTo(lmap);
+}
+
+function applyInset() {
+  const { size, mg, bw, bc, pos } = S;
+  mi.style.width  = size + 'px';
+  mi.style.height = size + 'px';
+  mi.style.border = bw > 0 ? `${bw}px solid ${bc}` : 'none';
+  mi.style.top = mi.style.right = mi.style.bottom = mi.style.left = '';
+  const m = mg + 'px';
+  if (pos === 'tl') { mi.style.top = m; mi.style.left = m; }
+  if (pos === 'tr') { mi.style.top = m; mi.style.right = m; }
+  if (pos === 'bl') { mi.style.bottom = m; mi.style.left = m; }
+  if (pos === 'br') { mi.style.bottom = m; mi.style.right = m; }
+  if (lmap) setTimeout(() => lmap.invalidateSize(), 40);
+}
+
+// ── Contrôles ────────────────────────────────────────────────
+document.querySelectorAll('[data-bm]').forEach(b =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-bm]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); S.bm = b.dataset.bm; refreshBasemap();
+  })
+);
+document.querySelectorAll('[data-pos]').forEach(b =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-pos]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); S.pos = b.dataset.pos; applyInset();
+  })
+);
+document.getElementById('sz').addEventListener('input', function() {
+  S.size = +this.value; document.getElementById('szv').textContent = S.size + ' px'; applyInset();
+});
+document.getElementById('zm').addEventListener('input', function() {
+  S.zoom = +this.value;
+  document.getElementById('zmv').textContent = 'z ' + S.zoom;
+  document.getElementById('zlevel').textContent = 'z ' + S.zoom;
+  if (lmap) lmap.setZoom(S.zoom);
+});
+document.getElementById('bw').addEventListener('input', function() {
+  S.bw = +this.value; document.getElementById('bwv').textContent = S.bw + ' px'; applyInset();
+});
+document.getElementById('bc').addEventListener('input', function() {
+  S.bc = this.value; applyInset();
+});
+document.getElementById('mg').addEventListener('input', function() {
+  S.mg = +this.value; document.getElementById('mgv').textContent = S.mg + ' px'; applyInset();
+});
+document.getElementById('sc').addEventListener('change', function() {
+  S.showCoords = this.checked;
+});
+
+// ── Export ───────────────────────────────────────────────────
+eb.addEventListener('click', doExport);
+
+async function doExport() {
+  if (!lat) return;
+  eb.disabled = true; eb.textContent = '⏳ En cours…';
+  setProgress(0.1); toast('Chargement des tuiles…');
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = photoW; canvas.height = photoH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, photoW, photoH);
+
+    const scale  = photoW / img.clientWidth;
+    const insetPx = Math.round(S.size * scale);
+    const mgPx    = Math.round(S.mg   * scale);
+    const bwPx    = Math.round(S.bw   * scale);
+    setProgress(0.2);
+
+    const mapCenter = lmap ? lmap.getCenter() : { lat, lng: lon };
+    const mapCv = await renderMap(
+      mapCenter.lat, mapCenter.lng,
+      S.zoom, insetPx, insetPx, S.bm, setProgress, lat, lon
+    );
+    setProgress(0.9);
+
+    let ix, iy;
+    const ex = photoW - insetPx - mgPx, ey = photoH - insetPx - mgPx;
+    if (S.pos === 'tl') { ix = mgPx; iy = mgPx; }
+    if (S.pos === 'tr') { ix = ex;   iy = mgPx; }
+    if (S.pos === 'bl') { ix = mgPx; iy = ey;   }
+    if (S.pos === 'br') { ix = ex;   iy = ey;   }
+
+    if (bwPx > 0) {
+      ctx.fillStyle = S.bc;
+      ctx.fillRect(ix - bwPx, iy - bwPx, insetPx + bwPx * 2, insetPx + bwPx * 2);
+    }
+    ctx.drawImage(mapCv, ix, iy, insetPx, insetPx);
+
+    if (S.showCoords) {
+      const ns = lat >= 0 ? 'N' : 'S', ew = lon >= 0 ? 'E' : 'O';
+      const txt = `${Math.abs(lat).toFixed(5)}° ${ns}  /  ${Math.abs(lon).toFixed(5)}° ${ew}`;
+      const fs  = Math.max(18, Math.round(12 * scale));
+      const pad = Math.round(5 * scale);
+      ctx.font = `${fs}px 'Courier New', monospace`;
+      ctx.textBaseline = 'top';
+      const tw = ctx.measureText(txt).width;
+      const labelY = iy + insetPx + bwPx;
+      ctx.fillStyle = 'rgba(0,0,0,.68)';
+      ctx.fillRect(ix, labelY, tw + pad * 2, fs + pad * 2);
+      ctx.fillStyle = '#e8e8d8';
+      ctx.fillText(txt, ix + pad, labelY + pad);
+    }
+
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.93));
+    const a = document.createElement('a');
+    a.download = `geophoto_${Date.now()}.jpg`;
+    a.href = URL.createObjectURL(blob); a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    setProgress(1); setTimeout(() => setProgress(0), 800);
+    toast('✓ Image exportée avec succès');
+
+  } catch (e) {
+    console.error(e);
+    if (e instanceof DOMException && e.name === 'SecurityError')
+      toast('⚠ Erreur CORS (satellite) — essayez le fond Plan', true);
+    else toast('⚠ Erreur export : ' + e.message, true);
+    setProgress(0);
+  } finally {
+    eb.disabled = false; eb.textContent = '⬇ Exporter en JPEG';
+  }
+}
+
+function setProgress(v) { prog.style.transform = `scaleX(${v})`; }
+
+// ── Rendu tuiles canvas ──────────────────────────────────────
+async function renderMap(cLat, cLon, zoom, w, h, bm, onProg, pLat = null, pLon = null) {
+  const T = 256, n = Math.pow(2, zoom);
+  const txf = (cLon + 180) / 360 * n;
+  const sinL = Math.sin(cLat * Math.PI / 180);
+  const tyf  = (0.5 - Math.log((1 + sinL) / (1 - sinL)) / (4 * Math.PI)) * n;
+  const ctx0 = Math.floor(txf), cty0 = Math.floor(tyf);
+  const offX = (txf - ctx0) * T, offY = (tyf - cty0) * T;
+  const cx = w / 2, cy = h / 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bm === 'carto' ? '#f2efea' : '#2c2c2c';
+  ctx.fillRect(0, 0, w, h);
+
+  const range = Math.ceil(Math.max(w, h) / T) + 2;
+  const tasks = [];
+  for (let dx = -range; dx <= range; dx++) {
+    for (let dy = -range; dy <= range; dy++) {
+      const tx = ctx0 + dx, ty = cty0 + dy;
+      if (ty < 0 || ty >= n) continue;
+      const txw = ((tx % n) + n) % n;
+      const canX = cx - offX + dx * T, canY = cy - offY + dy * T;
+      if (canX + T < 0 || canX > w || canY + T < 0 || canY > h) continue;
+      const url = buildTileUrl(bm, txw, ty, zoom);
+      tasks.push(loadImg(url).then(img => { if (img) ctx.drawImage(img, canX, canY, T, T); }));
+    }
+  }
+  await Promise.all(tasks);
+  if (onProg) onProg(0.85);
+
+  let pinX = cx, pinY = cy;
+  if (pLat !== null && pLon !== null) {
+    const ptxf = (pLon + 180) / 360 * n;
+    const sinP  = Math.sin(pLat * Math.PI / 180);
+    const ptyf  = (0.5 - Math.log((1 + sinP) / (1 - sinP)) / (4 * Math.PI)) * n;
+    pinX = cx + (ptxf - txf) * T;
+    pinY = cy + (ptyf - tyf) * T;
+  }
+  const margin = 40;
+  if (pinX > -margin && pinX < w + margin && pinY > -margin && pinY < h + margin)
+    drawPin(ctx, pinX, pinY, Math.min(w, h));
+  return canvas;
+}
+
+function buildTileUrl(bm, x, y, z) {
+  if (bm === 'carto') {
+    const s = 'abcd'[(Math.abs(x) + Math.abs(y)) % 4];
+    return `https://${s}.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;
+  }
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+}
+
+function loadImg(url) {
+  return new Promise(res => {
+    const i = new Image(); i.crossOrigin = 'anonymous';
+    const t = setTimeout(() => res(null), 7000);
+    i.onload  = () => { clearTimeout(t); res(i); };
+    i.onerror = () => { clearTimeout(t); res(null); };
+    i.src = url;
+  });
+}
+
+// Marqueur de localisation
+function drawPin(ctx, cx, cy, sz) {
+  const s = Math.max(0.9, Math.min(4.5, sz / 170));
+  const r  = 9 * s, hh = 22 * s;
+  const circY = cy - hh;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.4)';
+  ctx.shadowBlur  = 5 * s; ctx.shadowOffsetX = 1 * s; ctx.shadowOffsetY = 2.5 * s;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx - r * .7, circY + r * .85);
+  ctx.lineTo(cx + r * .7, circY + r * .85);
+  ctx.closePath();
+  ctx.fillStyle = '#c0392b'; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, circY, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#c0392b'; ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5 * s; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, circY, r * .3, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.restore();
+}
+</script>
+</body>
+</html>
