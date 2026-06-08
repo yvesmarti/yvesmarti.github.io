@@ -1,64 +1,105 @@
 ---
-layout: page
+layout: default
 title: "Outils SIG & Géomatique — Yves Marti"
-subtitle: Applications web pour la géomatique et l'analyse de données
 description: "Outils web développés par Yves Marti : isochrones, géocodage, extraction OpenStreetMap, visualisation de données géolocalisées."
+extra_css: /assets/css/outils.css
+extra_js: /assets/js/outils.js
+body_class: ot-page
 ---
 
-{% for categorie in site.data.outils %}
-<section class="outils-section">
-    <h2 class="outils-categorie">{{ categorie.categorie }}</h2>
-    <div class="outils-grid">
-        {% for outil in categorie.outils %}
-        <a href="{% if outil.actif %}{{ outil.lien | relative_url }}{% else %}#{% endif %}"
-           class="outil-card {% unless outil.actif %}inactive{% endunless %}">
-            <h3>{{ outil.nom }}</h3>
-            <p>{{ outil.description }}</p>
-            <span class="outil-badge">
-                {% if outil.actif %}Disponible{% else %}À venir{% endif %}
-            </span>
-        </a>
-        {% endfor %}
-    </div>
-</section>
-{% endfor %}
+<header class="ot-hero">
+  <div class="ot-hero-eyebrow">Boîte à outils</div>
+  <h1 class="ot-hero-title">Outils SIG &amp; Géomatique</h1>
+  <p class="ot-hero-sub">Applications web pour la géomatique, l'environnement et l'analyse de données territoriales.</p>
+</header>
 
-<section class="recommandes-section">
-    <div class="recommandes-header">
-        <div class="recommandes-header-content">
-            <h2 class="recommandes-title">Sites et outils recommandés</h2>
-            <p class="recommandes-subtitle">Logiciels et ressources web que j'utilise et recommande</p>
+<div class="ot-filter-section">
+  <div class="ot-filter-row" id="ot-filter-row">
+    <button class="ot-pill active" data-filter="all">Tous</button>
+    <button class="ot-pill" data-filter="geo">Géomatique &amp; Carto</button>
+    <button class="ot-pill" data-filter="analyse">Analyse de données</button>
+    <button class="ot-pill" data-filter="env">Environnement &amp; Déchets</button>
+    <button class="ot-pill" data-filter="autres">Autres outils</button>
+    <span class="ot-filter-count" id="ot-count"></span>
+  </div>
+</div>
+
+<div class="ot-sections-wrapper">
+  {% for categorie in site.data.outils %}
+  <section class="ot-section" data-cat="{{ categorie.cat_id }}">
+    <h2 class="ot-categorie">{{ categorie.categorie }}</h2>
+    <div class="ot-card-grid">
+      {% for outil in categorie.outils %}
+      <a href="{% if outil.actif %}{{ outil.lien | relative_url }}{% else %}#{% endif %}"
+         class="ot-card{% unless outil.actif %} ot-card--inactive{% endunless %}"
+         {% unless outil.actif %}aria-disabled="true"{% endunless %}>
+        <div class="ot-card-thumb ot-card-thumb--{{ categorie.cat_id }}">
+          <span class="ot-card-thumb-emoji">{{ outil.emoji }}</span>
         </div>
+        <div class="ot-card-body">
+          <div class="ot-card-tags">
+            <span class="ot-badge ot-badge--{{ categorie.cat_id }}">{{ categorie.categorie }}</span>
+          </div>
+          <h3 class="ot-card-title">{{ outil.nom }}</h3>
+          <p class="ot-card-desc">{{ outil.description }}</p>
+          <div class="ot-card-footer">
+            {% if outil.actif %}
+            <span class="ot-card-link">
+              Ouvrir
+              <svg class="ot-card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </span>
+            {% else %}
+            <span class="ot-badge-soon">À venir</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
     </div>
-    <div class="recommandes-body">
-        <div class="recommandes-filters">
-            <button class="rec-filter-btn active" data-filter="Tous">Tous</button>
-            <button class="rec-filter-btn" data-filter="Logiciel">Logiciel</button>
-            <button class="rec-filter-btn" data-filter="Site internet">Site internet</button>
-            <button class="rec-filter-btn" data-filter="Gratuit">Gratuit</button>
-            <button class="rec-filter-btn" data-filter="SIG & Géo">SIG &amp; Géo</button>
-            <button class="rec-filter-btn" data-filter="Productivité">Productivité</button>
-        </div>
-        <div class="recommandes-grid">
-            {% for outil in site.data.outils_recommandes %}
-            <a href="{{ outil.url }}" target="_blank" rel="noopener noreferrer"
-               class="rec-card"
-               data-tags="{{ outil.tags | join: ',' }}">
-                <div class="rec-card-top">
-                    <h3 class="rec-card-title">{{ outil.nom }}</h3>
-                    <svg class="rec-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="7" y1="17" x2="17" y2="7"></line>
-                        <polyline points="7 7 17 7 17 17"></polyline>
-                    </svg>
-                </div>
-                <p class="rec-card-desc">{{ outil.description }}</p>
-                <div class="rec-card-tags">
-                    {% for tag in outil.tags %}
-                    <span class="rec-tag">{{ tag }}</span>
-                    {% endfor %}
-                </div>
-            </a>
-            {% endfor %}
-        </div>
+  </section>
+  {% endfor %}
+</div>
+
+<section class="ot-recommandes-section">
+  <div class="ot-recommandes-header">
+    <div class="ot-recommandes-header-content">
+      <div class="ot-recommandes-eyebrow">Ressources</div>
+      <h2 class="ot-recommandes-title">Sites et outils recommandés</h2>
+      <p class="ot-recommandes-subtitle">Logiciels et ressources web que j'utilise et recommande</p>
     </div>
+  </div>
+  <div class="ot-recommandes-body">
+    <div class="ot-recommandes-filters">
+      <button class="ot-pill ot-pill--rec active" data-filter="Tous">Tous</button>
+      <button class="ot-pill ot-pill--rec" data-filter="Logiciel">Logiciel</button>
+      <button class="ot-pill ot-pill--rec" data-filter="Site internet">Site internet</button>
+      <button class="ot-pill ot-pill--rec" data-filter="Gratuit">Gratuit</button>
+      <button class="ot-pill ot-pill--rec" data-filter="SIG & Géo">SIG &amp; Géo</button>
+      <button class="ot-pill ot-pill--rec" data-filter="Productivité">Productivité</button>
+    </div>
+    <div class="ot-recommandes-grid">
+      {% for outil in site.data.outils_recommandes %}
+      <a href="{{ outil.url }}" target="_blank" rel="noopener noreferrer"
+         class="ot-rec-card"
+         data-tags="{{ outil.tags | join: ',' }}">
+        <div class="ot-rec-card-top">
+          <h3 class="ot-rec-card-title">{{ outil.nom }}</h3>
+          <svg class="ot-rec-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </div>
+        <p class="ot-rec-card-desc">{{ outil.description }}</p>
+        <div class="ot-rec-card-tags">
+          {% for tag in outil.tags %}
+          <span class="ot-rec-tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
 </section>
