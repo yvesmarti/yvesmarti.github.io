@@ -1021,6 +1021,16 @@ body {
         border-top: none;
     }
 
+    /* mix-blend-mode: difference rendrait le dropdown illisible sur mobile */
+    .nav:not(.nav--scrolled) {
+        mix-blend-mode: normal;
+    }
+
+    /* Le dropdown mobile a toujours un fond sombre : forcer le texte en clair */
+    .nav--scrolled .nav-links a {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
     .nav-links {
         display: none;
         position: absolute;
