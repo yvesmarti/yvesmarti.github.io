@@ -46,3 +46,11 @@
   tags: ["EXIF", "Leaflet", "JS"]
   emoji: "📸"
   url: "/outils"
+
+- id: 7
+  title: "Guide des formules Excel"
+  desc: "Référence interactive des principales formules Excel : syntaxe, exemples concrets et conseils d'utilisation, organisés par catégorie."
+  type: "site"
+  tags: ["Excel", "HTML", "CSS", "JS"]
+  emoji: "📗"
+  url: "https://yvesmarti.github.io/guide-excel/"
