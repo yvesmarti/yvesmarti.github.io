@@ -46,7 +46,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    mix-blend-mode: difference;
+    mix-blend-mode: normal;
+    background: linear-gradient(to bottom,
+        rgba(10, 26, 18, 0.45) 0%,
+        rgba(10, 26, 18, 0.0) 100%);
     transition:
         top          0.44s cubic-bezier(0.4, 0, 0.2, 1),
         left         0.44s cubic-bezier(0.4, 0, 0.2, 1),
@@ -62,10 +65,11 @@ body {
 .nav-logo {
     font-family: var(--font-display);
     font-size: 1.25rem;
-    color: white;
+    color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
     letter-spacing: 0.04em;
     transition: color 0.3s ease;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 .nav-links {
@@ -75,13 +79,14 @@ body {
 }
 
 .nav-links a {
-    color: white;
+    color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
     font-size: 0.8rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 600;
     transition: color 0.25s ease;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 .nav-mobile-toggle {
