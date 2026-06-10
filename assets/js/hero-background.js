@@ -272,10 +272,17 @@
 
     const hero = document.querySelector(CONFIG.heroSelector) || canvas.parentElement;
     if (hero) {
+      // Cache the canvas rect: getBoundingClientRect() forces a layout read,
+      // too costly to run on every pointermove (can fire at 100+ Hz).
+      // The rect is viewport-relative, so invalidate it on scroll and resize.
+      let rect = null;
+      const invalidateRect = () => { rect = null; };
+      window.addEventListener('scroll', invalidateRect, { passive: true });
+      window.addEventListener('resize', invalidateRect);
       hero.addEventListener('pointermove', (e) => {
-        const r = canvas.getBoundingClientRect();
-        S.tmx = e.clientX - r.left;
-        S.tmy = e.clientY - r.top;
+        if (!rect) rect = canvas.getBoundingClientRect();
+        S.tmx = e.clientX - rect.left;
+        S.tmy = e.clientY - rect.top;
       });
       hero.addEventListener('pointerleave', () => {
         S.tmx = -9999; S.tmy = -9999;

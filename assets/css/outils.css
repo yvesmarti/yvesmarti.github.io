@@ -77,7 +77,7 @@ body.ot-page {
 .ot-pill:hover {
   background: #e8f4f0;
   border-color: #6abfaa;
-  color: #2a7a65;
+  color: var(--color-accent, #3d8b6e);
 }
 
 .ot-pill.active {
@@ -200,7 +200,7 @@ body.ot-page {
   font-family: 'Source Sans 3', sans-serif;
 }
 
-.ot-badge--geo     { background: #f0faf6; color: #2a7a65; }
+.ot-badge--geo     { background: #f0faf6; color: #1a5c4a; }
 .ot-badge--analyse { background: #f0f4ff; color: #4060c0; }
 .ot-badge--env     { background: #f2f9f0; color: #3a7a30; }
 .ot-badge--autres  { background: #fdf8f0; color: #a06020; }
@@ -431,7 +431,7 @@ body.ot-page {
 
 [data-theme="dark"] .ot-categorie {
   color: #b8d8c8;
-  border-bottom-color: #2a7a65;
+  border-bottom-color: var(--color-accent, #5aad8a);
 }
 
 [data-theme="dark"] .ot-card {

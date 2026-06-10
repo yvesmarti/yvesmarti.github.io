@@ -78,12 +78,12 @@
 .rl-pill:hover {
   background: #e8f4f0;
   border-color: #6abfaa;
-  color: #2a7a65;
+  color: var(--color-accent);
 }
 
 .rl-pill.active {
-  background: #2a7a65;
-  border-color: #2a7a65;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: #fff;
 }
 
@@ -192,8 +192,8 @@
   font-family: 'Source Sans 3', sans-serif;
 }
 
-.rl-badge--etude  { background: #f0faf6; color: #2a7a65; }
-.rl-badge--astuce { background: #fff8ed; color: #b87a00; }
+.rl-badge--etude  { background: #f0faf6; color: #1a5c4a; }
+.rl-badge--astuce { background: #fff8ed; color: #8a5c00; }
 .rl-badge--outil  { background: #f0f4ff; color: #4060c0; }
 .rl-badge--site   { background: #fdf0f8; color: #9040a0; }
 
@@ -243,7 +243,7 @@
 .rl-card-link {
   font-size: .78rem;
   font-weight: 600;
-  color: #2a7a65;
+  color: var(--color-accent);
   text-decoration: none;
   display: inline-flex;
   align-items: center;

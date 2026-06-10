@@ -61,12 +61,22 @@
         var bar = document.getElementById('reading-progress');
         if (!bar) return;
 
-        window.addEventListener('scroll', function () {
+        var ticking = false;
+
+        function update() {
             var scrollTop  = window.scrollY || document.documentElement.scrollTop;
             var docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+            ticking = false;
             if (docHeight <= 0) return;
             var progress   = Math.min(100, (scrollTop / docHeight) * 100);
             bar.style.width = progress + '%';
+        }
+
+        window.addEventListener('scroll', function () {
+            if (!ticking) {
+                requestAnimationFrame(update);
+                ticking = true;
+            }
         }, { passive: true });
     }
 
@@ -205,7 +215,10 @@
 
         function isMobile() { return window.innerWidth <= 768; }
 
-        window.addEventListener('scroll', function () {
+        var ticking = false;
+
+        function update() {
+            ticking = false;
             if (isMobile()) {
                 bg.style.transform = '';
                 return;
@@ -217,6 +230,13 @@
             if (scrollY > heroHeight) return;
 
             bg.style.transform = 'translateY(' + (scrollY * 0.3) + 'px)';
+        }
+
+        window.addEventListener('scroll', function () {
+            if (!ticking) {
+                requestAnimationFrame(update);
+                ticking = true;
+            }
         }, { passive: true });
     }
 

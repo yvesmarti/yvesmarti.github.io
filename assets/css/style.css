@@ -2686,3 +2686,24 @@ body,
 }
 
 /* Dark mode — no changes needed (section is already dark) */
+
+/* ===========================================
+   ACCESSIBILITÉ — prefers-reduced-motion
+   Coupe les animations décoratives (vagues, bounce,
+   curseur typewriter, hints) et rend les transitions
+   instantanées pour les utilisateurs qui le demandent.
+   =========================================== */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

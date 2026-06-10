@@ -29,7 +29,7 @@
 
     grid.innerHTML = visible.map(function (item) {
       const thumb = item.image
-        ? '<img src="' + item.image + '" alt="' + item.title + '">'
+        ? '<img src="' + item.image + '" alt="' + item.title + '" loading="lazy">'
         : '<span class="rl-card-thumb-emoji">' + item.emoji + '</span>';
 
       const tags = (item.tags || [])

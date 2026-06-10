@@ -8,6 +8,11 @@
 <meta name="author" content="Yves Marti">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://yvesmarti.github.io/cv/">
+<meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <meta property="og:type" content="profile">
 <meta property="og:title" content="CV - Yves Marti · Chargé de mission déchets / SIG">
 <meta property="og:description" content="CV de Yves Marti, Chargé de mission déchets et SIG en Normandie. 10 ans d'expérience en observatoire régional, QGIS et analyse de données territoriales.">
@@ -31,11 +36,12 @@
 }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
 <style>
   :root {
-    --teal: #2a7a5e;
-    --teal-light: #c4ddd5;
-    --teal-pale: #f0f5f3;
+    --teal: #3d8b6e;
+    --teal-light: #c9e0d6;
+    --teal-pale: #f0f6f3;
     --dark: #2C2C2C;
     --mid: #555;
     --light: #888;
@@ -479,6 +485,31 @@
   }
   .btn-back:hover { background: #f0f0ee; color: var(--dark); border-color: #BBB; }
   .btn-back svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* ── Mode sombre (écran uniquement : l'impression reste toujours claire) ── */
+  @media screen {
+    [data-theme="dark"] {
+      --teal: #5aad8a;
+      --teal-light: #2a3d30;
+      --teal-pale: #1c2a20;
+      --dark: #d4e8dc;
+      --mid: #a8c4b6;
+      --light: #7a9a8a;
+      --bg: #131e17;
+      --white: #1a2e24;
+    }
+    [data-theme="dark"] body { background: #131e17; }
+    [data-theme="dark"] .cv { box-shadow: 0 4px 40px rgba(0,0,0,.5); }
+    [data-theme="dark"] .col-main { border-right-color: #2a3d30; }
+    [data-theme="dark"] .skill-tag { background: #1c2a20; }
+    [data-theme="dark"] .detail-panel { background: #1a2e24; }
+    [data-theme="dark"] .detail-overlay { background: rgba(0,0,0,.55); }
+    [data-theme="dark"] .btn-dl { color: #10231a; }
+    [data-theme="dark"] .btn-dl svg { fill: #10231a; }
+    [data-theme="dark"] .btn-dl:hover { background: #6ecba0; }
+    [data-theme="dark"] .btn-back { border-color: #2a3d30; color: #a8c4b6; }
+    [data-theme="dark"] .btn-back:hover { background: #1c2a20; color: #d4e8dc; border-color: #4a9d7a; }
+  }
 
   /* ── Print ── */
   @media print {

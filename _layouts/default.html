@@ -21,6 +21,13 @@
     <meta name="author" content="{{ site.author }}">
     <meta name="robots" content="index, follow">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
+    <meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ '/assets/images/favicon.svg' | relative_url }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ '/assets/images/favicon-32.png' | relative_url }}">
+    <link rel="apple-touch-icon" href="{{ '/assets/images/apple-touch-icon.png' | relative_url }}">
 
     <!-- Canonical -->
     <link rel="canonical" href="{{ site.url }}{{ page.url | replace:'index.html','' }}">
@@ -141,7 +148,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;1,400&family=Outfit:wght@700&family=Source+Sans+3:wght@300;400;600&family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:wght@400&family=Outfit:wght@700&family=Source+Sans+3:wght@300;400;600&family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Thème : lecture anticipée pour éviter le flash (FOUC) -->
     <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
