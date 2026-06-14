@@ -46,7 +46,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    mix-blend-mode: difference;
     transition:
         top          0.44s cubic-bezier(0.4, 0, 0.2, 1),
         left         0.44s cubic-bezier(0.4, 0, 0.2, 1),
