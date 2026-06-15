@@ -53,6 +53,14 @@
         '</a>'
       ].join('');
     }).join('');
+
+    // Apparition en cascade — délai croissant par carte (sauf mouvement réduit)
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      grid.querySelectorAll('.rl-card').forEach(function (card, i) {
+        card.style.animationDelay = (i * 55) + 'ms';
+      });
+    }
   }
 
   function initFilters() {

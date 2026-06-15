@@ -80,7 +80,26 @@ body {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-weight: 500;
+    position: relative;
     transition: color 0.25s ease;
+}
+
+/* Soulignement animé (du centre vers les bords) — généralise l'état scrollé/dark */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1.5px;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
 }
 
 .nav-mobile-toggle {
@@ -188,6 +207,33 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Entrée du héros : le nom se resserre, le trait se déploie */
+@keyframes heroNameSettle {
+    from { letter-spacing: 0.14em; transform: translateY(10px); }
+    to   { letter-spacing: -0.02em; transform: translateY(0); }
+}
+
+@keyframes heroDividerGrow {
+    from { width: 0; opacity: 0; }
+    to   { width: 48px; opacity: 0.85; }
+}
+
+/* Révélation mot à mot de la tagline (délais posés en JS) */
+.hero-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.6em);
+    animation: heroWordIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes heroWordIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-word { animation: none; opacity: 1; transform: none; }
+}
+
 .hero-name {
     font-family: var(--font-display);
     font-size: clamp(2.65rem, 6.6vw, 4.8rem);
@@ -195,6 +241,7 @@ body {
     line-height: 1.05;
     margin-bottom: 1.25rem;
     letter-spacing: -0.02em;
+    animation: heroNameSettle 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .hero-divider {
@@ -204,6 +251,14 @@ body {
     margin: 0 auto 1.25rem;
     border: none;
     opacity: 0.85;
+    animation: heroDividerGrow 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.45s both;
+}
+
+/* Mouvement réduit : pas d'entrée animée, états finaux affichés d'emblée
+   (placé après les règles pour primer en cas d'égalité de spécificité) */
+@media (prefers-reduced-motion: reduce) {
+    .hero-name,
+    .hero-divider { animation: none; }
 }
 
 .hero-role {
@@ -243,13 +298,20 @@ body {
     text-transform: uppercase;
     font-weight: 500;
     border-radius: 2px;
-    transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+    transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .hero-cv-btn:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
     background: rgba(61, 139, 110, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(61, 139, 110, 0.22);
+}
+
+.hero-cv-btn:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 3px;
 }
 
 .hero-cv-btn svg {
@@ -1285,13 +1347,19 @@ body {
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.2s ease;
     letter-spacing: 0.02em;
 }
 
 .filter-btn:hover {
     border-color: rgba(255, 255, 255, 0.55);
     color: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+}
+
+.filter-btn:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
 }
 
 .filter-btn.active {
@@ -1305,6 +1373,24 @@ body {
     opacity: 0.18;
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+/* Apparition en cascade au scroll — via animation (délai posé en JS) pour ne
+   pas interférer avec les transitions de survol/filtrage */
+.skill-card.skill-reveal { opacity: 0; }
+
+.skill-card.skill-reveal.is-visible {
+    animation: skillCardIn 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes skillCardIn {
+    from { opacity: 0; translate: 0 24px; }
+    to   { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skill-card.skill-reveal { opacity: 1; }
+    .skill-card.skill-reveal.is-visible { animation: none; }
 }
 
 /* ===========================================
