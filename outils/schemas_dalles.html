@@ -29,6 +29,8 @@
     <meta name="twitter:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:creator" content="@yvesmarti">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
+    <!-- SheetJS (xlsx-js-style fork) pour export Excel avec styles -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { margin: 0; padding: 20px; background: #f5f5f5; }
@@ -70,7 +72,8 @@
         .recap-warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px; margin-top: 10px; font-size: 12px; }
         .item-btns { display: flex; gap: 5px; }
         .canvas-container { position: relative; overflow: auto; min-height: 400px; display: flex; flex-direction: column; }
-        canvas { border: 1px solid #ddd; background: white; cursor: move; }
+        canvas { border: 1px solid #ddd; background: white; cursor: move; align-self: flex-start; display: block; }
+        .debug-cursor { position: absolute; pointer-events: none; width: 12px; height: 12px; border-radius: 50%; background: rgba(231,76,60,0.85); border: 2px solid white; transform: translate(-50%,-50%); transition: opacity 0.4s; box-shadow: 0 0 4px rgba(0,0,0,0.4); }
         .legend { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
         .legend-color { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #999; }
@@ -309,7 +312,7 @@
                 <h2 style="margin-top: 20px;" id="recapPlanchesTitle">🪵 Calcul des planches</h2>
                 <div class="form-group">
                     <label>Hauteur du claustra (cm)</label>
-                    <input type="number" id="claustraHauteur" value="120" min="50" max="250" onchange="updateRecap(); drawElevation()">
+                    <input type="number" id="claustraHauteur" value="160" min="50" max="250" onchange="updateRecap(); drawElevation()">
                 </div>
                 <div class="input-row-3">
                     <div class="form-group">
@@ -322,13 +325,14 @@
                     </div>
                     <div class="form-group">
                         <label>Espacement (cm)</label>
-                        <input type="number" id="plancheEspacement" value="3" min="0" max="10" step="0.5" onchange="updateRecap(); drawElevation()">
+                        <input type="number" id="plancheEspacement" value="2" min="0" max="10" step="0.5" onchange="updateRecap(); drawElevation()">
                     </div>
                 </div>
                 <p class="dimensions-info" id="orientHint">💡 Espacement = jour entre chaque planche</p>
 
                 <div class="recap-box recap-devis" id="recapPlanches"></div>
                 <button class="btn-primary" onclick="exportDevis()" style="margin-top: 15px;">📋 Exporter récap pour devis</button>
+                <button class="btn-success" onclick="exportExcel()" style="margin-top: 8px;">📊 Exporter Excel (.xlsx)</button>
             </div>
 
             <!-- TAB OPTIONS -->
@@ -353,6 +357,14 @@
                     • Clic droit sur bac : rotation 90°<br>
                     • Double-clic : supprimer l'élément
                 </div>
+
+                <div style="margin-top:15px; padding:10px; background:#fff3e0; border-left:4px solid #ff9800; border-radius:5px;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600;">
+                        <input type="checkbox" id="debugCursor" style="width:16px;height:16px;">
+                        🎯 Afficher le point de clic (debug)
+                    </label>
+                    <p style="font-size:11px; color:#666; margin:4px 0 0 24px;">Montre un point rouge à l'endroit exact où chaque clic est détecté.</p>
+                </div>
             </div>
         </div>
         
@@ -363,7 +375,7 @@
             </div>
 
             <div id="viewPlan" class="view-content active">
-                <div class="canvas-container"><canvas id="canvas"></canvas></div>
+                <div class="canvas-container" style="position:relative;"><canvas id="canvas"></canvas><div id="debugDot" class="debug-cursor" style="display:none;opacity:0;"></div></div>
                 <div class="legend" id="legendContainer"></div>
                 <div class="export-btns">
                     <button class="btn-primary" onclick="exportImage('canvas')">📷 Exporter PNG</button>
@@ -406,6 +418,32 @@
     let orientationPlanches = 'vertical'; // 'vertical' ou 'horizontal'
     let colors = { 'OMr': { base: '#e74c3c' }, 'Emballages': { base: '#f1c40f' } };
     let accesPartiel = { enabled: false, gaucheLen: 60, droiteLen: 60 };
+
+    // ================================================================
+    //  COORDONNÉES CANVAS — correction du ratio CSS/interne
+    // ================================================================
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width  / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top)  * scaleY
+        };
+    }
+    function showDebugDot(e) {
+        if (!document.getElementById('debugCursor')?.checked) return;
+        const rect = canvas.getBoundingClientRect();
+        const dot = document.getElementById('debugDot');
+        // Position relative au canvas-container (parent de canvas + dot)
+        const contRect = dot.parentElement.getBoundingClientRect();
+        dot.style.display = 'block';
+        dot.style.opacity = '1';
+        dot.style.left = (e.clientX - contRect.left) + 'px';
+        dot.style.top  = (e.clientY - contRect.top)  + 'px';
+        clearTimeout(dot._fadeTimer);
+        dot._fadeTimer = setTimeout(() => { dot.style.opacity = '0'; }, 600);
+    }
 
     // ================================================================
     //  UTILITAIRES COULEURS
@@ -623,6 +661,47 @@
             infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>➡ Droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
         }
 
+        // ACCÈS PARTIEL : section gauche + section droite du côté bas (avec ouverture centrale)
+        // Actif uniquement quand "Bas complet" n'est pas coché et accès partiel activé
+        if (accesPartiel.enabled && !b) {
+            const gL = accesPartiel.gaucheLen;
+            const dR = accesPartiel.droiteLen;
+            const totalW = xEnd - xStart; // longueur totale du côté bas
+            const ouverture = totalW - gL - dR - 2 * s;
+
+            if (ouverture > 0) {
+                // Section gauche : du début du côté bas jusqu'au poteau encadrant l'ouverture (inclus)
+                // Le segment va de xStart à (xStart + gL + s), avec un poteau à chaque extrémité
+                if (gL > 0) {
+                    const segStart = xStart;
+                    const segEnd = xStart + gL + s;
+                    const res = computePostPositions(segStart, segEnd, s, maxPlanche);
+                    res.positions.forEach(px => addPost(px, yBas));
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                } else {
+                    // Pas de planches gauches, mais on place quand même le poteau encadrant gauche de l'ouverture
+                    addPost(xStart, yBas);
+                }
+
+                // Section droite : du poteau encadrant droit jusqu'à la fin du côté bas
+                // Le segment va de (xEnd - dR - s) à xEnd, avec un poteau à chaque extrémité
+                if (dR > 0) {
+                    const segStart = xEnd - dR - s;
+                    const segEnd = xEnd;
+                    const res = computePostPositions(segStart, segEnd, s, maxPlanche);
+                    res.positions.forEach(px => addPost(px, yBas));
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                } else {
+                    // Pas de planches droites, mais on place quand même le poteau encadrant droit de l'ouverture
+                    addPost(xEnd - s, yBas);
+                }
+
+                infoHtml += `<div style="font-size:11px;color:#27ae60;margin:2px 0;">↕ Ouverture conservée : <strong>${ouverture} cm</strong></div>`;
+            } else {
+                infoHtml += `<div style="font-size:12px;color:#c0392b;margin:2px 0;">⚠️ Accès partiel : ouverture nulle ou négative, poteaux non placés.</div>`;
+            }
+        }
+
         document.getElementById('autoEspacementInfo').innerHTML = infoHtml || '<span style="font-size:12px;color:#999;">Aucun côté sélectionné</span>';
         updatePoteauList(); draw(); drawElevation();
     }
@@ -699,14 +778,29 @@
             // Poteaux encadrant l'ouverture
             const ouverture=cW-gL-dR-2*s;
             if(ouverture>0){
+                // Position en cm (système dalle) des poteaux d'encadrement
+                const xStartCm = -deb - (g ? ep : 0);
+                const yBasCm = dalle.largeur + deb + ep - s;
+                const xPGcm = xStartCm + gL;
+                const xPDcm = xStartCm + gL + s + ouverture;
+                // Détecter si un poteau existe déjà à ces positions (placé via "Placer poteaux auto")
+                const tol = 1;
+                const hasPG = poteaux.some(p => Math.abs(p.x - xPGcm) <= tol && Math.abs(p.y - yBasCm) <= tol);
+                const hasPD = poteaux.some(p => Math.abs(p.x - xPDcm) <= tol && Math.abs(p.y - yBasCm) <= tol);
+
                 ctx.fillStyle='#5d4e37';
-                // Poteau gauche (bord droit des planches G)
-                const xPG=xBase+gL*echelle, pW=s*echelle;
-                ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2; ctx.strokeRect(xPG,yAcc,pW,hh);
-                // Poteau droit (bord gauche des planches D)
-                const xPD=xBase+(gL+s+ouverture)*echelle;
-                ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
-                // Flèche ouverture
+                ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2;
+                // Poteau gauche (bord droit des planches G) — seulement si pas déjà dans poteaux[]
+                if(!hasPG){
+                    const xPG=xBase+gL*echelle, pW=s*echelle;
+                    ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeRect(xPG,yAcc,pW,hh);
+                }
+                // Poteau droit (bord gauche des planches D) — seulement si pas déjà dans poteaux[]
+                if(!hasPD){
+                    const xPD=xBase+(gL+s+ouverture)*echelle, pW=s*echelle;
+                    ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
+                }
+                // Flèche ouverture (toujours affichée)
                 ctx.fillStyle='#27ae60'; ctx.font='11px Arial'; ctx.textAlign='center';
                 const xOuvCentre=xBase+(gL+s+ouverture/2)*echelle;
                 ctx.fillText(`↕ ouv. ${ouverture} cm`,xOuvCentre,yAcc+hh+14);
@@ -820,8 +914,42 @@
             const sAP=parseInt(document.getElementById('poteauSection').value)||10;
             const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
             const ouv=Math.max(0,totalWap-gL-dR-2*sAP);
-            const segs=[]; if(gL>0)segs.push({start:0,width:gL}); if(dR>0)segs.push({start:totalWap-dR,width:dR});
-            const posts=[]; if(ouv>0){posts.push({start:gL,width:sAP});posts.push({start:gL+sAP+ouv,width:sAP});}
+
+            // Récupérer les poteaux placés sur le côté bas (depuis poteaux[]) — même filtre que getSegmentsForSide('bas')
+            const xStartAP = -debAP - (gAP ? epAP : 0);
+            const bY = dalle.largeur + debAP + epAP;
+            const postsFromList = poteaux
+                .filter(p => (p.y + p.section) >= dalle.largeur + debAP && p.y <= bY)
+                .map(p => ({start: p.x - xStartAP, width: p.section}))
+                .sort((a,b) => a.start - b.start);
+
+            let segs = [];
+            let posts;
+            if(postsFromList.length > 0){
+                // Mode auto : utiliser les poteaux placés (encadrement + éventuels intermédiaires)
+                // et découper les segments de planches autour de chaque poteau dans les zones gauche/droite
+                posts = postsFromList;
+                const zones = [];
+                if(gL > 0) zones.push({start: 0, end: gL});
+                if(dR > 0) zones.push({start: totalWap - dR, end: totalWap});
+                zones.forEach(zone => {
+                    const zonePosts = postsFromList
+                        .filter(p => p.start + p.width > zone.start && p.start < zone.end)
+                        .sort((a,b) => a.start - b.start);
+                    let cur = zone.start;
+                    zonePosts.forEach(p => {
+                        if(p.start > cur) segs.push({start: cur, width: Math.round(p.start - cur)});
+                        cur = p.start + p.width;
+                    });
+                    if(cur < zone.end) segs.push({start: cur, width: Math.round(zone.end - cur)});
+                });
+            } else {
+                // Fallback : segments bruts + 2 poteaux d'encadrement par défaut
+                if(gL > 0) segs.push({start: 0, width: gL});
+                if(dR > 0) segs.push({start: totalWap - dR, width: dR});
+                posts = [];
+                if(ouv > 0){ posts.push({start: gL, width: sAP}); posts.push({start: gL + sAP + ouv, width: sAP}); }
+            }
             sideData={totalWidth:totalWap,segments:segs.length?segs:[{start:0,width:totalWap}],poteaux:posts,ouverture:ouv,ouvertureStart:gL+sAP};
         } else {
             sideData=getSegmentsForSide(currentElevationSide);
@@ -972,7 +1100,7 @@
     //  INTERACTIONS CANVAS
     // ================================================================
     canvas.addEventListener('mousedown',e=>{
-        const rect=canvas.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+        const {x:mx,y:my}=getMousePos(e); showDebugDot(e);
         const d=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const pad=80, oc=(d+ep)*echelle, dX=pad+oc, dY=pad+oc;
         for(let i=bacs.length-1;i>=0;i--){
@@ -986,7 +1114,7 @@
     });
     canvas.addEventListener('mousemove',e=>{
         if(!isDragging||!selectedItem)return;
-        const rect=canvas.getBoundingClientRect(), mx=e.clientX-rect.left, my=e.clientY-rect.top;
+        const {x:mx,y:my}=getMousePos(e);
         const d=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const pad=80, oc=(d+ep)*echelle, dX=pad+oc, dY=pad+oc;
         const gs=parseInt(document.getElementById('gridSize').value)||10, snap=document.getElementById('snapToGrid').checked;
@@ -999,13 +1127,13 @@
     canvas.addEventListener('mouseleave',()=>{isDragging=false;selectedItem=null;selectedType=null;});
     canvas.addEventListener('contextmenu',e=>{
         e.preventDefault();
-        const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+        const {x:mx,y:my}=getMousePos(e); showDebugDot(e);
         const d=parseInt(document.getElementById('claustraDebord').value)||0,ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const pad=80,oc=(d+ep)*echelle,dX=pad+oc,dY=pad+oc;
         for(let i=bacs.length-1;i>=0;i--){const b=bacs[i],dims=getBacDimensions(b),x=dX+b.x*echelle,y=dY+b.y*echelle,w=dims.w*echelle,h=dims.h*echelle;if(mx>=x&&mx<=x+w&&my>=y&&my<=y+h){rotateBac(b.id);break;}}
     });
     canvas.addEventListener('dblclick',e=>{
-        const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+        const {x:mx,y:my}=getMousePos(e);
         const d=parseInt(document.getElementById('claustraDebord').value)||0,ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const pad=80,oc=(d+ep)*echelle,dX=pad+oc,dY=pad+oc;
         for(let i=bacs.length-1;i>=0;i--){const b=bacs[i],dims=getBacDimensions(b),x=dX+b.x*echelle,y=dY+b.y*echelle,w=dims.w*echelle,h=dims.h*echelle;if(mx>=x&&mx<=x+w&&my>=y&&my<=y+h){if(confirm(`Supprimer "${b.nom}" ?`))supprimerBac(b.id);return;}}
@@ -1355,6 +1483,398 @@
 
         const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
         const a=document.createElement('a'); a.download=`devis-PAV-${orientationPlanches}-${dalle.longueur}x${dalle.largeur}-${Date.now()}.txt`; a.href=URL.createObjectURL(blob); a.click();
+    }
+
+    // ================================================================
+    //  EXPORT EXCEL (DQE — Détail Quantitatif Estimatif)
+    // ================================================================
+    function exportExcel(){
+        if(typeof XLSX==='undefined'){
+            alert('La librairie SheetJS n\'a pas pu être chargée. Vérifiez votre connexion internet.');
+            return;
+        }
+
+        // -------- RÉCUPÉRATION DE L'ÉTAT --------
+        const hClaustra = parseInt(document.getElementById('claustraHauteur').value) || 160;
+        const lP = parseInt(document.getElementById('plancheLargeur').value) || 15;
+        const epP = parseFloat(document.getElementById('plancheEpaisseur').value) || 2;
+        const espInput = document.getElementById('plancheEspacement').value;
+        const esp = espInput === '' ? 2 : parseFloat(espInput);
+        const poteauSec = parseInt(document.getElementById('poteauSection').value) || 10;
+        const deb = parseInt(document.getElementById('claustraDebord').value) || 0;
+        const ep = parseInt(document.getElementById('claustraEpaisseur').value) || 15;
+
+        const h = document.getElementById('claustraHaut').checked;
+        const b = document.getElementById('claustraBas').checked;
+        const g = document.getElementById('claustraGauche').checked;
+        const dr = document.getElementById('claustraDroite').checked;
+
+        const surf = dalle.longueur * dalle.largeur / 10000;  // m²
+        const nO = bacs.filter(x => x.type === 'OMr').length;
+        const nE = bacs.filter(x => x.type === 'Emballages').length;
+        const nbPlaques = poteaux.length;  // nb poteaux principaux
+
+        // -------- LINÉAIRE CLAUSTRA (cm) --------
+        const lH = dalle.longueur + (deb*2) + (g?ep:0) + (dr?ep:0);
+        const lV = dalle.largeur + (deb*2);
+        let ltClaustra = 0;
+        if(h) ltClaustra += lH;
+        if(b) ltClaustra += lH;
+        if(g) ltClaustra += lV;
+        if(dr) ltClaustra += lV;
+        if(accesPartiel.enabled && !b){
+            ltClaustra += accesPartiel.gaucheLen + accesPartiel.droiteLen;
+        }
+
+        // -------- CÔTÉS ACTIFS & SEGMENTS ACCÈS PARTIEL --------
+        const sides = [];
+        if(h) sides.push('haut');
+        if(b) sides.push('bas');
+        if(g) sides.push('gauche');
+        if(dr) sides.push('droite');
+
+        const apSegs = [];
+        if(accesPartiel.enabled && !b){
+            if(accesPartiel.gaucheLen > 0) apSegs.push({width: accesPartiel.gaucheLen, label:'Accès G'});
+            if(accesPartiel.droiteLen > 0) apSegs.push({width: accesPartiel.droiteLen, label:'Accès D'});
+        }
+
+        // -------- CALCUL PLANCHES, TRAVÉES, LISSES --------
+        let totalPl = 0;
+        let linPlanches = 0;   // ml
+        let totalTravees = 0;
+        let linLisses = 0;     // ml
+        let nbPoteauxAcces = (accesPartiel.enabled && !b && apSegs.length) ? 2 : 0;
+
+        if(orientationPlanches === 'vertical'){
+            // Côtés
+            sides.forEach(cote => {
+                const sd = getSegmentsForSide(cote);
+                totalTravees += sd.segments.length;
+                sd.segments.forEach(seg => {
+                    let nb;
+                    if(esp === 0) nb = Math.floor(seg.width / lP);
+                    else nb = Math.floor((seg.width + esp) / (lP + esp));
+                    totalPl += nb;
+                });
+            });
+            // Accès partiel
+            apSegs.forEach(seg => {
+                let nb;
+                if(esp === 0) nb = Math.floor(seg.width / lP);
+                else nb = Math.floor((seg.width + esp) / (lP + esp));
+                totalPl += nb;
+                totalTravees += 1;
+            });
+            linPlanches = totalPl * hClaustra / 100;
+            // 3 lisses par travée, chacune = hauteur claustra
+            linLisses = 3 * totalTravees * hClaustra / 100;
+        } else {
+            // Horizontales
+            let nbR;
+            if(esp === 0) nbR = Math.floor(hClaustra / lP);
+            else nbR = Math.floor((hClaustra + esp) / (lP + esp));
+            let sommeLargSegments = 0;
+            sides.forEach(cote => {
+                const sd = getSegmentsForSide(cote);
+                totalTravees += sd.segments.length;
+                sd.segments.forEach(seg => {
+                    totalPl += nbR;
+                    linPlanches += seg.width * nbR;
+                    sommeLargSegments += seg.width;
+                });
+            });
+            apSegs.forEach(seg => {
+                totalPl += nbR;
+                linPlanches += seg.width * nbR;
+                sommeLargSegments += seg.width;
+                totalTravees += 1;
+            });
+            linPlanches = linPlanches / 100;   // → ml
+            // 3 lisses par travée, courant sur la longueur du segment
+            linLisses = 3 * sommeLargSegments / 100;
+        }
+
+        // -------- QUANTITÉS PRINCIPALES --------
+        const volBeton = surf * 0.125;   // m³ (ép. 12,5 cm)
+        const volTV = surf * 0.10;       // m³ (ép. 10 cm)
+        const totalPoteaux = nbPlaques + nbPoteauxAcces;
+        const linCouvertines = ltClaustra / 100;   // ml
+
+        // -------- ARRONDIS --------
+        const round2 = v => Math.round(v * 100) / 100;
+        const round1 = v => Math.round(v * 10) / 10;
+        const ceilN = v => Math.ceil(v);
+        const ceilDiz = v => Math.ceil(v / 10) * 10;
+        const ceilCinq = v => Math.ceil(v / 5) * 5;
+        const ceilCent = v => Math.ceil(v / 100) * 100;
+
+        // -------- STYLES (xlsx-js-style) --------
+        const sTitre = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+            fill: { fgColor: { rgb: "1F4E79" } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+        const sLotHeader = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            fill: { fgColor: { rgb: "2E75B6" } },
+            alignment: { horizontal: "left", vertical: "center" }
+        };
+        const sColHeader = {
+            font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+            fill: { fgColor: { rgb: "404040" } },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        };
+        const sCell = {
+            font: { sz: 10 },
+            alignment: { vertical: "center", wrapText: true },
+            border: {
+                top: { style: "thin", color: { rgb: "BFBFBF" } },
+                bottom: { style: "thin", color: { rgb: "BFBFBF" } },
+                left: { style: "thin", color: { rgb: "BFBFBF" } },
+                right: { style: "thin", color: { rgb: "BFBFBF" } }
+            }
+        };
+        const sCellCentre = Object.assign({}, sCell, { alignment: { horizontal:"center", vertical:"center" } });
+        const sCellRight = Object.assign({}, sCell, { alignment: { horizontal:"right", vertical:"center" } });
+        const sInfoHeader = {
+            font: { bold: true, sz: 10 },
+            fill: { fgColor: { rgb: "D9E1F2" } },
+            alignment: { vertical: "center" }
+        };
+        const sNote = {
+            font: { italic: true, sz: 10, color: { rgb: "C00000" } },
+            alignment: { vertical: "center", wrapText: true }
+        };
+
+        // -------- CONSTRUCTION FEUILLE --------
+        const dateStr = new Date().toLocaleDateString('fr-FR');
+        const modeLabel = orientationPlanches === 'vertical' ? 'Verticales' : 'Horizontales';
+        const sectionPlancheStr = `${lP}×${epP} cm`;
+        const sectionPoteauStr = `${poteauSec}×${poteauSec} cm`;
+
+        // Tableau de lignes (chaque ligne = tableau de cellules ou objet {v, s})
+        // On utilise une approche par cellules : un tableau aoa enrichi avec styles via XLSX.utils.aoa_to_sheet puis affectation des styles
+        const aoa = [];
+
+        // Ligne 1 : Titre (fusionné A1:F1)
+        aoa.push(["DÉTAIL QUANTITATIF ESTIMATIF — Dalle PDR", "", "", "", "", ""]);
+        // Ligne 2 : infos dalle
+        aoa.push([
+            "Dalle :", `${dalle.longueur} × ${dalle.largeur} cm`,
+            "Surface :", `${surf.toFixed(2)} m²`,
+            "Date :", dateStr
+        ]);
+        // Ligne 3 : infos bacs/poteaux
+        aoa.push([
+            "Bacs OMr :", nO,
+            "Bacs Emb. :", nE,
+            "Poteaux :", totalPoteaux
+        ]);
+        aoa.push([
+            "Planches :", totalPl,
+            "Orientation :", modeLabel,
+            "Hauteur claustra :", `${hClaustra} cm`
+        ]);
+        // Ligne 5 : vide
+        aoa.push(["", "", "", "", "", ""]);
+        // Ligne 6 : en-têtes colonnes
+        aoa.push(["Réf.", "Désignation", "Unité", "Qté brute", "Qté + marge", "Remarques"]);
+
+        // ----- LOT 1 BÉTON -----
+        aoa.push(["LOT 1 — BÉTON", "", "", "", "", ""]);
+        aoa.push([
+            "1.1", "Béton C25/30 livré — dalle PDR", "m³",
+            round2(volBeton), round2(volBeton * 1.10),
+            "Épaisseur 12,5 cm — C25/30"
+        ]);
+
+        // ----- LOT 2 BOIS -----
+        aoa.push(["LOT 2 — BOIS ET CLAUSTRA", "", "", "", "", ""]);
+        const remPlanches = orientationPlanches==='vertical'
+            ? `Verticales — hauteur ${hClaustra} cm`
+            : `Horizontales — longueurs variables selon segments`;
+        aoa.push([
+            "2.1", `Planches pin traité cl.4 — ${sectionPlancheStr}`, "ml",
+            round2(linPlanches), round1(linPlanches * 1.05),
+            remPlanches
+        ]);
+        aoa.push([
+            "2.2", "Lisses intermédiaires pin cl.4 (3/travée)", "ml",
+            round2(linLisses), round1(linLisses * 1.05),
+            `3 lisses par travée — ${totalTravees} travées`
+        ]);
+        aoa.push([
+            "2.3", `Poteaux pin traité cl.4 — ${sectionPoteauStr} H=190`, "u",
+            totalPoteaux, ceilN(totalPoteaux * 1.05),
+            "160 cm hors sol + 30 cm ancrage"
+        ]);
+        aoa.push([
+            "2.4", `Chapeaux poteau galvanisés ${sectionPoteauStr}`, "u",
+            totalPoteaux, ceilN(totalPoteaux * 1.05),
+            "1 chapeau / poteau"
+        ]);
+
+        // ----- LOT 3 QUINCAILLERIE -----
+        aoa.push(["LOT 3 — QUINCAILLERIE", "", "", "", "", ""]);
+        const visPlanches = totalPl * 2;
+        const visPoteaux = totalPoteaux * 4;
+        const equerres = totalPoteaux * 2;
+        const platines = totalPoteaux * 1;
+        const chevilles = totalPoteaux * 2;
+        aoa.push([
+            "3.1", "Vis inox 6×40 — fixation planches", "u",
+            visPlanches, ceilCent(visPlanches * 1.05),
+            "2 vis / planche"
+        ]);
+        aoa.push([
+            "3.2", "Vis inox 6×80 — fixation poteaux/platines", "u",
+            visPoteaux, ceilDiz(visPoteaux * 1.05),
+            "4 vis / poteau"
+        ]);
+        aoa.push([
+            "3.3", "Équerres galva renforcées", "u",
+            equerres, ceilCinq(equerres * 1.05),
+            "2 / poteau"
+        ]);
+        aoa.push([
+            "3.4", `Platines ancrage galva ${sectionPoteauStr}`, "u",
+            platines, ceilN(platines * 1.05),
+            "1 / poteau"
+        ]);
+        aoa.push([
+            "3.5", "Chevilles chimiques + tiges filetées M12×300", "u",
+            chevilles, ceilN(chevilles * 1.05),
+            "2 / poteau"
+        ]);
+        aoa.push([
+            "3.6", "Couvertines alu laqué — sommet claustra", "ml",
+            round2(linCouvertines), round1(linCouvertines * 1.05),
+            "Linéaire total claustra"
+        ]);
+
+        // ----- LOT 4 FERRAILLE -----
+        aoa.push(["LOT 4 — FERRAILLE", "", "", "", "", ""]);
+        const nbTreillis = Math.ceil(surf / 14.4);
+        aoa.push([
+            "4.1", "Treillis soudé ST25 — panneaux 2,4×6 m", "u",
+            nbTreillis, ceilN(nbTreillis * 1.05),
+            "1 panneau = 14,4 m²"
+        ]);
+
+        // ----- LOT 5 TOUT-VENANT -----
+        aoa.push(["LOT 5 — TOUT-VENANT", "", "", "", "", ""]);
+        aoa.push([
+            "5.1", "Gravier tout-venant 20/40 — fondation 10 cm", "m³",
+            round2(volTV), round2(volTV * 1.10),
+            "Sous la dalle, épaisseur 10 cm"
+        ]);
+
+        // Ligne vide puis note
+        aoa.push(["", "", "", "", "", ""]);
+        aoa.push([
+            "⚠ Estimation indicative — Prévoir les marges réglementaires avant commande. Hypothèses : dalle C25/30 ép.12,5 cm, TV ép.10 cm, pin cl.4 autoclavé.",
+            "", "", "", "", ""
+        ]);
+
+        // -------- CRÉATION DE LA FEUILLE --------
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // -------- LARGEURS DE COLONNES --------
+        ws['!cols'] = [
+            { wch: 8 },   // A
+            { wch: 52 },  // B
+            { wch: 8 },   // C
+            { wch: 14 },  // D
+            { wch: 14 },  // E
+            { wch: 40 }   // F
+        ];
+
+        // -------- FUSIONS --------
+        ws['!merges'] = ws['!merges'] || [];
+        // Ligne 1 : titre A1:F1
+        ws['!merges'].push({ s:{r:0,c:0}, e:{r:0,c:5} });
+        // Dernière ligne : note de bas de page (fusionnée)
+        const lastRow = aoa.length - 1;
+        ws['!merges'].push({ s:{r:lastRow,c:0}, e:{r:lastRow,c:5} });
+
+        // -------- HAUTEURS DE LIGNE --------
+        ws['!rows'] = [];
+        ws['!rows'][0] = { hpt: 24 };      // titre plus haut
+        ws['!rows'][5] = { hpt: 22 };      // header colonnes
+        ws['!rows'][lastRow] = { hpt: 30 }; // note
+
+        // -------- APPLICATION DES STYLES --------
+        // Helper pour fixer le style d'une cellule
+        function setStyle(r, c, style){
+            const ref = XLSX.utils.encode_cell({r:r, c:c});
+            if(!ws[ref]) ws[ref] = { v: "", t: "s" };
+            ws[ref].s = style;
+        }
+        function setNumFmt(r, c, fmt){
+            const ref = XLSX.utils.encode_cell({r:r, c:c});
+            if(ws[ref]) ws[ref].z = fmt;
+        }
+
+        // Ligne 1 : titre
+        for(let c=0; c<6; c++) setStyle(0, c, sTitre);
+        // Lignes 2-4 : infos (alterner header/valeur)
+        for(let r=1; r<=3; r++){
+            for(let c=0; c<6; c++){
+                setStyle(r, c, c%2===0 ? sInfoHeader : sCell);
+            }
+        }
+        // Ligne 6 (index 5) : en-têtes colonnes
+        for(let c=0; c<6; c++) setStyle(5, c, sColHeader);
+
+        // Lignes du tableau : à partir de la ligne 7 (index 6) jusqu'à lastRow-2
+        // On détecte les lignes "lot header" (col B vide ET col A commence par "LOT ")
+        for(let r=6; r<lastRow-1; r++){
+            const refA = XLSX.utils.encode_cell({r:r, c:0});
+            const valA = ws[refA] ? String(ws[refA].v) : "";
+            if(valA.startsWith("LOT ")){
+                for(let c=0; c<6; c++) setStyle(r, c, sLotHeader);
+                // Fusion du titre de lot sur A:F
+                ws['!merges'].push({ s:{r:r,c:0}, e:{r:r,c:5} });
+            } else {
+                // Ligne de données
+                setStyle(r, 0, sCellCentre);   // Réf.
+                setStyle(r, 1, sCell);          // Désignation
+                setStyle(r, 2, sCellCentre);    // Unité
+                setStyle(r, 3, sCellRight);     // Qté brute
+                setStyle(r, 4, sCellRight);     // Qté + marge
+                setStyle(r, 5, sCell);          // Remarques
+                // Format numérique pour D et E selon unité
+                const unite = ws[XLSX.utils.encode_cell({r:r,c:2})] ? ws[XLSX.utils.encode_cell({r:r,c:2})].v : "";
+                if(unite === "m³"){
+                    setNumFmt(r, 3, "0.00");
+                    setNumFmt(r, 4, "0.00");
+                } else if(unite === "ml"){
+                    setNumFmt(r, 3, "0.00");
+                    setNumFmt(r, 4, "0.0");
+                } else {
+                    setNumFmt(r, 3, "0");
+                    setNumFmt(r, 4, "0");
+                }
+            }
+        }
+        // Note de fin
+        setStyle(lastRow, 0, sNote);
+
+        // -------- CRÉATION DU CLASSEUR --------
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DQE — Dalle PDR");
+
+        // -------- ÉCRITURE & TÉLÉCHARGEMENT --------
+        const dateFn = new Date().toISOString().slice(0,10);
+        const filename = `DQE-PDR-${dalle.longueur}x${dalle.largeur}-${dateFn}.xlsx`;
+        XLSX.writeFile(wb, filename);
     }
 
     // ================================================================
