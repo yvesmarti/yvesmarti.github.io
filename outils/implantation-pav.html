@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implantation colonnes enterrées</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --rouge:#B91E27; --rouge-fonce:#8f161d;
+    --vert:#B1B993; --vert-clair:#e7eadd;
+    --beton:#9a9a96; --beton-clair:#c7c7c2;
+    --encre:#23231f; --gris:#6b6b66; --cote:#5a5a55;
+    --papier:#fbfbf8; --carte:#ffffff; --liseré:#e3e3dc;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:var(--encre);background:var(--papier);
+       display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+  header{border-bottom:3px solid var(--rouge);padding:11px 20px;flex:0 0 auto;}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--rouge);font-weight:700;}
+  h1{font-size:19px;margin:2px 0 0;font-weight:700;}
+
+  .main{display:flex;flex:1 1 auto;min-height:0;}
+  @media(max-width:860px){.main{flex-direction:column;}}
+
+  .panel{width:298px;flex:0 0 298px;overflow-y:auto;padding:15px;background:var(--carte);border-right:1px solid var(--liseré);}
+  @media(max-width:860px){.panel{width:100%;flex:0 0 auto;max-height:42%;border-right:none;border-bottom:1px solid var(--liseré);}}
+  .grp{margin-bottom:15px;}
+  .grp > label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;}
+
+  .stepper{display:flex;border:1px solid var(--liseré);border-radius:8px;overflow:hidden;width:fit-content;}
+  .stepper button{width:40px;height:40px;border:none;background:var(--vert-clair);color:var(--rouge-fonce);font-size:22px;cursor:pointer;font-weight:700;}
+  .stepper button:hover{background:var(--vert);}
+  .stepper .count{width:52px;text-align:center;font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;line-height:40px;}
+
+  .segmented{display:flex;flex-direction:column;gap:6px;}
+  .segmented button{text-align:left;border:1px solid var(--liseré);background:#fff;border-radius:7px;padding:8px 11px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--encre);}
+  .segmented button:hover{border-color:var(--beton);}
+  .segmented button.on{border-color:var(--rouge);background:#fdeff0;font-weight:600;}
+  .perso{display:none;gap:8px;margin-top:8px;}
+  .perso.show{display:flex;}
+  .perso .mini{flex:1;}
+  .perso label{font-size:11px;color:var(--gris);display:block;margin-bottom:3px;}
+
+  .fluxlist{display:flex;flex-direction:column;gap:5px;}
+  .fluxrow{display:flex;align-items:center;gap:8px;}
+  .fluxrow .badge{width:24px;height:24px;border-radius:5px;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .fluxrow select{flex:1;padding:6px 7px;border:1px solid var(--liseré);border-radius:6px;font-family:inherit;font-size:12.5px;background:#fff;}
+
+  input[type=number]{width:100%;padding:7px 8px;border:1px solid var(--liseré);border-radius:6px;font-family:inherit;font-size:14px;font-variant-numeric:tabular-nums;}
+  .toggle{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;}
+  .toggle input{width:17px;height:17px;accent-color:var(--rouge);}
+
+  details{border-top:1px solid var(--liseré);padding-top:10px;}
+  summary{cursor:pointer;font-size:12.5px;color:var(--gris);font-weight:600;list-style:none;}
+  summary::before{content:"▸ ";color:var(--rouge);}
+  details[open] summary::before{content:"▾ ";}
+  .adv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .adv label{font-size:11px;color:var(--gris);display:block;margin-bottom:3px;}
+
+  .right{flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;}
+  .tabs{display:flex;flex:0 0 auto;border-bottom:1px solid var(--liseré);background:var(--carte);}
+  .tabs button{border:none;background:none;padding:12px 20px;font-family:inherit;font-size:14px;font-weight:600;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;}
+  .tabs button.on{color:var(--rouge);border-bottom-color:var(--rouge);}
+
+  .view{flex:1 1 auto;min-height:0;display:none;}
+  .view.on{display:flex;}
+  #viewMesures{flex-direction:column;overflow-y:auto;padding:18px;}
+  #viewImplantation{flex-direction:column;}
+
+  .plan-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+  .config-tag{font-size:12px;color:var(--rouge);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+  .drawing{width:100%;max-width:760px;background:#fff;border:1px dashed var(--liseré);border-radius:8px;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0;font-size:13px;}
+  .legend .it{display:flex;align-items:center;gap:7px;}
+  .legend .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.2);}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;max-width:760px;}
+  @media(max-width:560px){.stats{grid-template-columns:1fr;}}
+  .stat{background:var(--vert-clair);border-radius:8px;padding:11px 13px;}
+  .stat.major{background:var(--rouge);color:#fff;}
+  .stat .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
+  .stat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .stat .u{font-size:12px;font-weight:400;opacity:.8;}
+  .notes{margin-top:18px;font-size:13px;color:var(--gris);max-width:760px;}
+  .notes h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--encre);margin:0 0 8px;}
+  .notes ul{margin:0;padding-left:18px;} .notes li{margin-bottom:5px;} .notes b{color:var(--encre);}
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .btn{border:1px solid var(--rouge);background:#fff;color:var(--rouge);border-radius:7px;padding:8px 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn:hover{background:var(--rouge);color:#fff;}
+
+  .maptools{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;background:var(--carte);border-bottom:1px solid var(--liseré);}
+  .maptools .search{display:flex;gap:5px;flex:1 1 200px;max-width:320px;position:relative;}
+  .maptools .search input{flex:1;padding:7px 9px;border:1px solid var(--liseré);border-radius:6px;font-family:inherit;font-size:13px;}
+  .maptools .search button{border:none;background:var(--rouge);color:#fff;border-radius:6px;padding:0 11px;cursor:pointer;font-weight:700;}
+  .results{position:absolute;top:38px;left:0;right:0;background:#fff;border:1px solid var(--liseré);border-radius:6px;overflow:hidden;display:none;z-index:1000;}
+  .results.show{display:block;}
+  .results div{padding:7px 9px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--liseré);}
+  .results div:hover{background:var(--vert-clair);}
+  .rotrow{display:flex;align-items:center;gap:7px;font-size:13px;}
+  .rotrow input[type=range]{width:110px;accent-color:var(--rouge);}
+  .rotrow input[type=number]{width:56px;}
+  .basebtns{display:flex;gap:5px;}
+  .basebtns button{border:1px solid var(--liseré);background:#fff;border-radius:6px;padding:7px 12px;cursor:pointer;font-family:inherit;font-size:13px;}
+  .basebtns button.on{border-color:var(--rouge);background:#fdeff0;font-weight:600;}
+  #map{flex:1 1 auto;min-height:0;}
+  .leaflet-container{font-family:inherit;background:#dcdcd6;}
+  .maplegend{background:#fff;padding:8px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);font-size:12px;line-height:1.7;}
+  .maplegend .it{display:flex;align-items:center;gap:6px;}
+  .maplegend .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.2);}
+</style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">Outil d'implantation</div>
+    <h1>Colonnes enterrées — dimensionnement &amp; calage terrain</h1>
+  </header>
+
+  <div class="main">
+    <aside class="panel">
+      <div class="grp">
+        <label>Nombre de colonnes</label>
+        <div class="stepper"><button id="moins">−</button><div class="count" id="nb">3</div><button id="plus">+</button></div>
+      </div>
+
+      <div class="grp">
+        <label>Configuration</label>
+        <div class="segmented" id="configBtns">
+          <button data-mode="ligne" class="on">En ligne</button>
+          <button data-mode="grille">En carré / grille</button>
+          <button data-mode="perso">Personnalisé</button>
+        </div>
+        <div class="perso" id="persoFields">
+          <div class="mini"><label>Rangées</label><input type="number" id="rows" min="1" max="6" value="2"></div>
+          <div class="mini"><label>Col. / rangée</label><input type="number" id="cols" min="1" max="8" value="2"></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <label>Flux par colonne</label>
+        <div class="fluxlist" id="fluxlist"></div>
+      </div>
+
+      <div class="grp">
+        <label class="toggle"><input type="checkbox" id="ailes"><span>Ailes béton (zone humide, +24 cm)</span></label>
+      </div>
+
+      <details>
+        <summary>Réglages avancés (distances)</summary>
+        <div class="adv">
+          <div><label>Cuvelage (cm)</label><input type="number" id="cuv" value="173"></div>
+          <div><label>Entre cuvelages</label><input type="number" id="esp" value="20"></div>
+          <div><label>Marge blindage</label><input type="number" id="marge" value="20"></div>
+        </div>
+      </details>
+    </aside>
+
+    <div class="right">
+      <div class="tabs">
+        <button data-tab="mesures" class="on">Mesures</button>
+        <button data-tab="implantation">Implantation</button>
+      </div>
+
+      <section id="viewMesures" class="view on">
+        <div class="plan-head">
+          <div style="font-weight:700;font-size:15px">Vue en plan (à l'échelle)</div>
+          <div class="config-tag" id="tag">En ligne · 3 colonnes</div>
+        </div>
+        <svg id="plan" class="drawing" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend" id="legend"></div>
+        <div class="stats">
+          <div class="stat major"><div class="k">Emprise fouille</div><div class="v" id="dim">—<span class="u"> cm</span></div></div>
+          <div class="stat"><div class="k">Surface chantier</div><div class="v" id="surf">—<span class="u"> m²</span></div></div>
+          <div class="stat"><div class="k">Emprise colonnes</div><div class="v" id="dimcol">—<span class="u"> cm</span></div></div>
+        </div>
+        <div class="notes">
+          <h3>À garder en tête</h3>
+          <ul>
+            <li><b>Fouille &gt; 3 m</b> → blindage lourd + coordination SPS (3ᵉ catégorie). La marge de blindage est déjà incluse dans l'emprise.</li>
+            <li><b>Accès engins :</b> camion ~15 m, grue 35 T (~16 m de haut). Prévoir le dégagement au-delà de l'emprise fouille.</li>
+            <li><b>Distances mini SULO :</b> 20 cm entre cuvelages et jusqu'au blindage ; ≤ 30 cm sur un côté pour la pose des bornes.</li>
+          </ul>
+        </div>
+        <div class="actions">
+          <button class="btn" id="copier">Copier le résumé</button>
+          <button class="btn" id="imprimer">Imprimer / PDF</button>
+        </div>
+      </section>
+
+      <section id="viewImplantation" class="view">
+        <div class="maptools">
+          <div class="search">
+            <input id="q" placeholder="Adresse…" autocomplete="off">
+            <button id="go">↵</button>
+            <div class="results" id="res"></div>
+          </div>
+          <div class="rotrow">
+            <span>Orientation</span>
+            <input type="range" id="rot" min="0" max="359" value="0">
+            <input type="number" id="rotn" min="0" max="359" value="0">°
+          </div>
+          <div class="basebtns">
+            <button id="bPlan" class="on">Plan</button>
+            <button id="bSat">Satellite</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="cad"><span>Cadastre</span></label>
+          <label class="toggle"><input type="checkbox" id="etalon"><span>Étalon 10 m</span></label>
+          <button class="btn" id="geojson">Exporter GeoJSON</button>
+        </div>
+        <div id="map"></div>
+      </section>
+    </div>
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+const FLUX = {
+  OMR:    {label:'OMR',                 color:'#7d7d77', full:'Ordures ménagères résiduelles'},
+  EMB:    {label:'Emballages / papiers',color:'#f2b705', full:'Recyclables secs hors verre'},
+  VERRE:  {label:'Verre',               color:'#3a8a3f', full:'Verre'},
+  TEXTILE:{label:'Textile',             color:'#2f6f9e', full:'Textile'}
+};
+const CYCLE = ['OMR','EMB','VERRE','TEXTILE'];
+
+const state = {n:3, mode:'ligne', wings:false, rot:0, cuv:173, esp:20, marge:20, prows:2, pcols:2,
+               flux:['OMR','EMB','VERRE'], center:{lat:49.28649, lng:-0.11558}};
+
+function gridDims(){
+  if(state.mode==='ligne') return {r:1, c:state.n};
+  if(state.mode==='perso') return {r:Math.max(1,state.prows), c:Math.max(1,state.pcols)};
+  const c=Math.ceil(Math.sqrt(state.n)); return {r:Math.ceil(state.n/c), c};
+}
+function compute(){
+  const cw=state.cuv+(state.wings?24:0);
+  const {r,c}=gridDims();
+  const L=c*cw+(c-1)*state.esp+2*state.marge;
+  const W=r*cw+(r-1)*state.esp+2*state.marge;
+  const Lc=c*cw+(c-1)*state.esp, Wc=r*cw+(r-1)*state.esp;
+  return {cw,r,c,L,W,Lc,Wc,Lp:Math.ceil(L/10)*10,Wp:Math.ceil(W/10)*10};
+}
+
+function buildFlux(){
+  for(let i=0;i<state.n;i++) if(!state.flux[i]) state.flux[i]=CYCLE[i%4];
+  state.flux.length=state.n;
+  const box=$('fluxlist'); box.innerHTML='';
+  state.flux.forEach((f,i)=>{
+    const row=document.createElement('div'); row.className='fluxrow';
+    const badge=document.createElement('div'); badge.className='badge'; badge.textContent=i+1; badge.style.background=FLUX[f].color;
+    const sel=document.createElement('select');
+    Object.keys(FLUX).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=FLUX[k].label;if(k===f)o.selected=true;sel.appendChild(o);});
+    sel.onchange=()=>{state.flux[i]=sel.value;badge.style.background=FLUX[sel.value].color;renderAll();};
+    row.appendChild(badge); row.appendChild(sel); box.appendChild(row);
+  });
+}
+
+/* ── Mesures (SVG coté) ── */
+function rect(x,y,w,h,fill,stroke,sw,rx){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" rx="${rx}"/>`;}
+function dimH(x1,x2,y,l){return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--cote)"/><line x1="${x1}" y1="${y-4}" x2="${x1}" y2="${y+4}" stroke="var(--cote)"/><line x1="${x2}" y1="${y-4}" x2="${x2}" y2="${y+4}" stroke="var(--cote)"/><text x="${(x1+x2)/2}" y="${y-6}" font-size="13" font-weight="600" fill="var(--cote)" text-anchor="middle">${l}</text>`;}
+function dimV(x,y1,y2,l){return `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="var(--cote)"/><line x1="${x-4}" y1="${y1}" x2="${x+4}" y2="${y1}" stroke="var(--cote)"/><line x1="${x-4}" y1="${y2}" x2="${x+4}" y2="${y2}" stroke="var(--cote)"/><text x="${x+6}" y="${(y1+y2)/2}" font-size="13" font-weight="600" fill="var(--cote)" text-anchor="start" transform="rotate(90 ${x+6} ${(y1+y2)/2})">${l}</text>`;}
+
+function renderMeasures(){
+  const m=compute(), cw=m.cw;
+  const padTop=46,padLeft=20,padRight=64, VW=800,VH=460, dW=VW-padLeft-padRight, dH=VH-padTop-20;
+  const scale=Math.min(dW/m.L, dH/m.W);
+  const ox=padLeft+(dW-m.L*scale)/2, oy=padTop+(dH-m.W*scale)/2;
+  const X=cm=>ox+cm*scale, Y=cm=>oy+cm*scale;
+  let s=rect(X(0),Y(0),m.L*scale,m.W*scale,'var(--vert-clair)','var(--rouge)',2,4), d=0;
+  for(let i=0;i<m.r&&d<state.n;i++)for(let j=0;j<m.c&&d<state.n;j++){
+    const x=X(state.marge+j*(cw+state.esp)), y=Y(state.marge+i*(cw+state.esp)), w=cw*scale;
+    s+=rect(x,y,w,w,FLUX[state.flux[d]].color,'var(--encre)',1.2,2); d++;
+    s+=`<text x="${x+w/2}" y="${y+w/2}" font-size="${Math.max(11,Math.min(20,w*0.3))}" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.25)" stroke-width=".4" text-anchor="middle" dominant-baseline="central">${d}</text>`;
+  }
+  s+=dimH(X(0),X(m.L),Y(0)-16,`${m.Lp} cm`); s+=dimV(X(m.L)+16,Y(0),Y(m.W),`${m.Wp} cm`);
+  if(m.c>1){const xa=X(state.marge+cw),xb=X(state.marge+cw+state.esp),yy=Y(state.marge+cw/2);
+    s+=`<line x1="${xa}" y1="${yy}" x2="${xb}" y2="${yy}" stroke="var(--cote)"/><text x="${(xa+xb)/2}" y="${yy-5}" font-size="10" fill="var(--cote)" text-anchor="middle">${state.esp}</text>`;}
+  $('plan').innerHTML=s;
+
+  const used=[...new Set(state.flux)];
+  $('legend').innerHTML=used.map(k=>`<div class="it"><span class="sw" style="background:${FLUX[k].color}"></span>${FLUX[k].label}</div>`).join('');
+  const noms={ligne:'En ligne',grille:'En carré / grille',perso:'Personnalisé'};
+  $('tag').textContent=`${noms[state.mode]} · ${m.r}×${m.c} (${state.n} colonne${state.n>1?'s':''})`;
+  $('dim').innerHTML=`${m.Lp} × ${m.Wp}<span class="u"> cm</span>`;
+  $('surf').innerHTML=`${(m.Lp*m.Wp/10000).toLocaleString('fr-FR',{maximumFractionDigits:1})}<span class="u"> m²</span>`;
+  $('dimcol').innerHTML=`${Math.round(m.Lc)} × ${Math.round(m.Wc)}<span class="u"> cm</span>`;
+}
+
+/* ── Implantation (carte) ── */
+let map=null, plan, sat, cadastre, handle, group, etalonLayer=null, legendCtl;
+const blank='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
+function ensureMap(){
+  if(map) return;
+  map=L.map('map',{center:[state.center.lat,state.center.lng],zoom:20,maxZoom:22});
+  plan=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxNativeZoom:20,maxZoom:22,attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+  sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:22,errorTileUrl:blank,attribution:'© Esri'});
+  cadastre=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&STYLE=PCI%20vecteur&TILEMATRIXSET=PM&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxNativeZoom:19,maxZoom:22,opacity:0.85,errorTileUrl:blank,attribution:'© IGN'});
+  L.control.scale({metric:true,imperial:false,maxWidth:160}).addTo(map);
+  handle=L.marker([state.center.lat,state.center.lng],{draggable:true,title:"Glissez pour déplacer l'implantation"}).addTo(map);
+  handle.on('drag',e=>{const p=e.target.getLatLng();state.center={lat:p.lat,lng:p.lng};renderMap();});
+  group=L.layerGroup().addTo(map);
+  legendCtl=L.control({position:'bottomright'});
+  legendCtl.onAdd=function(){this._div=L.DomUtil.create('div','maplegend');return this._div;};
+  legendCtl.addTo(map);
+}
+// décalage local (mètres) → coordonnées, corrigé en longitude par la latitude
+function rotXY(xm,ym){const t=state.rot*Math.PI/180;return [xm*Math.cos(t)-ym*Math.sin(t), xm*Math.sin(t)+ym*Math.cos(t)];}
+function placeLL(xm,ym){const [xr,yr]=rotXY(xm,ym);return [state.center.lat+yr/111320, state.center.lng+xr/(111320*Math.cos(state.center.lat*Math.PI/180))];}        // [lat,lng] pour Leaflet
+function placeGJ(xm,ym){const [lat,lng]=placeLL(xm,ym);return [lng,lat];}                                                                                              // [lng,lat] pour GeoJSON
+function ringLL(xMin,yMin,w,h){return [placeLL(xMin,yMin),placeLL(xMin+w,yMin),placeLL(xMin+w,yMin+h),placeLL(xMin,yMin+h)];}
+function ringGJ(xMin,yMin,w,h){const r=[placeGJ(xMin,yMin),placeGJ(xMin+w,yMin),placeGJ(xMin+w,yMin+h),placeGJ(xMin,yMin+h)];r.push(r[0]);return r;}                  // anneau fermé
+
+function renderMap(){
+  if(!map) return;
+  const m=compute(), cwM=m.cw/100, espM=state.esp/100, mgM=state.marge/100, Lm=m.L/100, Wm=m.W/100;
+  group.clearLayers();
+  L.polygon(ringLL(-Lm/2,-Wm/2,Lm,Wm),{color:'#B91E27',weight:2,fillColor:'#B1B993',fillOpacity:0.2}).addTo(group);
+  let d=0;
+  for(let i=0;i<m.r&&d<state.n;i++)for(let j=0;j<m.c&&d<state.n;j++){
+    const xMin=-Lm/2+mgM+j*(cwM+espM), yMin=-Wm/2+mgM+i*(cwM+espM), f=state.flux[d]; d++;
+    L.polygon(ringLL(xMin,yMin,cwM,cwM),{color:'#23231f',weight:1.5,fillColor:FLUX[f].color,fillOpacity:0.85})
+      .bindTooltip(`Colonne ${d} — ${FLUX[f].label}`,{direction:'top'}).addTo(group);
+  }
+  if(etalonLayer){map.removeLayer(etalonLayer);etalonLayer=null;}
+  if($('etalon').checked){
+    const e=ringLL(-Lm/2-12,-5,10,10);
+    etalonLayer=L.polygon(e,{color:'#000',weight:1.5,dashArray:'5 4',fill:false}).addTo(map);
+    L.marker(e[0],{opacity:0}).bindTooltip('10 m',{permanent:true,direction:'top'}).addTo(etalonLayer);
+  }
+  const used=[...new Set(state.flux)];
+  legendCtl._div.innerHTML=used.map(k=>`<div class="it"><span class="sw" style="background:${FLUX[k].color}"></span>${FLUX[k].label}</div>`).join('');
+}
+
+/* ── Export GeoJSON (WGS84 / EPSG:4326) ── */
+function exportGeoJSON(){
+  const m=compute(), cwM=m.cw/100, espM=state.esp/100, mgM=state.marge/100, Lm=m.L/100, Wm=m.W/100;
+  const features=[];
+  // emprise fouille
+  features.push({type:'Feature',
+    properties:{type:'emprise_fouille', longueur_cm:m.Lp, largeur_cm:m.Wp,
+                surface_m2:+(m.Lp*m.Wp/10000).toFixed(2), orientation_deg:state.rot, nb_colonnes:state.n},
+    geometry:{type:'Polygon', coordinates:[ringGJ(-Lm/2,-Wm/2,Lm,Wm)]}});
+  // colonnes
+  let d=0;
+  for(let i=0;i<m.r&&d<state.n;i++)for(let j=0;j<m.c&&d<state.n;j++){
+    const xMin=-Lm/2+mgM+j*(cwM+espM), yMin=-Wm/2+mgM+i*(cwM+espM), f=state.flux[d]; d++;
+    features.push({type:'Feature',
+      properties:{type:'colonne', numero:d, flux:f, flux_libelle:FLUX[f].full,
+                  flux_couleur:FLUX[f].color, cuvelage_cm:state.cuv, ailes_beton:state.wings},
+      geometry:{type:'Polygon', coordinates:[ringGJ(xMin,yMin,cwM,cwM)]}});
+  }
+  const fc={type:'FeatureCollection', features};
+  const blob=new Blob([JSON.stringify(fc,null,2)],{type:'application/geo+json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='implantation_colonnes.geojson';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function renderAll(){ renderMeasures(); renderMap(); }
+
+async function geocode(){
+  const q=$('q').value.trim(); if(!q) return;
+  try{
+    const r=await fetch('https://api-adresse.data.gouv.fr/search/?limit=5&q='+encodeURIComponent(q));
+    const d=await r.json(); const box=$('res'); box.innerHTML='';
+    if(!d.features.length){box.innerHTML='<div>Aucun résultat</div>';box.classList.add('show');return;}
+    d.features.forEach(f=>{
+      const el=document.createElement('div'); el.textContent=f.properties.label;
+      el.onclick=()=>{const [lng,lat]=f.geometry.coordinates;state.center={lat,lng};handle.setLatLng([lat,lng]);map.setView([lat,lng],20);box.classList.remove('show');renderMap();};
+      box.appendChild(el);
+    }); box.classList.add('show');
+  }catch(e){$('res').innerHTML='<div>Recherche indisponible</div>';$('res').classList.add('show');}
+}
+
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    b.classList.add('on');
+    $(b.dataset.tab==='mesures'?'viewMesures':'viewImplantation').classList.add('on');
+    if(b.dataset.tab==='implantation'){ensureMap();setTimeout(()=>{map.invalidateSize();renderMap();},60);}
+  };
+});
+
+$('plus').onclick =()=>{if(state.n<12){state.n++;$('nb').textContent=state.n;buildFlux();renderAll();}};
+$('moins').onclick=()=>{if(state.n>1){state.n--;$('nb').textContent=state.n;buildFlux();renderAll();}};
+document.querySelectorAll('#configBtns button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#configBtns button').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.mode=b.dataset.mode;$('persoFields').classList.toggle('show',state.mode==='perso');renderAll();};
+});
+$('ailes').onchange=e=>{state.wings=e.target.checked;renderAll();};
+$('cuv').oninput  =e=>{state.cuv=+e.target.value||173;renderAll();};
+$('esp').oninput  =e=>{state.esp=+e.target.value||0;renderAll();};
+$('marge').oninput=e=>{state.marge=+e.target.value||0;renderAll();};
+$('rows').oninput =e=>{state.prows=+e.target.value||1;renderAll();};
+$('cols').oninput =e=>{state.pcols=+e.target.value||1;renderAll();};
+$('rot').oninput  =e=>{state.rot=+e.target.value;$('rotn').value=state.rot;renderMap();};
+$('rotn').oninput =e=>{state.rot=+e.target.value||0;$('rot').value=state.rot;renderMap();};
+$('etalon').onchange=()=>renderMap();
+$('go').onclick=geocode; $('q').addEventListener('keydown',e=>{if(e.key==='Enter')geocode();});
+$('bPlan').onclick=()=>{map.addLayer(plan);map.removeLayer(sat);$('bPlan').classList.add('on');$('bSat').classList.remove('on');};
+$('bSat').onclick =()=>{map.addLayer(sat);map.removeLayer(plan);$('bSat').classList.add('on');$('bPlan').classList.remove('on');};
+$('cad').onchange =e=>{if(e.target.checked)map.addLayer(cadastre);else map.removeLayer(cadastre);};
+$('geojson').onclick=exportGeoJSON;
+
+$('imprimer').onclick=()=>window.print();
+$('copier').onclick=()=>{
+  const m=compute(); const tally={}; state.flux.forEach(f=>tally[f]=(tally[f]||0)+1);
+  const det=Object.keys(tally).map(k=>`${tally[k]} × ${FLUX[k].label}`).join(', ');
+  const t=`Implantation colonnes enterrées
+${$('tag').textContent}
+Flux : ${det}
+Emprise fouille : ${m.Lp} × ${m.Wp} cm (${(m.Lp*m.Wp/10000).toFixed(1)} m²)
+Emprise colonnes : ${Math.round(m.Lc)} × ${Math.round(m.Wc)} cm
+Cuvelage ${state.cuv} cm${state.wings?' + ailes (24 cm)':''} · espacement ${state.esp} cm · marge ${state.marge} cm`;
+  navigator.clipboard.writeText(t).then(()=>{$('copier').textContent='Copié ✓';setTimeout(()=>$('copier').textContent='Copier le résumé',1500);});
+};
+
+buildFlux();
+renderMeasures();
+</script>
+</body>
+</html>
