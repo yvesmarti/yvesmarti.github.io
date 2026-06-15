@@ -112,6 +112,17 @@
             item.style.transitionDelay = (index * 100) + 'ms';
             observer.observe(item);
         });
+
+        // Cartes de compétences : apparition en cascade (animation découplée du survol
+        // pour ne pas retarder hover/filtrage ; délai plafonné pour les grilles longues)
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelectorAll('.skill-card').forEach(function (card, index) {
+            card.classList.add('skill-reveal');
+            if (!reduceMotion) {
+                card.style.animationDelay = ((index % 8) * 60) + 'ms';
+            }
+            observer.observe(card);
+        });
     }
 
     /* ------------------------------------------
@@ -172,37 +183,30 @@
         var el = document.getElementById('hero-typewriter');
         if (!el) return;
 
-        // Lire le texte existant (fallback sans JS conservé dans le HTML)
+        // Texte existant conservé comme fallback sans JS
         var text = el.textContent.trim().replace(/\s+/g, ' ');
+
+        // Mouvement réduit : afficher la tagline d'un bloc, sans animation
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) {
+            el.textContent = text;
+            return;
+        }
+
+        // Révélation mot à mot, en cascade
+        var words = text.split(' ');
         el.textContent = '';
 
-        // Conteneur texte + curseur
-        var textNode = document.createElement('span');
-        var cursor   = document.createElement('span');
-        cursor.classList.add('typewriter-cursor');
-        cursor.setAttribute('aria-hidden', 'true');
-
-        el.appendChild(textNode);
-        el.appendChild(cursor);
-
-        var i = 0;
-
-        // Démarrage après 500 ms
-        setTimeout(function () {
-            function type() {
-                if (i < text.length) {
-                    textNode.textContent += text[i];
-                    i++;
-                    setTimeout(type, 40);
-                } else {
-                    // Curseur disparaît à la fin
-                    setTimeout(function () {
-                        cursor.classList.add('done');
-                    }, 800);
-                }
+        words.forEach(function (word, idx) {
+            var span = document.createElement('span');
+            span.className = 'hero-word';
+            span.textContent = word;
+            span.style.animationDelay = (300 + idx * 55) + 'ms';
+            el.appendChild(span);
+            if (idx < words.length - 1) {
+                el.appendChild(document.createTextNode(' '));
             }
-            type();
-        }, 500);
+        });
     }
 
     /* ------------------------------------------
