@@ -109,9 +109,28 @@
   .maplegend{background:#fff;padding:8px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);font-size:12px;line-height:1.7;}
   .maplegend .it{display:flex;align-items:center;gap:6px;}
   .maplegend .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.2);}
+
+
+/* ── BACK LINK ─────────────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 1.2rem 0 0.5rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #6b7c75;
+  text-decoration: none;
+  transition: color .15s;
+}
+.back-link:hover { color: #3d8b6e; }
 </style>
 </head>
 <body>
+  <a href="/outils/" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Retour aux outils
+  </a>
   <header>
     <div class="eyebrow">Outil d'implantation</div>
     <h1>Colonnes enterrées — dimensionnement &amp; calage terrain</h1>
