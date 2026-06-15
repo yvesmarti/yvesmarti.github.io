@@ -471,6 +471,20 @@
                 height: 60vh;
             }
         }
+
+        /* ── BACK LINK ─────────────────────────────────────────── */
+        .back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0 0 0.8rem;
+          font-size: .85rem;
+          font-weight: 600;
+          color: #6b7c75;
+          text-decoration: none;
+          transition: color .15s;
+        }
+        .back-link:hover { color: #3d8b6e; }
     </style>
 </head>
 <body>
@@ -479,6 +493,10 @@
              PANNEAU LATÉRAL GAUCHE
              ========================================== -->
         <div class="sidebar">
+            <a href="/outils/" class="back-link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour aux outils
+            </a>
             <!-- En-tête -->
             <div class="header">
                 <h1><i class="fas fa-map-marked-alt"></i> Extracteur POI OSM</h1>

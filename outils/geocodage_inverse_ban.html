@@ -131,9 +131,27 @@
             color: #388e3c;
             font-weight: bold;
         }
+
+        /* ── BACK LINK ─────────────────────────────────────────── */
+        .back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin: 1.2rem 0 0.5rem;
+          font-size: .85rem;
+          font-weight: 600;
+          color: #6b7c75;
+          text-decoration: none;
+          transition: color .15s;
+        }
+        .back-link:hover { color: #3d8b6e; }
     </style>
 </head>
 <body>
+    <a href="/outils/" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour aux outils
+    </a>
     <div class="container">
         <h1>🗺️ Géocodage Inversé avec la BAN</h1>
         
@@ -446,19 +464,5 @@
             document.body.removeChild(lien);
         }
     </script>
-    <!-- Bouton de retour vers la page des outils -->
-<div style="text-align: center; margin: 30px 0; padding: 20px 0; border-top: 1px solid #ddd;">
-    <a href="/outils/"
-       style="display: inline-block; 
-              padding: 12px 24px; 
-              background-color: #007bff; 
-              color: white; 
-              text-decoration: none; 
-              border-radius: 5px; 
-              font-weight: bold;
-              transition: background-color 0.3s;">
-        ← Retour aux outils
-    </a>
-</div>
 </body>
 </html>
