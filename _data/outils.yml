@@ -70,6 +70,18 @@
       lien: outils/generateur_calendrier_collecte.html
       actif: true
 
+    - nom: Dimensionnement de dalles
+      emoji: "📐"
+      description: Configurez et dimensionnez vos dalles pour points d'apport volontaire avec bacs et claustra.
+      lien: outils/schemas_dalles.html
+      actif: true
+
+    - nom: Implantation de colonnes enterrées
+      emoji: "🗑️"
+      description: Planifiez et visualisez l'implantation de colonnes enterrées (PAV) sur une carte interactive avec gestion des contraintes terrain.
+      lien: outils/implantation-pav.html
+      actif: true
+
     - nom: Outil environnemental
       emoji: "🌿"
       description: Emplacement disponible pour un outil environnemental.
@@ -79,12 +91,6 @@
 - categorie: Autres outils pratiques
   cat_id: autres
   outils:
-    - nom: Dimensionnement de dalles
-      emoji: "📐"
-      description: Configurez et dimensionnez vos dalles pour points d'apport volontaire avec bacs et claustra.
-      lien: outils/schemas_dalles.html
-      actif: true
-
     - nom: Générateur de QR codes
       emoji: "📱"
       description: Créez des QR codes (URL, contact vCard, WiFi) directement dans le navigateur, sans serveur ni transfert de données.
