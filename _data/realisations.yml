@@ -50,7 +50,15 @@
 - id: 7
   title: "Guide des formules Excel"
   desc: "Référence interactive des principales formules Excel : syntaxe, exemples concrets et conseils d'utilisation, organisés par catégorie."
-  type: "site"
+  type: "guide"
   tags: ["Excel", "HTML", "CSS", "JS"]
   emoji: "📗"
   url: "https://yvesmarti.github.io/guide-excel/"
+
+- id: 8
+  title: "Guide des marchés publics"
+  desc: "Guide pratique pour comprendre et naviguer dans les procédures de marchés publics : seuils, types de procédures, rédaction des pièces essentielles."
+  type: "guide"
+  tags: ["Marchés publics", "Commande publique", "HTML"]
+  emoji: "📋"
+  url: "https://yvesmarti.github.io/guide-marches-publics/"
