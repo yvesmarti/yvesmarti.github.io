@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Ce fichier documente le dépôt pour Claude Code (claude.ai/code). Il doit rester à jour à chaque évolution significative du projet.
 
 ---
 
@@ -8,135 +8,462 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Portfolio professionnel de **Yves Marti** — chargé de mission déchets & SIG en Normandie. Site statique Jekyll hébergé sur GitHub Pages, entièrement en français.
 
-URL de production : https://yvesmarti.github.io
+- URL de production : https://yvesmarti.github.io
+- Branche de déploiement : `main` (push → déploiement automatique GitHub Pages)
+- Pas de CI/CD supplémentaire, pas de tests automatisés
 
 ---
 
 ## Commandes utiles
 
-### Développement local
-
 ```bash
-bundle install          # Installer les dépendances Ruby (première fois)
-bundle exec jekyll serve  # Lancer le serveur local → http://localhost:4000
-bundle exec jekyll build  # Générer le site dans _site/
+bundle install              # Installer les dépendances Ruby (première fois)
+bundle exec jekyll serve    # Serveur local → http://localhost:4000
+bundle exec jekyll build    # Générer le site dans _site/
 ```
-
-Le site se déploie automatiquement sur GitHub Pages à chaque push sur `main`. Il n'y a pas de pipeline CI/CD supplémentaire, pas de tests automatisés.
 
 ---
 
-## Architecture du site
-
-### Structure générale
+## Architecture générale
 
 Le site mélange deux modes de fonctionnement :
 
-**Pages Jekyll (avec layout)** — utilisent `_layouts/default.html` ou `_layouts/page.html` :
-- `index.html` — Page d'accueil, layout `default`
-- `outils.html` — Liste des outils, layout `page`
-- `realisations/index.html` — Portfolio réalisations, layout `default` avec CSS/JS dédiés
-- `realisations/*.html` — Pages de détail des réalisations, layout `page` ou `default`
+### Pages Jekyll (avec layout)
 
-**Pages autonomes (sans layout Jekyll)** — HTML/CSS/JS auto-contenus, pas de nav/footer partagés :
-- `cv/index.html` — CV interactif, optimisé impression, styles inline
-- `outils/*.html` — Outils web fonctionnels (géocodage, isochrones, etc.)
-- `outils/suivi/index.html` — PWA de suivi terrain (service worker inclus)
+Utilisent `_layouts/default.html` ou `_layouts/page.html`, partagent nav/footer :
 
-### Layouts
+| Fichier | Layout | Rôle |
+|---|---|---|
+| `index.html` | `default` | Page d'accueil |
+| `outils.html` | `page` | Catalogue des outils (extra CSS/JS) |
+| `realisations/index.html` | `default` | Portfolio réalisations (extra CSS/JS) |
+| `realisations/*.html` | `page` ou `default` | Pages de détail des réalisations |
 
-`_layouts/default.html` — layout maître : head complet (SEO, Open Graph, JSON-LD, GTM), `_includes/header.html`, `<main>{{ content }}</main>`, `_includes/footer.html`, chargement de `main.js` et optionnellement `page.extra_js`/`page.extra_css`.
+### Pages autonomes (sans layout Jekyll)
 
-`_layouts/page.html` — hérite de `default`, ajoute automatiquement une section `.page-header` avec titre (`page.title`) et sous-titre (`page.subtitle`) sur fond `--color-primary`.
+HTML/CSS/JS auto-contenus, sans nav/footer partagés :
 
-### Données (`_data/`)
-
-Tout le contenu modifiable est dans des fichiers YAML :
-
-| Fichier | Utilisé dans |
+| Fichier | Rôle |
 |---|---|
-| `timeline.yml` | Timeline horizontale défilante — section `#parcours` de `index.html` |
-| `competences.yml` | Grille de compétences filtrables — section `section-dark` de `index.html` |
-| `stats.yml` | Compteurs animés — section `section-dark` de `index.html` |
-| `outils.yml` | Catalogue d'outils par catégorie — `outils.html` |
-| `realisations.yml` | Cards du portfolio — injecté en JSON dans `realisations/index.html` via `{{ site.data.realisations | jsonify }}` |
-| `experiences.yml` | Non utilisé directement côté front à ce jour |
-| `formations.yml` | Non utilisé directement côté front à ce jour |
+| `cv/index.html` | CV interactif, optimisé impression, styles et données inline |
+| `outils/*.html` | Outils web fonctionnels (une appli par fichier) |
+| `outils/suivi/index.html` | PWA de suivi terrain GPS (service worker inclus) |
 
 ---
 
-## Système de design — état actuel
+## Structure des fichiers
 
-### Variables CSS principales (`assets/css/style.css`)
-
-```css
---color-primary: #1a3a32   /* vert forêt foncé — héros, sections sombres, nav */
---color-accent:  #3d8b6e   /* vert moyen — liens, accents, bordures actives */
---color-light:   #f7f9f8   /* fond clair principal */
---color-warm:    #e8ded4   /* fond beige chaleureux — sections intermédiaires */
---color-text:    #2c2c2c
---color-muted:   #6b7c75
+```
+yvesmarti.github.io/
+├── _config.yml               # Config Jekyll (titre, plugins, SEO keywords)
+├── Gemfile                   # Dépendances Ruby (github-pages, jekyll-sitemap)
+├── index.html                # Page d'accueil
+├── outils.html               # Page catalogue outils
+├── realisations.html         # Redirect → /realisations/
+├── robots.txt                # SEO
+│
+├── _data/                    # Contenu YAML (source de vérité)
+│   ├── competences.yml       # 13 cartes de compétences filtrables
+│   ├── experiences.yml       # 4 expériences pro (non rendu côté front)
+│   ├── formations.yml        # 3 diplômes (non rendu côté front)
+│   ├── outils.yml            # Catalogue d'outils par catégorie (19 entrées)
+│   ├── outils_recommandes.yml # 4 outils tiers recommandés (Recordly, etc.)
+│   ├── realisations.yml      # 8 items du portfolio
+│   ├── stats.yml             # Compteurs animés (70+ collectivités, etc.)
+│   └── timeline.yml          # 7 items parcours chronologique (formation + expé)
+│
+├── _layouts/
+│   ├── default.html          # Layout maître (head SEO, GTM, nav, footer, main.js)
+│   └── page.html             # Hérite de default, ajoute .page-header coloré
+│
+├── _includes/
+│   ├── header.html           # Navigation fixe (logo YM, liens, toggle dark mode)
+│   └── footer.html           # Pied de page (copyright dynamique)
+│
+├── assets/
+│   ├── css/
+│   │   ├── style.css         # Feuille principale (2 795 lignes)
+│   │   ├── outils.css        # Styles page outils (501 lignes)
+│   │   └── realisations.css  # Styles page réalisations (433 lignes)
+│   ├── js/
+│   │   ├── main.js           # Core JS (540 lignes, IIFE vanilla)
+│   │   ├── hero-background.js # Canvas Perlin noise héros (316 lignes)
+│   │   ├── outils.js         # Filtrage/rendu page outils (61 lignes)
+│   │   └── realisations.js   # Filtrage/rendu portfolio (97 lignes)
+│   └── images/
+│       ├── favicon.svg / favicon-32.png / apple-touch-icon.png
+│       ├── og-image.png      # 1200×630 Open Graph
+│       └── preview-*.webp/png # Aperçus des réalisations
+│
+├── cv/
+│   └── index.html            # CV autonome (données inline, print-friendly)
+│
+├── outils/                   # 16 applis HTML autonomes
+│   ├── geocodage_adresse_ban.html
+│   ├── geocodage_inverse_ban.html
+│   ├── isochrones_ORS.html
+│   ├── photomapviewer.html
+│   ├── photogeomanager.html
+│   ├── extracteurosm.html
+│   ├── generateur_calendrier_collecte.html
+│   ├── schemas_dalles.html
+│   ├── schemas_dalles_v2.html
+│   ├── implantation-pav.html
+│   ├── qr-code.html
+│   ├── annotateur-carte.html
+│   ├── encart-gps.html
+│   ├── creation_retroplanning.html
+│   ├── optimisation_tournee.html
+│   └── suivi/
+│       ├── index.html        # PWA suivi terrain
+│       ├── manifest.json     # Installabilité PWA
+│       └── service-worker.js # Cache offline
+│
+└── realisations/
+    ├── index.html            # Portfolio (rendu dynamique via realisations.js)
+    ├── etude-de-cas-redevance-speciale.html
+    ├── presentation-dashboard.html
+    ├── api-utiles.html
+    └── realisations-variant-a.html
 ```
 
-**Typographie** — toutes chargées depuis Google Fonts :
-- `--font-display: 'DM Serif Display'` — titres H1/H2, `.lead`, citations
-- `--font-body: 'Source Sans 3'` — corps de texte par défaut
-- `'Space Grotesk'` (700) — timeline HTL, titres géo
-- `'Space Mono'` — dates monospace, hints
-- `'Outfit'` (700) — titres de postes `.tl__title`
-- `'Lora'` (italic) — descriptions `.tl__desc`
+---
 
-**Mode sombre** — basculement via `[data-theme="dark"]` sur `<html>`, persisté dans `localStorage`. Un script inline dans `<head>` (anti-FOUC) le restaure avant le rendu. Les variables CSS sont surchargées dans `[data-theme="dark"] { ... }`.
+## Données YAML (`_data/`)
 
-### Incohérences de style à unifier (objectif déclaré)
+### `outils.yml`
 
-Trois systèmes de couleurs coexistent actuellement :
+Structure par catégorie. Chaque outil :
 
-1. **Style principal** (`style.css`) — accent : `#3d8b6e`
-2. **Page CV** (`cv/index.html`, styles inline) — utilise `--teal: #2a7a5e` (teinte différente), pas de dark mode, `font-family: Lora + Source Sans 3`
-3. **Réalisations** (`realisations.css`) — utilise `#2a7a65` hardcodé, `font-family: system-ui` au lieu de `Source Sans 3`
+```yaml
+- nom: "Nom de l'outil"
+  description: "Courte description"
+  lien: "/outils/mon-outil.html"
+  icone: "🗺️"
+  actif: true          # false = masqué dans le catalogue
+  nouveau: true        # optionnel — badge "nouveau"
+```
 
-La page CV est entièrement autonome pour permettre l'impression propre. Si l'on unifie ses couleurs, il faudra modifier les variables CSS inline dans `cv/index.html`.
+Catégories actuelles : `Géomatique & Cartographie`, `Analyse de Données`, `Environnement & Déchets`, `Autres outils pratiques`.
 
-### Séparateurs en vague SVG
+### `realisations.yml`
 
-Les vagues entre sections utilisent des `<path fill="COULEUR_HARDCODÉE">`. Le dark mode les surcharge via :
+```yaml
+- id: "identifiant-unique"
+  titre: "Titre"
+  description: "Description courte"
+  type: "site|etude|astuce|outil"   # détermine le filtre et le badge
+  tags: ["Tag1", "Tag2"]
+  image: "/assets/images/preview-xxx.webp"
+  lien: "/realisations/ma-page.html"   # optionnel
+  lien_externe: "https://..."          # optionnel
+```
+
+### `competences.yml`
+
+```yaml
+- titre: "Titre compétence"
+  icone: "🗺️"
+  categorie: "Cartographie"   # sert au filtre JS
+  couleur: "#3d8b6e"
+  description: "Texte affiché dans la carte"
+```
+
+### `timeline.yml`
+
+```yaml
+- annee: "2020"
+  titre: "Poste ou diplôme"
+  lieu: "Organisation"
+  type: "experience|formation"
+  description: "Détail optionnel"
+```
+
+### `stats.yml`
+
+```yaml
+- valeur: 70
+  suffixe: "+"
+  label: "Collectivités accompagnées"
+  icone: "🏛️"
+```
+
+### `outils_recommandes.yml`
+
+Outils tiers (pas créés par Yves) affichés en section dédiée sur `outils.html` :
+
+```yaml
+- nom: "Recordly"
+  description: "..."
+  lien: "https://..."
+  categorie: "Productivité"
+```
+
+---
+
+## Système de design
+
+### Variables CSS (`assets/css/style.css`)
+
+```css
+/* Couleurs */
+--color-primary:      #1a3a32   /* vert forêt foncé — héros, sections sombres, nav */
+--color-primary-dark: #0a1a10   /* dark mode uniquement */
+--color-accent:       #3d8b6e   /* vert moyen — liens, accents, bordures actives */
+--color-accent-light: #9ed4b8   /* accents légers */
+--color-light:        #f7f9f8   /* fond clair principal */
+--color-warm:         #e8ded4   /* fond beige chaleureux — sections intermédiaires */
+--color-text:         #2c2c2c
+--color-muted:        #6b7c75
+
+/* Typographie */
+--font-display: 'DM Serif Display'
+--font-body:    'Source Sans 3'
+```
+
+### Polices Google Fonts (chargées dans `_layouts/default.html`)
+
+| Police | Graisse | Usage |
+|---|---|---|
+| DM Serif Display | 400 | H1/H2, `.lead`, citations (`--font-display`) |
+| Source Sans 3 | 400, 600 | Corps de texte (`--font-body`) |
+| Space Grotesk | 700 | Timeline HTL, titres géo |
+| Space Mono | 400 | Dates monospace, hints |
+| Outfit | 700 | Titres de postes `.tl__title` |
+| Lora | 400 italic | Descriptions `.tl__desc` |
+
+### Dark mode
+
+Basculé via `data-theme="dark"` sur `<html>`, persisté en `localStorage`. Script inline dans `<head>` (anti-FOUC) le restaure avant rendu. Variables CSS surchargées dans `[data-theme="dark"] { ... }` dans `style.css`.
+
+### Séparateurs vague SVG
+
+Les vagues entre sections utilisent `<path fill="COULEUR_HARDCODÉE">`. Règle CSS dark mode :
+
 ```css
 [data-theme="dark"] .wave-separator path[fill="#f7f9f8"] { fill: #131e17; }
 ```
-**Important** : si une couleur de fond de section change, il faut mettre à jour à la fois le `fill` dans le HTML **et** la règle CSS du dark mode correspondante.
+
+**Important** : si une couleur de fond de section change, mettre à jour le `fill` dans le HTML **ET** la règle CSS dark mode correspondante.
+
+### Responsive — breakpoints
+
+| Breakpoint | Comportement notable |
+|---|---|
+| 1024px | Skills grid 3 cols, nav pill désactivée |
+| 768px | Skills grid 2 cols, layout mobile général |
+| 480px | Skills grid 1 col, hero réduit |
+
+### Incohérences de style à unifier (objectif futur)
+
+Trois systèmes de couleurs coexistent :
+
+1. **Style principal** (`style.css`) — accent : `#3d8b6e`
+2. **Page CV** (`cv/index.html`, inline) — `--teal: #2a7a5e` (teinte différente), police Lora + Source Sans 3
+3. **Réalisations** (`realisations.css`) — `#2a7a65` hardcodé, `font-family: system-ui`
+
+La page CV est autonome pour permettre l'impression propre. Toute unification de ses couleurs se fait dans les variables CSS inline de `cv/index.html`.
 
 ---
 
-## JavaScript (`assets/js/main.js`)
+## JavaScript
 
-IIFE vanilla JS (pas de framework), 11 fonctions d'initialisation appelées sur `DOMContentLoaded` :
+### `assets/js/main.js` — Core (IIFE vanilla, `DOMContentLoaded`)
 
-| Fonction | Rôle |
+| Fonction | Sélecteur / Hook | Rôle |
+|---|---|---|
+| `initMobileMenu` | `.hamburger` / `.nav-links` | Menu burger mobile |
+| `initDarkMode` | `#theme-toggle` / `localStorage` | Toggle thème |
+| `initNavScroll` | `nav` après 80 px scroll | Nav en pill flottante |
+| `initProgressBar` | `#progress-bar` | Barre de lecture en haut |
+| `initScrollAnimations` | `.animate-on-scroll` (IntersectionObserver) | Révèle les éléments au scroll |
+| `initCounters` | `.stat-counter[data-target]` | Compteurs animés |
+| `initTypewriter` | `#hero-typewriter` | Effet machine à écrire |
+| `initParallax` | `.hero-parallax-bg` | Parallaxe fond héros |
+| `initAnimatedTimeline` | `#exp-timeline .tl__item → .is-lit` | Timeline verticale scroll-driven |
+| `initHorizontalTimeline` | `#parcours` / `#htl-track` | Timeline horizontale (scroll → translateX) |
+| `initSkillFilters` | `.filter-btn` / `.skill-card[data-categorie]` | Filtres compétences |
+
+### `assets/js/hero-background.js`
+
+Canvas Perlin noise animé (`#isoline-canvas`) dans la section héros. Indépendant de `main.js`, chargé séparément depuis `default.html`.
+
+### `assets/js/outils.js`
+
+Filtrage des cartes outils par catégorie sur `outils.html`. Filtre `.filter-pill` sur `.outil-card[data-categorie]`.
+
+### `assets/js/realisations.js`
+
+Rendu dynamique des cards portfolio via `RL_ITEMS` (JSON injecté par Jekyll via `{{ site.data.realisations | jsonify }}`). Filtrage par `type` (site / etude / astuce / outil). Animation cascade à l'affichage.
+
+---
+
+## Catalogue des outils (`outils/`)
+
+Toutes les pages sont des applis HTML autonomes (sans layout Jekyll).
+
+### Géomatique & Cartographie
+
+| Fichier | Titre affiché | APIs / libs clés |
+|---|---|---|
+| `geocodage_adresse_ban.html` | Géocodage adresse | BAN (api.gouv.fr), PapaParse (CSV import) |
+| `geocodage_inverse_ban.html` | Géocodage inverse | BAN |
+| `isochrones_ORS.html` | Zones isochrones | OpenRouteService (ORS), Leaflet |
+| `photomapviewer.html` | Visionneuse photos géolocalisées | Leaflet, EXIF |
+| `photogeomanager.html` | Renommage photos GPS | EXIF, SheetJS |
+| `extracteurosm.html` | Extraction données OSM | Overpass API, Leaflet |
+| `annotateur-carte.html` | Annotation de carte | Leaflet |
+| `encart-gps.html` | Badge GPS | BAN, canvas |
+
+### Environnement & Déchets
+
+| Fichier | Titre affiché | Libs clés |
+|---|---|---|
+| `generateur_calendrier_collecte.html` | Calendrier de collecte | FullCalendar ou logique custom |
+| `schemas_dalles.html` | Schémas de dalles (v1) | Canvas |
+| `schemas_dalles_v2.html` | Schémas de dalles (v2) | Canvas |
+| `implantation-pav.html` | Implantation PAV souterrains | Leaflet |
+
+### Autres outils
+
+| Fichier | Titre affiché | Libs clés |
+|---|---|---|
+| `qr-code.html` | Générateur QR code | QRCode.js |
+| `creation_retroplanning.html` | Rétro-planning | — |
+| `optimisation_tournee.html` | Optimisation de tournée | — |
+
+### PWA suivi terrain (`outils/suivi/`)
+
+- `index.html` — Appli de suivi GPS terrain (38,8 KB)
+- `manifest.json` — Installable en PWA, `theme_color: #2c5f2d`, icônes SVG data-URI
+- `service-worker.js` — Cache offline
+
+---
+
+## Portfolio réalisations (`realisations/`)
+
+### `_data/realisations.yml` → `realisations/index.html`
+
+La page index affiche toutes les entrées YAML sous forme de cards filtrables. Filtres par `type` : `site`, `etude`, `astuce`, `outil`.
+
+### Pages de détail existantes
+
+| Fichier | Sujet |
 |---|---|
-| `initMobileMenu` | Menu burger mobile |
-| `initDarkMode` | Toggle thème + localStorage |
-| `initNavScroll` | Nav en pill flottante après 80 px de scroll |
-| `initProgressBar` | Barre de lecture verte en haut |
-| `initScrollAnimations` | IntersectionObserver sur `.animate-on-scroll` |
-| `initCounters` | Compteurs animés `.stat-counter[data-target]` |
-| `initTypewriter` | Effet machine à écrire sur `#hero-typewriter` |
-| `initParallax` | Parallaxe du dégradé héros `.hero-parallax-bg` |
-| `initAnimatedTimeline` | Timeline verticale `#exp-timeline` (scroll-driven, `.tl__item → .is-lit`) |
-| `initHorizontalTimeline` | Timeline horizontale `#parcours` / `#htl-track` (scroll converti en translateX) |
-| `initIsolines` | Canvas Perlin noise animé `#isoline-canvas` dans le héros |
-| `initSkillFilters` | Filtres `.filter-btn` sur `.skill-card[data-categorie]` |
+| `etude-de-cas-redevance-speciale.html` | Power Query pour la redevance spéciale (42,5 KB) |
+| `presentation-dashboard.html` | Présentation tableau de bord (31,6 KB) |
+| `api-utiles.html` | Guide API open data utiles (35,5 KB) |
+| `realisations-variant-a.html` | Variante / archive |
 
-`assets/js/realisations.js` — rendu dynamique des cards via `RL_ITEMS` (JSON injecté par Jekyll), filtrage par type.
+---
+
+## CV (`cv/index.html`)
+
+Page entièrement autonome (sans layout Jekyll) :
+- Styles CSS variables inline (`--teal: #2a7a5e`, `--teal-dark: #1d5e45`)
+- Layout deux colonnes : gauche (expériences), droite (compétences, contact)
+- Dark mode propre (variables CSS inline, script autonome)
+- Impression propre (media print intégré)
+- **Données directement dans le HTML** (pas pilotées par YAML)
+- Police : Lora + Source Sans 3
+
+---
+
+## Layouts et includes
+
+### `_layouts/default.html`
+
+- `<head>` complet : charset, viewport, canonical, OG, Twitter Card, JSON-LD (Person + WebPage + BreadcrumbList)
+- Google Tag Manager (GTM-KC3LMQP2) dans `<head>` et `<body>`
+- Script anti-FOUC dark mode (inline avant CSS)
+- Chargement Google Fonts (6 familles)
+- `{% include header.html %}`
+- `<main>{{ content }}</main>`
+- `{% include footer.html %}`
+- `main.js` + `hero-background.js`
+- Support front matter : `page.extra_css` et `page.extra_js` (tableaux de chemins)
+
+### `_layouts/page.html`
+
+Hérite de `default`. Ajoute :
+- `<section class="page-header">` avec `page.title`, `page.subtitle`, lien retour `← Retour`
+- Fond `--color-primary` sur le header
+
+### `_includes/header.html`
+
+- `<nav>` fixe avec logo `YM`
+- Liens : Parcours (#parcours), Outils (/outils.html), Réalisations (/realisations/), CV (/cv/), Contact (#contact)
+- Bouton toggle dark mode (icône soleil/lune SVG)
+- Bouton hamburger mobile
+
+### `_includes/footer.html`
+
+Copyright dynamique via `{{ 'now' | date: '%Y' }}`.
+
+---
+
+## SEO & Analytics
+
+- **Google Tag Manager** : GTM-KC3LMQP2
+- **JSON-LD** : Person, WebPage, BreadcrumbList dans chaque page
+- **Open Graph + Twitter Card** : titre, description, image (`og-image.png` 1200×630)
+- **Sitemap** : généré par `jekyll-sitemap`
+- **robots.txt** : autorise tout, pointe vers le sitemap
+- **Keywords `_config.yml`** : 40+ termes (SIG, QGIS, déchets, Normandie, cartographie…)
+
+---
+
+## Bibliothèques externes utilisées dans les outils
+
+| Lib | Usage |
+|---|---|
+| Leaflet.js | Cartographie interactive (isochrones, photomapviewer, OSM, PAV…) |
+| PapaParse | Import CSV dans les outils de géocodage |
+| SheetJS (xlsx) | Lecture fichiers Excel (photogeomanager) |
+| QRCode.js | Génération QR codes |
+| Font Awesome | Icônes dans les outils autonomes |
+
+### APIs externes
+
+| API | Usage |
+|---|---|
+| BAN (api-adresse.data.gouv.fr) | Géocodage adresse / inverse — gratuite, pas de clé |
+| OpenRouteService (ORS) | Isochrones — clé API requise (saisie utilisateur) |
+| Overpass API (OSM) | Extraction données OpenStreetMap |
 
 ---
 
 ## Ajouter un outil
 
-1. Créer `outils/mon-outil.html` (page HTML autonome, sans layout Jekyll)
-2. Ajouter une entrée dans `_data/outils.yml` avec `actif: true` et le bon `lien:`
+1. Créer `outils/mon-outil.html` (page HTML autonome, sans front matter Jekyll)
+2. Ajouter une entrée dans `_data/outils.yml` avec `actif: true` et `lien: /outils/mon-outil.html`
+3. Optionnel : ajouter `nouveau: true` pour afficher le badge
 
 ## Ajouter une réalisation
 
-1. Ajouter une entrée dans `_data/realisations.yml` — la card apparaît automatiquement
-2. Si une page de détail est nécessaire, créer `realisations/ma-realisation.html` (layout `page` ou `default`)
+1. Ajouter une entrée dans `_data/realisations.yml` — la card apparaît automatiquement dans `/realisations/`
+2. Si une page de détail est nécessaire, créer `realisations/ma-realisation.html` (layout `page` recommandé)
+
+## Ajouter un item à la timeline parcours
+
+Éditer `_data/timeline.yml` — la timeline horizontale de la section `#parcours` se regénère automatiquement.
+
+---
+
+## `_config.yml` — paramètres clés
+
+```yaml
+title: "Yves MARTI"
+description: "Expert déchets / SIG / cartographie en Normandie"
+profession: "Chargé de mission déchets / SIG"
+location: "Normandie, France"
+linkedin: yvesmarti
+markdown: kramdown
+plugins:
+  - jekyll-sitemap
+exclude:
+  - README.md
+  - GUIDE.md
+  - Gemfile
+  - Gemfile.lock
+```
