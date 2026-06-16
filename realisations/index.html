@@ -7,8 +7,11 @@ extra_js: /assets/js/realisations.js
 body_class: rl-page
 ---
 
+{% assign main_items = site.data.realisations | where_exp: "item", "item.type != 'guide'" %}
+{% assign guide_items = site.data.realisations | where: "type", "guide" %}
+
 <script>
-var RL_ITEMS = {{ site.data.realisations | jsonify }};
+var RL_ITEMS = {{ main_items | jsonify }};
 </script>
 
 <header class="rl-hero">
@@ -30,4 +33,39 @@ var RL_ITEMS = {{ site.data.realisations | jsonify }};
 
 <section class="rl-grid-section">
   <div class="rl-card-grid" id="rl-grid"></div>
+</section>
+
+<section class="rl-guides-section">
+  <div class="rl-guides-header">
+    <h2 class="rl-guides-title">Guides et ressources</h2>
+    <p class="rl-guides-sub">Documents de référence à consulter ou partager.</p>
+  </div>
+  <div class="rl-guides-grid">
+    {% for item in guide_items %}
+    <a class="rl-card rl-card--guide" href="{{ item.url }}">
+      <div class="rl-card-thumb">
+        {% if item.image %}
+        <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy">
+        {% else %}
+        <span class="rl-card-thumb-emoji">{{ item.emoji }}</span>
+        {% endif %}
+      </div>
+      <div class="rl-card-body">
+        <div class="rl-card-tags">
+          <span class="rl-badge rl-badge--guide">Guide</span>
+        </div>
+        <h2 class="rl-card-title">{{ item.title }}</h2>
+        <p class="rl-card-desc">{{ item.desc }}</p>
+        <div class="rl-card-footer">
+          <div class="rl-card-meta-tags">
+            {% for tag in item.tags %}
+            <span class="rl-card-meta-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          <span class="rl-card-link">Consulter <span class="rl-card-arrow">→</span></span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
 </section>

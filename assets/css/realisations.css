@@ -296,6 +296,59 @@
   font-family: 'Source Sans 3', sans-serif;
 }
 
+/* ── Section Guides et ressources ── */
+.rl-guides-section {
+  padding: 0 2.5rem 4rem;
+  border-top: 1.5px solid #ece9e3;
+  margin-top: .5rem;
+}
+
+.rl-guides-header {
+  padding: 2.5rem 0 1.5rem;
+}
+
+.rl-guides-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--color-primary);
+  margin-bottom: .35rem;
+  letter-spacing: -.01em;
+}
+
+.rl-guides-sub {
+  font-size: .88rem;
+  color: var(--color-muted);
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+.rl-guides-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .rl-guides-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 580px) {
+  .rl-guides-grid { grid-template-columns: 1fr; }
+  .rl-guides-section { padding: 0 1.25rem 3rem; }
+}
+
+/* Badge Guide */
+.rl-badge--guide { background: #f0f6ff; color: #2060b0; }
+
+/* Mode nuit — Section guides */
+[data-theme="dark"] .rl-guides-section {
+  border-top-color: #2a3d30;
+}
+
+[data-theme="dark"] .rl-guides-title { color: #d4e8dc; }
+[data-theme="dark"] .rl-guides-sub   { color: #8aaa9a; }
+[data-theme="dark"] .rl-badge--guide { background: #0f1828; color: #6090d8; }
+
 /* ── Nav : lien actif Réalisations ── */
 .nav--scrolled .nav-links a.rl-nav-active {
   color: #111;
