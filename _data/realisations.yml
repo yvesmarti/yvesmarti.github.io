@@ -62,3 +62,11 @@
   tags: ["Marchés publics", "Commande publique", "HTML"]
   emoji: "📋"
   url: "https://yvesmarti.github.io/guide-marches-publics/"
+
+- id: 9
+  title: "Guide de la comptabilité publique territoriale"
+  desc: "Guide pratique pour comprendre la comptabilité en fonction publique territoriale : principes budgétaires, sections de fonctionnement et d'investissement, écritures et nomenclatures."
+  type: "guide"
+  tags: ["Comptabilité", "FPT", "HTML"]
+  emoji: "📒"
+  url: "https://yvesmarti.github.io/guide-compta-fpt/"
