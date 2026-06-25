@@ -21,6 +21,29 @@ permalink: pretty
 plugins:
   - jekyll-sitemap
 
+# Exclure du sitemap les pages orphelines (non liées depuis la nav / le catalogue)
+defaults:
+  - scope:
+      path: "outils/suivi-temp.html"
+    values:
+      sitemap: false
+  - scope:
+      path: "outils/schemas_dalles_v2.html"
+    values:
+      sitemap: false
+  - scope:
+      path: "outils/optimisation_tournee.html"
+    values:
+      sitemap: false
+  - scope:
+      path: "outils/creation_retroplanning.html"
+    values:
+      sitemap: false
+  - scope:
+      path: "realisations/realisations-variant-a.html"
+    values:
+      sitemap: false
+
 # Exclure certains fichiers de la compilation
 exclude:
   - README.md
