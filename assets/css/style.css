@@ -1369,8 +1369,10 @@ body {
 }
 
 /* Carte atténuée lors du filtrage */
+/* !important nécessaire : l'animation skillCardIn (fill-mode both) contrôle
+   l'opacity après le reveal au scroll et passe outre les règles normales. */
 .skill-card.dimmed {
-    opacity: 0.18;
+    opacity: 0.18 !important;
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
