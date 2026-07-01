@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GéoPhoto — Encart cartographique</title>
+<title>GéoPhoto - Encart cartographique</title>
 <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
@@ -290,7 +290,7 @@ input[type=color] {
 #mi .leaflet-container { cursor: grab; }
 #mi .leaflet-container.leaflet-drag-target { cursor: grabbing; }
 
-/* Saisie manuelle — champ unique */
+/* Saisie manuelle - champ unique */
 #mcoords {
   width: 100%; background: var(--bg); border: 1px solid var(--bd);
   color: var(--text); padding: 8px 10px; border-radius: 4px;
@@ -393,7 +393,7 @@ input[type=color] {
 
   <div class="blk">
     <div class="lbl">Géolocalisation GPS</div>
-    <div id="gps">—</div>
+    <div id="gps">-</div>
 
     <div id="manual-block">
       <div class="mlbl" style="margin-top:10px">▸ Saisie manuelle</div>
@@ -669,7 +669,7 @@ function applyManualCoords() {
   const raw = document.getElementById('mcoords').value;
   const parsed = parseCoords(raw);
   if (!parsed) {
-    toast('⚠ Format invalide — ex : 49.154750, -0.362163', true);
+    toast('⚠ Format invalide - ex : 49.154750, -0.362163', true);
     return;
   }
   lat = parsed.lat; lon = parsed.lon;
@@ -900,7 +900,7 @@ function dumpTiffTags(view, base) {
 }
 
 // ── Carte Leaflet ────────────────────────────────────────────
-// ── Icônes Leaflet — miroir des styles canvas ────────────────
+// ── Icônes Leaflet - miroir des styles canvas ────────────────
 function makeDivIcon(style) {
   const SH = 'overflow:visible;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.38))';
   const D = {
@@ -1094,7 +1094,7 @@ async function doExport() {
   } catch (e) {
     console.error(e);
     if (e instanceof DOMException && e.name === 'SecurityError')
-      toast('⚠ Erreur CORS (satellite) — essayez le fond Plan', true);
+      toast('⚠ Erreur CORS (satellite) - essayez le fond Plan', true);
     else toast('⚠ Erreur export : ' + e.message, true);
     setProgress(0);
   } finally {
@@ -1168,7 +1168,7 @@ function loadImg(url) {
   });
 }
 
-// Marqueur de localisation — 5 styles
+// Marqueur de localisation - 5 styles
 function drawPin(ctx, cx, cy, sz) {
   const s   = Math.max(0.9, Math.min(4.5, sz / 170));
   const r   = 9 * s;
@@ -1182,7 +1182,7 @@ function drawPin(ctx, cx, cy, sz) {
   switch (S.pinStyle) {
 
     case 'pin': default: {
-      // Punaise classique — triangle + cercle
+      // Punaise classique - triangle + cercle
       const hh = 22 * s, circY = cy - hh;
       ctx.beginPath();
       ctx.moveTo(cx, cy);

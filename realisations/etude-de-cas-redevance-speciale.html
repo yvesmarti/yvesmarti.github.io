@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Case Study — Redevance Spéciale · Power Query</title>
+  <title>Case Study - Redevance Spéciale · Power Query</title>
 <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
@@ -13,20 +13,20 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.github.io/realisations/etude-de-cas-redevance-speciale.html">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Étude de cas : automatiser la prospection Redevance Spéciale avec Power Query — Yves Marti">
+    <meta property="og:title" content="Étude de cas : automatiser la prospection Redevance Spéciale avec Power Query - Yves Marti">
     <meta property="og:description" content="Comment interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties à la redevance spéciale sur un territoire intercommunal.">
     <meta property="og:url" content="https://yvesmarti.github.io/realisations/etude-de-cas-redevance-speciale.html">
     <meta property="og:locale" content="fr_FR">
-    <meta property="og:site_name" content="Yves MARTI">
+    <meta property="og:site_name" content="Yves Marti - Chargé de mission déchets & SIG">
     <meta property="og:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Étude de cas : automatiser la prospection Redevance Spéciale avec Power Query — Yves Marti">
+    <meta name="twitter:title" content="Étude de cas : automatiser la prospection Redevance Spéciale avec Power Query - Yves Marti">
     <meta name="twitter:description" content="Comment interroger les APIs publiques françaises depuis Excel pour constituer automatiquement la liste des entreprises assujetties à la redevance spéciale sur un territoire intercommunal.">
     <meta name="twitter:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
-    <meta name="twitter:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:creator" content="@yvesmarti">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -634,7 +634,7 @@
     <div class="section" id="probleme">
       <p class="section-label">Le problème</p>
       <h2>Une tâche manuelle, répétée chaque année</h2>
-      <p>La Redevance Spéciale (RS) est due par les professionnels qui produisent plus de 900 litres d'ordures ménagères par semaine sur au moins 4 semaines consécutives dans l'année. Pour un EPCI de 38 communes, identifier ces assujettis implique traditionnellement de croiser des fichiers Excel, des extractions SIRENE et des visites terrain — un processus long, source d'erreurs et difficile à maintenir à jour.</p>
+      <p>La Redevance Spéciale (RS) est due par les professionnels qui produisent plus de 900 litres d'ordures ménagères par semaine sur au moins 4 semaines consécutives dans l'année. Pour un EPCI de 38 communes, identifier ces assujettis implique traditionnellement de croiser des fichiers Excel, des extractions SIRENE et des visites terrain - un processus long, source d'erreurs et difficile à maintenir à jour.</p>
       <p>À cela s'ajoute une contrainte réglementaire : les professionnels assujettis à la RS sont exonérés de la TEOM. Un listing incomplet ou obsolète se traduit donc directement par des pertes de recettes ou des doubles facturations.</p>
       <div class="callout">
         L'objectif : obtenir en un clic une liste à jour de tous les établissements actifs sur le territoire, prête à être enrichie pour le calcul et le suivi de la redevance.
@@ -665,7 +665,7 @@
           </div>
           <div>
             <div class="api-card-title">Établissements actifs par commune</div>
-            <div class="api-card-desc">Filtre par code INSEE et état actif (<code>etat=A</code>). Retourne SIRET, raison sociale, code NAF, adresse complète et coordonnées GPS de l'établissement local — pas du siège.</div>
+            <div class="api-card-desc">Filtre par code INSEE et état actif (<code>etat=A</code>). Retourne SIRET, raison sociale, code NAF, adresse complète et coordonnées GPS de l'établissement local - pas du siège.</div>
           </div>
         </div>
       </div>
@@ -691,7 +691,7 @@
 
       <p>Chaque requête appelle la précédente. <code>FnAppelAPI</code> centralise la gestion des codes d'erreur HTTP ; <code>Communes_EPCI</code> récupère les 38 codes INSEE en un seul appel ; <code>Entreprises_EPCI</code> itère sur chaque commune avec pagination automatique et agrège tous les résultats.</p>
 
-      <h3>Requête 1 — Fonction d'appel API</h3>
+      <h3>Requête 1 - Fonction d'appel API</h3>
       <p>Centralise les headers HTTP et la gestion silencieuse des erreurs. Retourne <code>null</code> en cas d'échec plutôt que de faire planter toute la requête.</p>
 
       <div class="code-block">
@@ -704,7 +704,7 @@
           <span class="code-filename">FnAppelAPI</span>
           <span class="code-lang">Power Query M</span>
         </div>
-        <div class="code-body"><pre><span class="cm">// Fonction réutilisable — gère les erreurs HTTP silencieusement</span>
+        <div class="code-body"><pre><span class="cm">// Fonction réutilisable - gère les erreurs HTTP silencieusement</span>
 <span class="op">(</span>url <span class="kw">as</span> text<span class="op">)</span> <span class="kw">as</span> any <span class="op">=></span>
 <span class="kw">let</span>
     Source <span class="op">=</span> <span class="kw">try</span> <span class="fn">Json.Document</span><span class="op">(</span>
@@ -720,7 +720,7 @@
     Source</pre></div>
       </div>
 
-      <h3>Requête 2 — Communes de l'EPCI</h3>
+      <h3>Requête 2 - Communes de l'EPCI</h3>
       <p>Un seul appel API suffit pour récupérer les 38 codes INSEE. La requête transforme la liste JSON en table Power Query exploitable.</p>
 
       <div class="code-block">
@@ -757,7 +757,7 @@
     Expansion</pre></div>
       </div>
 
-      <h3>Requête 3 — Entreprises avec pagination automatique</h3>
+      <h3>Requête 3 - Entreprises avec pagination automatique</h3>
       <p>Le cœur du dispositif. Pour chaque commune, une fonction interne calcule le nombre total de pages à récupérer et les agrège. L'objet <code>matching_etablissements</code> garantit des coordonnées locales plutôt que celles du siège.</p>
 
       <div class="code-block">
@@ -855,7 +855,7 @@
       <p>Une fois l'actualisation terminée (2 à 5 minutes pour les 38 communes), la table apparaît directement dans Excel avec toutes les colonnes prêtes à l'emploi.</p>
 
       <div class="screenshot-wrapper">
-        <img src="../assets/images/excel-table-redevance.webp" width="1091" height="620" loading="lazy" alt="Table des établissements assujettis dans Excel — colonnes RaisonSociale, SIREN, SIRET, CodePostal, Commune, CodeNAF, Latitude, Longitude">
+        <img src="../assets/images/excel-table-redevance.webp" width="1091" height="620" loading="lazy" alt="Table des établissements assujettis dans Excel - colonnes RaisonSociale, SIREN, SIRET, CodePostal, Commune, CodeNAF, Latitude, Longitude">
       </div>
     </div>
 
@@ -887,7 +887,7 @@
             <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 8v4l3 3"/></svg>
           </div>
           <div class="poss-title">Actualisation en un clic</div>
-          <div class="poss-desc">Le fichier se met à jour automatiquement — nouveaux établissements, fermetures, changements d'activité — sans aucune ressaisie manuelle.</div>
+          <div class="poss-desc">Le fichier se met à jour automatiquement - nouveaux établissements, fermetures, changements d'activité - sans aucune ressaisie manuelle.</div>
         </div>
         <div class="poss-card">
           <div class="poss-icon">
@@ -939,7 +939,7 @@
     </div>
     <div class="sidebar-card">
       <div class="sidebar-title">Autre article</div>
-      <a href="./api-utiles.html" class="sidebar-link">APIs Open Data — Guide pratique</a>
+      <a href="./api-utiles.html" class="sidebar-link">APIs Open Data - Guide pratique</a>
     </div>
   </aside>
 </div><!-- /article -->

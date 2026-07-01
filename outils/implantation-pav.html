@@ -133,7 +133,7 @@
   </a>
   <header>
     <div class="eyebrow">Outil d'implantation</div>
-    <h1>Colonnes enterrées — dimensionnement &amp; calage terrain</h1>
+    <h1>Colonnes enterrées - dimensionnement &amp; calage terrain</h1>
   </header>
 
   <div class="main">
@@ -189,9 +189,9 @@
         <svg id="plan" class="drawing" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="legend" id="legend"></div>
         <div class="stats">
-          <div class="stat major"><div class="k">Emprise fouille</div><div class="v" id="dim">—<span class="u"> cm</span></div></div>
-          <div class="stat"><div class="k">Surface chantier</div><div class="v" id="surf">—<span class="u"> m²</span></div></div>
-          <div class="stat"><div class="k">Emprise colonnes</div><div class="v" id="dimcol">—<span class="u"> cm</span></div></div>
+          <div class="stat major"><div class="k">Emprise fouille</div><div class="v" id="dim">-<span class="u"> cm</span></div></div>
+          <div class="stat"><div class="k">Surface chantier</div><div class="v" id="surf">-<span class="u"> m²</span></div></div>
+          <div class="stat"><div class="k">Emprise colonnes</div><div class="v" id="dimcol">-<span class="u"> cm</span></div></div>
         </div>
         <div class="notes">
           <h3>À garder en tête</h3>
@@ -340,7 +340,7 @@ function renderMap(){
   for(let i=0;i<m.r&&d<state.n;i++)for(let j=0;j<m.c&&d<state.n;j++){
     const xMin=-Lm/2+mgM+j*(cwM+espM), yMin=-Wm/2+mgM+i*(cwM+espM), f=state.flux[d]; d++;
     L.polygon(ringLL(xMin,yMin,cwM,cwM),{color:'#23231f',weight:1.5,fillColor:FLUX[f].color,fillOpacity:0.85})
-      .bindTooltip(`Colonne ${d} — ${FLUX[f].label}`,{direction:'top'}).addTo(group);
+      .bindTooltip(`Colonne ${d} - ${FLUX[f].label}`,{direction:'top'}).addTo(group);
   }
   if(etalonLayer){map.removeLayer(etalonLayer);etalonLayer=null;}
   if($('etalon').checked){

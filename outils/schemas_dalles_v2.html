@@ -13,20 +13,20 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.github.io/outils/schemas_dalles.html">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Configurateur de dalle & claustra (PAV) — Yves Marti">
+    <meta property="og:title" content="Configurateur de dalle & claustra (PAV) - Yves Marti">
     <meta property="og:description" content="Dimensionner et configurer une dalle pour point d'apport volontaire avec bacs et claustra : génération de schémas et métrés.">
     <meta property="og:url" content="https://yvesmarti.github.io/outils/schemas_dalles.html">
     <meta property="og:locale" content="fr_FR">
-    <meta property="og:site_name" content="Yves MARTI">
+    <meta property="og:site_name" content="Yves Marti - Chargé de mission déchets & SIG">
     <meta property="og:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Configurateur de dalle & claustra (PAV) — Yves Marti">
+    <meta name="twitter:title" content="Configurateur de dalle & claustra (PAV) - Yves Marti">
     <meta name="twitter:description" content="Dimensionner et configurer une dalle pour point d'apport volontaire avec bacs et claustra : génération de schémas et métrés.">
     <meta name="twitter:image" content="https://yvesmarti.github.io/assets/images/og-image.png">
-    <meta name="twitter:image:alt" content="Yves Marti — Chargé de mission déchets &amp; SIG, Normandie">
+    <meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:creator" content="@yvesmarti">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
     <!-- SheetJS (xlsx-js-style fork) pour export Excel avec styles -->
@@ -642,7 +642,7 @@
                     const segEnd = xStart + gL + s;
                     const res = computePostPositions(segStart, segEnd, s, maxPlanche);
                     res.positions.forEach(px => addPost(px, yBas));
-                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) - section gauche :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
                 } else {
                     // Pas de planches gauches, mais on place quand même le poteau encadrant gauche de l'ouverture
                     addPost(xStart, yBas);
@@ -655,7 +655,7 @@
                     const segEnd = xEnd;
                     const res = computePostPositions(segStart, segEnd, s, maxPlanche);
                     res.positions.forEach(px => addPost(px, yBas));
-                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) — section droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
+                    infoHtml += `<div style="font-size:12px;margin:2px 0;"><strong>⬇ Bas (accès) - section droite :</strong> ${res.nSpans} travée(s), planche = <strong>${res.plankLength} cm</strong>, c/c = ${res.c2c} cm</div>`;
                 } else {
                     // Pas de planches droites, mais on place quand même le poteau encadrant droit de l'ouverture
                     addPost(xEnd - s, yBas);
@@ -724,7 +724,7 @@
         if(g){ const x=dX-deb*echelle-ep*echelle, y=dY-deb*echelle, w=ep*echelle, hh=(dalle.largeur+deb*2)*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='horizontal'); }
         if(dr){ const x=dX+dalle.longueur*echelle+deb*echelle, y=dY-deb*echelle, w=ep*echelle, hh=(dalle.largeur+deb*2)*echelle; ctx.fillRect(x,y,w,hh); ctx.strokeRect(x,y,w,hh); drawWT(ctx,x,y,w,hh,orientationPlanches==='horizontal'); }
 
-        // ACCÈS PARTIEL — planches gauche + droite avec ouverture
+        // ACCÈS PARTIEL - planches gauche + droite avec ouverture
         if(accesPartiel.enabled && !b){
             const xBase=dX-deb*echelle-(g?ep*echelle:0);
             const yAcc=dY+dalle.largeur*echelle+deb*echelle;
@@ -755,12 +755,12 @@
 
                 ctx.fillStyle='#5d4e37';
                 ctx.strokeStyle='#3d2e17'; ctx.lineWidth=2;
-                // Poteau gauche (bord droit des planches G) — seulement si pas déjà dans poteaux[]
+                // Poteau gauche (bord droit des planches G) - seulement si pas déjà dans poteaux[]
                 if(!hasPG){
                     const xPG=xBase+gL*echelle, pW=s*echelle;
                     ctx.fillRect(xPG,yAcc,pW,hh); ctx.strokeRect(xPG,yAcc,pW,hh);
                 }
-                // Poteau droit (bord gauche des planches D) — seulement si pas déjà dans poteaux[]
+                // Poteau droit (bord gauche des planches D) - seulement si pas déjà dans poteaux[]
                 if(!hasPD){
                     const xPD=xBase+(gL+s+ouverture)*echelle, pW=s*echelle;
                     ctx.fillRect(xPD,yAcc,pW,hh); ctx.strokeRect(xPD,yAcc,pW,hh);
@@ -880,7 +880,7 @@
             const gL=accesPartiel.gaucheLen, dR=accesPartiel.droiteLen;
             const ouv=Math.max(0,totalWap-gL-dR-2*sAP);
 
-            // Récupérer les poteaux placés sur le côté bas (depuis poteaux[]) — même filtre que getSegmentsForSide('bas')
+            // Récupérer les poteaux placés sur le côté bas (depuis poteaux[]) - même filtre que getSegmentsForSide('bas')
             const xStartAP = -debAP - (gAP ? epAP : 0);
             const bY = dalle.largeur + debAP + epAP;
             const postsFromList = poteaux
@@ -969,7 +969,7 @@
         ctxElev.strokeStyle='#888'; ctxElev.lineWidth=1;
         ctxElev.strokeRect(oX-2, oY-4, totalW*sc+4, 4);
 
-        // Poteaux (avant, par-dessus les planches — juste les contours pour marquer la superposition)
+        // Poteaux (avant, par-dessus les planches - juste les contours pour marquer la superposition)
         sideData.poteaux.forEach(p=>{
             const px=oX+p.start*sc, pw=p.width*sc;
             const pTop=oY, pH=(hClaustra+hDalle+ancrage)*sc;
@@ -995,8 +995,8 @@
         ctxElev.fillStyle='#2c3e50'; ctxElev.font='bold 14px Arial'; ctxElev.textAlign='left';
         const labels={haut:'Côté HAUT',bas:'Côté BAS',gauche:'Côté GAUCHE',droite:'Côté DROITE'};
         const modeLabel=orientationPlanches==='vertical'?'planches verticales':'planches horizontales';
-        const basLabel=isAccesPartielBas?'Côté BAS — ACCÈS PARTIEL (ouverture centrale)':labels[currentElevationSide];
-        ctxElev.fillText(`Vue de face — ${basLabel} (${modeLabel})`,10,20);
+        const basLabel=isAccesPartielBas?'Côté BAS - ACCÈS PARTIEL (ouverture centrale)':labels[currentElevationSide];
+        ctxElev.fillText(`Vue de face - ${basLabel} (${modeLabel})`,10,20);
 
         // Ouverture accès partiel : visuel dans l'élévation
         if(isAccesPartielBas && sideData.ouverture>0){
@@ -1274,7 +1274,7 @@
             }
             const lin=totalPl*hClaustra;
             document.getElementById('recapPlanches').innerHTML=`
-                <h4>📋 Estimation — Planches <strong>verticales</strong></h4>
+                <h4>📋 Estimation - Planches <strong>verticales</strong></h4>
                 <table>
                     <tr><td>Hauteur claustra</td><td>${hClaustra} cm</td></tr>
                     <tr><td>Section planche</td><td>${lP} × ${epP} cm</td></tr>
@@ -1322,7 +1322,7 @@
             }
             const recapLongueurs=Object.entries(plParLongueur).sort((a,b)=>parseInt(b[0])-parseInt(a[0])).map(([l,n])=>`${n} planches de ${l} cm`).join('<br>');
             document.getElementById('recapPlanches').innerHTML=`
-                <h4>📋 Estimation — Planches <strong>horizontales</strong></h4>
+                <h4>📋 Estimation - Planches <strong>horizontales</strong></h4>
                 <table>
                     <tr><td>Hauteur claustra</td><td>${hClaustra} cm</td></tr>
                     <tr><td>Section planche</td><td>${lP} × ${epP} cm</td></tr>
@@ -1357,7 +1357,7 @@
         const deb=parseInt(document.getElementById('claustraDebord').value)||0, ep=parseInt(document.getElementById('claustraEpaisseur').value)||15;
         const modeLabel=orientationPlanches==='vertical'?'VERTICALES':'HORIZONTALES';
 
-        let t=`RÉCAPITULATIF POUR DEVIS — Point d'Apport Volontaire\n`;
+        let t=`RÉCAPITULATIF POUR DEVIS - Point d'Apport Volontaire\n`;
         t+=`Planches ${modeLabel}\n`;
         t+=`${'='.repeat(65)}\n\n`;
         t+=`Date: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
@@ -1405,7 +1405,7 @@
                 const gAP=document.getElementById('claustraGauche').checked, drAP=document.getElementById('claustraDroite').checked;
                 const totalWap=dalle.longueur+deb2*2+(gAP?ep2:0)+(drAP?ep2:0);
                 const ouv=Math.max(0,totalWap-accesPartiel.gaucheLen-accesPartiel.droiteLen-2*s);
-                t+=`    → Ouverture : ${ouv} cm — 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
+                t+=`    → Ouverture : ${ouv} cm - 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
             }
             t+=`\n${'='.repeat(65)}\nRÉSUMÉ COMMANDE\n${'='.repeat(65)}\n\n`;
             t+=`  ${totalPl} planches de ${hClaustra} cm (${lP}×${epP} cm)\n`;
@@ -1436,7 +1436,7 @@
                 const gAP=document.getElementById('claustraGauche').checked, drAP=document.getElementById('claustraDroite').checked;
                 const totalWap=dalle.longueur+deb2*2+(gAP?ep2:0)+(drAP?ep2:0);
                 const ouv=Math.max(0,totalWap-accesPartiel.gaucheLen-accesPartiel.droiteLen-2*s);
-                t+=`    → Ouverture : ${ouv} cm — 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
+                t+=`    → Ouverture : ${ouv} cm - 2 poteaux ${s}×${s} cm encadrant l'ouverture\n`;
             }
             t+=`\n${'='.repeat(65)}\nRÉSUMÉ COMMANDE\n${'='.repeat(65)}\n\n`;
             Object.entries(plParLongueur).sort((a,b2)=>parseInt(b2[0])-parseInt(a[0])).forEach(([l,n])=>{
@@ -1444,14 +1444,14 @@
             });
             t+=`  Linéaire: ${(Object.entries(plParLongueur).reduce((s,[l,n])=>s+parseInt(l)*n,0)/100).toFixed(2)} m\n`;
         }
-        t+=`\n  TOTAL: ${totalPl} planches\n\n${'='.repeat(65)}\n⚠️ Estimation indicative — Prévoir 10-15% de marge\n`;
+        t+=`\n  TOTAL: ${totalPl} planches\n\n${'='.repeat(65)}\n⚠️ Estimation indicative - Prévoir 10-15% de marge\n`;
 
         const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
         const a=document.createElement('a'); a.download=`devis-PAV-${orientationPlanches}-${dalle.longueur}x${dalle.largeur}-${Date.now()}.txt`; a.href=URL.createObjectURL(blob); a.click();
     }
 
     // ================================================================
-    //  EXPORT EXCEL (DQE — Détail Quantitatif Estimatif)
+    //  EXPORT EXCEL (DQE - Détail Quantitatif Estimatif)
     // ================================================================
     function exportExcel(){
         if(typeof XLSX==='undefined'){
@@ -1629,7 +1629,7 @@
         const aoa = [];
 
         // Ligne 1 : Titre (fusionné A1:F1)
-        aoa.push(["DÉTAIL QUANTITATIF ESTIMATIF — Dalle PDR", "", "", "", "", ""]);
+        aoa.push(["DÉTAIL QUANTITATIF ESTIMATIF - Dalle PDR", "", "", "", "", ""]);
         // Ligne 2 : infos dalle
         aoa.push([
             "Dalle :", `${dalle.longueur} × ${dalle.largeur} cm`,
@@ -1653,30 +1653,30 @@
         aoa.push(["Réf.", "Désignation", "Unité", "Qté brute", "Qté + marge", "Remarques"]);
 
         // ----- LOT 1 BÉTON -----
-        aoa.push(["LOT 1 — BÉTON", "", "", "", "", ""]);
+        aoa.push(["LOT 1 - BÉTON", "", "", "", "", ""]);
         aoa.push([
-            "1.1", "Béton C25/30 livré — dalle PDR", "m³",
+            "1.1", "Béton C25/30 livré - dalle PDR", "m³",
             round2(volBeton), round2(volBeton * 1.10),
-            "Épaisseur 12,5 cm — C25/30"
+            "Épaisseur 12,5 cm - C25/30"
         ]);
 
         // ----- LOT 2 BOIS -----
-        aoa.push(["LOT 2 — BOIS ET CLAUSTRA", "", "", "", "", ""]);
+        aoa.push(["LOT 2 - BOIS ET CLAUSTRA", "", "", "", "", ""]);
         const remPlanches = orientationPlanches==='vertical'
-            ? `Verticales — hauteur ${hClaustra} cm`
-            : `Horizontales — longueurs variables selon segments`;
+            ? `Verticales - hauteur ${hClaustra} cm`
+            : `Horizontales - longueurs variables selon segments`;
         aoa.push([
-            "2.1", `Planches pin traité cl.4 — ${sectionPlancheStr}`, "ml",
+            "2.1", `Planches pin traité cl.4 - ${sectionPlancheStr}`, "ml",
             round2(linPlanches), round1(linPlanches * 1.05),
             remPlanches
         ]);
         aoa.push([
             "2.2", "Lisses intermédiaires pin cl.4 (3/travée)", "ml",
             round2(linLisses), round1(linLisses * 1.05),
-            `3 lisses par travée — ${totalTravees} travées`
+            `3 lisses par travée - ${totalTravees} travées`
         ]);
         aoa.push([
-            "2.3", `Poteaux pin traité cl.4 — ${sectionPoteauStr} H=190`, "u",
+            "2.3", `Poteaux pin traité cl.4 - ${sectionPoteauStr} H=190`, "u",
             totalPoteaux, ceilN(totalPoteaux * 1.05),
             "160 cm hors sol + 30 cm ancrage"
         ]);
@@ -1687,19 +1687,19 @@
         ]);
 
         // ----- LOT 3 QUINCAILLERIE -----
-        aoa.push(["LOT 3 — QUINCAILLERIE", "", "", "", "", ""]);
+        aoa.push(["LOT 3 - QUINCAILLERIE", "", "", "", "", ""]);
         const visPlanches = totalPl * 2;
         const visPoteaux = totalPoteaux * 4;
         const equerres = totalPoteaux * 2;
         const platines = totalPoteaux * 1;
         const chevilles = totalPoteaux * 2;
         aoa.push([
-            "3.1", "Vis inox 6×40 — fixation planches", "u",
+            "3.1", "Vis inox 6×40 - fixation planches", "u",
             visPlanches, ceilCent(visPlanches * 1.05),
             "2 vis / planche"
         ]);
         aoa.push([
-            "3.2", "Vis inox 6×80 — fixation poteaux/platines", "u",
+            "3.2", "Vis inox 6×80 - fixation poteaux/platines", "u",
             visPoteaux, ceilDiz(visPoteaux * 1.05),
             "4 vis / poteau"
         ]);
@@ -1719,24 +1719,24 @@
             "2 / poteau"
         ]);
         aoa.push([
-            "3.6", "Couvertines alu laqué — sommet claustra", "ml",
+            "3.6", "Couvertines alu laqué - sommet claustra", "ml",
             round2(linCouvertines), round1(linCouvertines * 1.05),
             "Linéaire total claustra"
         ]);
 
         // ----- LOT 4 FERRAILLE -----
-        aoa.push(["LOT 4 — FERRAILLE", "", "", "", "", ""]);
+        aoa.push(["LOT 4 - FERRAILLE", "", "", "", "", ""]);
         const nbTreillis = Math.ceil(surf / 14.4);
         aoa.push([
-            "4.1", "Treillis soudé ST25 — panneaux 2,4×6 m", "u",
+            "4.1", "Treillis soudé ST25 - panneaux 2,4×6 m", "u",
             nbTreillis, ceilN(nbTreillis * 1.05),
             "1 panneau = 14,4 m²"
         ]);
 
         // ----- LOT 5 TOUT-VENANT -----
-        aoa.push(["LOT 5 — TOUT-VENANT", "", "", "", "", ""]);
+        aoa.push(["LOT 5 - TOUT-VENANT", "", "", "", "", ""]);
         aoa.push([
-            "5.1", "Gravier tout-venant 20/40 — fondation 10 cm", "m³",
+            "5.1", "Gravier tout-venant 20/40 - fondation 10 cm", "m³",
             round2(volTV), round2(volTV * 1.10),
             "Sous la dalle, épaisseur 10 cm"
         ]);
@@ -1744,7 +1744,7 @@
         // Ligne vide puis note
         aoa.push(["", "", "", "", "", ""]);
         aoa.push([
-            "⚠ Estimation indicative — Prévoir les marges réglementaires avant commande. Hypothèses : dalle C25/30 ép.12,5 cm, TV ép.10 cm, pin cl.4 autoclavé.",
+            "⚠ Estimation indicative - Prévoir les marges réglementaires avant commande. Hypothèses : dalle C25/30 ép.12,5 cm, TV ép.10 cm, pin cl.4 autoclavé.",
             "", "", "", "", ""
         ]);
 
@@ -1834,7 +1834,7 @@
 
         // -------- CRÉATION DU CLASSEUR --------
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "DQE — Dalle PDR");
+        XLSX.utils.book_append_sheet(wb, ws, "DQE - Dalle PDR");
 
         // -------- ÉCRITURE & TÉLÉCHARGEMENT --------
         const dateFn = new Date().toISOString().slice(0,10);

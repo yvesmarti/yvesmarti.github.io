@@ -41,7 +41,7 @@
 
 - id: 6
   title: "Visualiser des photos géolocalisées sur une carte"
-  desc: "Déposer un dossier de photos EXIF et les voir apparaître sur une carte Leaflet — utile pour les relevés terrain."
+  desc: "Déposer un dossier de photos EXIF et les voir apparaître sur une carte Leaflet - utile pour les relevés terrain."
   type: "astuce"
   tags: ["EXIF", "Leaflet", "JS"]
   emoji: "📸"
