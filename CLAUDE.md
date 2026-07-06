@@ -219,18 +219,19 @@ Outils tiers (pas créés par Yves) affichés en section dédiée sur `outils.ht
 /* Typographie */
 --font-display: 'DM Serif Display'
 --font-body:    'Source Sans 3'
+--font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, ... /* pile système, zéro requête */
 ```
 
 ### Polices Google Fonts (chargées dans `_layouts/default.html`)
 
-| Police | Graisse | Usage |
+Le site principal charge **exactement 2 familles** Google Fonts (une seule requête CSS, `display=swap` + preconnect) pour limiter le FOIT et préserver les Core Web Vitals :
+
+| Police | Graisses | Usage |
 |---|---|---|
-| DM Serif Display | 400 | H1/H2, `.lead`, citations (`--font-display`) |
-| Source Sans 3 | 400, 600 | Corps de texte (`--font-body`) |
-| Space Grotesk | 700 | Timeline HTL, titres géo |
-| Space Mono | 400 | Dates monospace, hints |
-| Outfit | 700 | Titres de postes `.tl__title` |
-| Lora | 400 italic | Descriptions `.tl__desc` |
+| DM Serif Display | 400 (roman + italique) | H1/H2, `.lead`, citations (`--font-display`) |
+| Source Sans 3 | 300, 400, 600, 700 (+ italique 400) | Corps de texte, labels, titres timeline (`--font-body`) |
+
+Les anciens rôles de Space Grotesk / Outfit (labels et titres timeline) sont assurés par Source Sans 3 700 (uppercase + letter-spacing conservés), ceux de Lora (`.tl__desc`) par Source Sans 3 italique, et ceux de Space Mono (dates, hints) par la pile monospace système `--font-mono`. **Ne pas rajouter de famille Google Fonts au layout sans raison forte** ; utiliser `var(--font-display)`, `var(--font-body)` ou `var(--font-mono)` plutôt que des `font-family` hardcodés.
 
 ### Dark mode
 
