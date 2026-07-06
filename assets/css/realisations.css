@@ -20,7 +20,7 @@
   text-transform: uppercase;
   color: var(--color-muted);
   margin-bottom: .6rem;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .rl-hero-title {
@@ -30,7 +30,7 @@
   line-height: 1.1;
   margin-bottom: .7rem;
   letter-spacing: -.01em;
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: var(--font-display);
 }
 
 .rl-hero-sub {
@@ -38,7 +38,7 @@
   color: var(--color-muted);
   max-width: 520px;
   line-height: 1.65;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ── Barre de filtres ── */
@@ -58,7 +58,7 @@
   margin-left: auto;
   font-size: .78rem;
   color: #999;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .rl-pill {
@@ -71,7 +71,7 @@
   background: #f4f2ee;
   color: #555;
   font-weight: 500;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
   transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
 
@@ -185,7 +185,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-card-tags {
@@ -203,7 +203,7 @@
   font-weight: 700;
   padding: .22rem .6rem;
   border-radius: 4px;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-badge--etude  { background: #f0faf6; color: #1a5c4a; }
@@ -212,7 +212,7 @@
 .rl-badge--site   { background: #fdf0f8; color: #9040a0; }
 
 .rl-card-title {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 400;
   color: var(--color-primary, #1a3a32);
@@ -225,7 +225,7 @@
   color: var(--color-muted);
   line-height: 1.58;
   flex: 1;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-card-footer {
@@ -247,7 +247,7 @@
   font-size: .65rem;
   color: #aaa;
   font-weight: 500;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-card-meta-tag::before {
@@ -263,7 +263,7 @@
   align-items: center;
   gap: .25rem;
   white-space: nowrap;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-card-arrow {
@@ -293,7 +293,7 @@
   text-align: center;
   color: #999;
   font-size: .9rem;
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ── Section Guides et ressources ── */
@@ -308,7 +308,7 @@
 }
 
 .rl-guides-title {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.6rem;
   font-weight: 400;
   color: var(--color-primary);
@@ -319,7 +319,7 @@
 .rl-guides-sub {
   font-size: .88rem;
   color: var(--color-muted);
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-body);
 }
 
 .rl-guides-grid {

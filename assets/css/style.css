@@ -12,6 +12,7 @@
     --color-muted: #6b7c75;
     --font-display: 'DM Serif Display', serif;
     --font-body: 'Source Sans 3', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 * {
@@ -1019,7 +1020,7 @@ body {
 
 .dispo-grid dt {
     font-size: 0.68rem;
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.7);
@@ -1496,7 +1497,7 @@ body {
 
 /* Titre de section — géométrique/bold distinctif */
 .section-title-geo {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: clamp(1.15rem, 3vw, 1.85rem);
     font-weight: 700;
     text-transform: uppercase;
@@ -1602,7 +1603,7 @@ body {
 
 /* Date — monoespace */
 .tl__date {
-    font-family: 'Space Mono', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 700;
     color: var(--tl-orange);
@@ -1617,7 +1618,7 @@ body {
 
 /* Titre du poste */
 .tl__title {
-    font-family: 'Outfit', 'Source Sans 3', sans-serif;
+    font-family: var(--font-body);
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--tl-teal);
@@ -1627,7 +1628,7 @@ body {
 
 /* Organisation */
 .tl__company {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--tl-ochre);
@@ -1638,7 +1639,8 @@ body {
 
 /* Description */
 .tl__desc {
-    font-family: 'Lora', Georgia, serif;
+    font-family: var(--font-body);
+    font-style: italic;
     font-size: 0.93rem;
     color: #5a4e3c;
     line-height: 1.75;
@@ -2103,7 +2105,7 @@ body,
 }
 
 .htl-section-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 700;
     text-transform: uppercase;
@@ -2114,8 +2116,9 @@ body,
 }
 
 .htl-section-sub {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.8rem;
+    font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgba(247, 249, 248, 0.7);
@@ -2133,8 +2136,9 @@ body,
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.75rem;
+    font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: rgba(247, 249, 248, 0.75);
@@ -2156,7 +2160,7 @@ body,
     display: flex;
     align-items: center;
     gap: 0.45rem;
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.68rem;
     letter-spacing: 0.12em;
     color: rgba(247, 249, 248, 0.28);
@@ -2276,7 +2280,7 @@ body,
 
 /* Card typography */
 .htl-period {
-    font-family: 'Space Mono', 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 0.67rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -2297,7 +2301,7 @@ body,
 }
 
 .htl-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.93rem;
     font-weight: 700;
     color: #f0ede8;
@@ -2306,7 +2310,7 @@ body,
 }
 
 .htl-org {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -2318,7 +2322,7 @@ body,
 .htl-item--edu .htl-org { color: rgba(61, 184, 141, 0.9); }
 
 .htl-desc {
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.8rem;
     color: rgba(247, 249, 248, 0.75);
     line-height: 1.65;
@@ -2344,7 +2348,7 @@ body,
     flex-direction: column;
     align-items: center;
     gap: 1px;
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -2422,7 +2426,7 @@ body,
 }
 
 .htl-item--now .htl-year-end {
-    font-family: 'Space Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.48rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
