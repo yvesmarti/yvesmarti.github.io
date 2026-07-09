@@ -4,7 +4,7 @@
 je dessine des cartes et j'automatise ce qui peut l'être.*
 
 **Yves Marti** — Chargé de mission déchets & SIG  
-[yvesmarti.github.io](https://yvesmarti.github.io) · [LinkedIn](https://linkedin.com/in/yvesmarti)
+[yvesmarti.fr](https://yvesmarti.fr) · [LinkedIn](https://linkedin.com/in/yvesmarti)
 
 ---
 
@@ -45,15 +45,15 @@ Ce dépôt héberge mon site et une collection d'outils construits pour un usage
 
 | Outil | Zone |
 |-------|------|
-| 🗺️ [Isochrones via ORS](https://yvesmarti.github.io/outils/isochrones_ORS.html) | Géomatique |
-| 📍 [Géocodage d'adresses en masse](https://yvesmarti.github.io/outils/geocodage_adresse_ban.html) | Géomatique |
-| 🔍 [Extraction de données OSM](https://yvesmarti.github.io/outils/extracteurosm.html) | Géomatique |
-| 📸 [Visionneuse photos géolocalisées](https://yvesmarti.github.io/outils/photomapviewer.html) | Géomatique |
-| 📅 [Calendrier de collecte](https://yvesmarti.github.io/outils/generateur_calendrier_collecte.html) | Déchets |
-| 🗑️ [Implantation PAV souterrains](https://yvesmarti.github.io/outils/implantation-pav.html) | Déchets |
-| 📱 [Suivi collecte terrain (PWA)](https://yvesmarti.github.io/outils/suivi/) | Déchets |
-| 🔲 [Générateur QR codes](https://yvesmarti.github.io/outils/qr-code.html) | Pratique |
-| 🖊️ [Annotateur de carte](https://yvesmarti.github.io/outils/annotateur-carte.html) | Pratique |
+| 🗺️ [Isochrones via ORS](https://yvesmarti.fr/outils/isochrones_ORS.html) | Géomatique |
+| 📍 [Géocodage d'adresses en masse](https://yvesmarti.fr/outils/geocodage_adresse_ban.html) | Géomatique |
+| 🔍 [Extraction de données OSM](https://yvesmarti.fr/outils/extracteurosm.html) | Géomatique |
+| 📸 [Visionneuse photos géolocalisées](https://yvesmarti.fr/outils/photomapviewer.html) | Géomatique |
+| 📅 [Calendrier de collecte](https://yvesmarti.fr/outils/generateur_calendrier_collecte.html) | Déchets |
+| 🗑️ [Implantation PAV souterrains](https://yvesmarti.fr/outils/implantation-pav.html) | Déchets |
+| 📱 [Suivi collecte terrain (PWA)](https://yvesmarti.fr/outils/suivi/) | Déchets |
+| 🔲 [Générateur QR codes](https://yvesmarti.fr/outils/qr-code.html) | Pratique |
+| 🖊️ [Annotateur de carte](https://yvesmarti.fr/outils/annotateur-carte.html) | Pratique |
 
 ---
 

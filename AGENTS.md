@@ -8,7 +8,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 Portfolio professionnel de **Yves Marti** — chargé de mission déchets & SIG en Normandie. Site statique Jekyll hébergé sur GitHub Pages, entièrement en français.
 
-URL de production : https://yvesmarti.github.io
+URL de production : https://yvesmarti.fr
 
 ---
 

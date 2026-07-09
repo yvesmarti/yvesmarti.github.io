@@ -8,7 +8,7 @@ Ce fichier documente le dépôt pour Claude Code (claude.ai/code). Il doit reste
 
 Portfolio professionnel de **Yves Marti** — chargé de mission déchets & SIG en Normandie. Site statique Jekyll hébergé sur GitHub Pages, entièrement en français.
 
-- URL de production : https://yvesmarti.github.io
+- URL de production : https://yvesmarti.fr
 - Branche de déploiement : `main` (push → déploiement automatique GitHub Pages)
 - Pas de CI/CD supplémentaire, pas de tests automatisés
 
