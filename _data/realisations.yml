@@ -53,7 +53,7 @@
   type: "guide"
   tags: ["Excel", "HTML", "CSS", "JS"]
   emoji: "📗"
-  url: "https://yvesmarti.github.io/guide-excel/"
+  url: "https://yvesmarti.fr/guide-excel/"
 
 - id: 8
   title: "Guide des marchés publics"
@@ -61,7 +61,7 @@
   type: "guide"
   tags: ["Marchés publics", "Commande publique", "HTML"]
   emoji: "📋"
-  url: "https://yvesmarti.github.io/guide-marches-publics/"
+  url: "https://yvesmarti.fr/guide-marches-publics/"
 
 - id: 9
   title: "Guide de la comptabilité publique territoriale"
@@ -69,4 +69,4 @@
   type: "guide"
   tags: ["Comptabilité", "FPT", "HTML"]
   emoji: "📒"
-  url: "https://yvesmarti.github.io/guide-compta-fpt/"
+  url: "https://yvesmarti.fr/guide-compta-fpt/"
