@@ -608,12 +608,12 @@
           <li>
             Pilotage du déploiement de
             <span class="detail-trigger" data-detail="pav">Points d'Apport Volontaire (PAV)</span>
-            sur 38 communes : prospection, concertation avec les élus, planification
+            et points de regroupement sur 38 communes : prospection, concertation avec les élus, planification
           </li>
           <li>
             Rédaction des pièces de
             <span class="detail-trigger" data-detail="marches-publics">marchés publics (CCTP, BPU/DQE)</span>
-            pour les fournitures de génie civil (dalles béton, claustra)
+            pour les fournitures de matériaux de génie civil
           </li>
           <li>
             <span class="detail-trigger" data-detail="collecte">Études d'optimisation des tournées de collecte</span>
@@ -793,19 +793,19 @@
       <h2 class="section-title">Formation</h2>
 
       <div class="formation-item">
-        <div class="formation-degree">Master 2 Gestion Territoriale du Développement Durable</div>
+        <div class="formation-degree"><span class="detail-trigger" data-detail="formation-master2" style="font-size:13px;font-family:'Lora',serif;">Master 2 Gestion Territoriale du Développement Durable</span></div>
         <div class="formation-school">Université Bordeaux III, 2014-2015</div>
         <div class="formation-desc">Gestion de projets, politiques environnementales, enjeux fonciers, SIG (QGIS)</div>
       </div>
 
       <div class="formation-item">
-        <div class="formation-degree">Licence de Géographie</div>
+        <div class="formation-degree"><span class="detail-trigger" data-detail="formation-licence-geo" style="font-size:13px;font-family:'Lora',serif;">Licence de Géographie</span></div>
         <div class="formation-school">Université Bordeaux III, 2012-2013</div>
         <div class="formation-desc">Approches géographiques du développement, SIG (MapInfo), études des risques</div>
       </div>
 
       <div class="formation-item">
-        <div class="formation-degree">Licence Langues Étrangères Appliquées : Anglais / Espagnol</div>
+        <div class="formation-degree"><span class="detail-trigger" data-detail="formation-licence-lea" style="font-size:13px;font-family:'Lora',serif;">Licence Langues Étrangères Appliquées : Anglais / Espagnol</span></div>
         <div class="formation-school">Université Bordeaux III, 2008-2011 · Spécialité Relations Internationales</div>
         <div class="formation-desc">Traductions thèmes et versions</div>
       </div>
@@ -898,7 +898,7 @@ const details = {
   },
   "marches-publics": {
     title: "Marchés publics - CCTP, BPU/DQE",
-    subtitle: "Fournitures de matériaux · 3 lots · NCPA",
+    subtitle: "Fournitures de matériaux · NCPA",
     sections: [
       {
         title: "En quoi ça consiste",
@@ -906,10 +906,10 @@ const details = {
         content: "Le CCTP (Cahier des Clauses Techniques Particulières) décrit précisément les exigences techniques auxquelles les candidats doivent répondre lot par lot. Le BPU (Bordereau des Prix Unitaires) liste les prix proposés par le prestataire ; le DQE (Détail Quantitatif Estimatif) en chiffre le montant prévisionnel en appliquant ces prix aux quantités estimées. Ces pièces sont essentielles pour comparer les offres, vérifier leur cohérence et encadrer contractuellement les prestations."
       },
       {
-        title: "Marché rédigé",
+        title: "Rédaction du marché et analyse des offres",
         type: "list",
         content: [
-          "Marché de fournitures de matériaux en 3 lots : dalles béton (pose pour PAV) et claustra en bois",
+          "Marché de fournitures de matériaux pour l'aménagement des PAV, réparti en plusieurs lots",
           "Rédaction du CCTP : spécifications techniques par lot (dimensions, résistances, finitions, conditions de livraison)",
           "Préparation du BPU et du DQE : chiffrage estimatif des quantités et des prix unitaires par lot",
           "Rédaction des cadres techniques de réponse permettant une comparaison structurée des offres",
@@ -1185,6 +1185,86 @@ const details = {
         title: "Outils",
         type: "tags",
         content: ["Claude", "Ollama", "LM Studio", "Prompting avancé", "Python", "Supabase", "Automatisation"]
+      }
+    ]
+  },
+  "formation-master2": {
+    title: "Master 2 Gestion Territoriale du Développement Durable",
+    subtitle: "Université Bordeaux III · 2014–2015",
+    sections: [
+      {
+        title: "Ce que forme ce diplôme",
+        type: "text",
+        content: "Formation pluridisciplinaire à la conduite de projets de développement durable à l'échelle des territoires. Elle croise politiques publiques environnementales, droit et aménagement, analyse socio-économique et outils d'aide à la décision. C'est la formation qui structure ma façon de travailler aujourd'hui : partir d'un enjeu de territoire, mobiliser les bons acteurs, objectiver par la donnée."
+      },
+      {
+        title: "Enseignements suivis",
+        type: "list",
+        content: [
+          "Politiques environnementales et réglementation (déchets, eau, énergie)",
+          "Montage et conduite de projets territoriaux, concertation avec les acteurs locaux",
+          "Enjeux fonciers, urbanisme et aménagement du territoire",
+          "Diagnostic territorial : collecte de données, indicateurs, restitution",
+          "SIG appliqué à l'aménagement (QGIS)"
+        ]
+      },
+      {
+        title: "Compétences acquises",
+        type: "tags",
+        content: ["Diagnostic territorial", "Gestion de projet", "Politiques publiques", "Concertation", "Analyse de données", "SIG (QGIS)"]
+      }
+    ]
+  },
+  "formation-licence-geo": {
+    title: "Licence de Géographie",
+    subtitle: "Université Bordeaux III · 2012–2013",
+    sections: [
+      {
+        title: "Ce que forme ce diplôme",
+        type: "text",
+        content: "Socle méthodologique du raisonnement spatial : comprendre pourquoi les choses se localisent là où elles sont, et savoir le démontrer. C'est ici que j'ai appris la cartographie, la statistique appliquée et les premiers SIG (MapInfo), des briques que j'utilise quotidiennement sur l'optimisation des tournées de collecte ou l'implantation des PAV."
+      },
+      {
+        title: "Enseignements suivis",
+        type: "list",
+        content: [
+          "Analyse spatiale et méthodes quantitatives (statistiques appliquées)",
+          "Cartographie : sémiologie graphique, représentation de données",
+          "Géographie du développement et des dynamiques territoriales",
+          "Études des risques (naturels, technologiques)",
+          "SIG : premiers traitements sous MapInfo"
+        ]
+      },
+      {
+        title: "Compétences acquises",
+        type: "tags",
+        content: ["Analyse spatiale", "Sémiologie cartographique", "Statistiques appliquées", "Analyse des risques", "SIG"]
+      }
+    ]
+  },
+  "formation-licence-lea": {
+    title: "Licence Langues Étrangères Appliquées (Anglais / Espagnol)",
+    subtitle: "Université Bordeaux III · 2008–2011 · Spécialité Relations Internationales",
+    sections: [
+      {
+        title: "Ce que forme ce diplôme",
+        type: "text",
+        content: "Formation bilingue anglais/espagnol appliquée au monde professionnel, complétée d'un socle en économie, droit et relations internationales. Au-delà des langues, elle m'a donné une exigence de précision rédactionnelle et de reformulation qui sert directement la rédaction de CCTP, de rapports et de notes aux élus."
+      },
+      {
+        title: "Enseignements suivis",
+        type: "list",
+        content: [
+          "Traduction (thème et version) en anglais et en espagnol",
+          "Anglais et espagnol appliqués au contexte professionnel",
+          "Économie, droit et institutions internationales",
+          "Civilisations des aires anglophone et hispanophone"
+        ]
+      },
+      {
+        title: "Compétences acquises",
+        type: "tags",
+        content: ["Anglais B2", "Espagnol B2", "Traduction", "Rédaction technique", "Veille en langue étrangère", "Synthèse"]
       }
     ]
   }
