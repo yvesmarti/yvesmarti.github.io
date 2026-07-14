@@ -81,6 +81,8 @@
     mx: -9999, my: -9999, tmx: -9999, tmy: -9999,
     raf: 0, running: false,
     shadeCanvas: null, shadeCtx: null, shadeImg: null,
+    reducedMotion: false, heroVisible: true, tabVisible: true,
+    io: null,
   };
 
   function resize() {
@@ -258,6 +260,21 @@
     S.raf = requestAnimationFrame(tick);
   }
 
+  // Starts/stops the rAF loop based on combined visibility state, so no
+  // frames (and none of their per-frame noise/isoline/hillshade work) are
+  // scheduled while the hero is off-screen, the tab is hidden, or reduced
+  // motion is requested.
+  function updateRunning() {
+    const shouldRun = S.heroVisible && S.tabVisible && !S.reducedMotion;
+    if (shouldRun && !S.running) {
+      S.running = true;
+      S.raf = requestAnimationFrame(tick);
+    } else if (!shouldRun && S.running) {
+      S.running = false;
+      cancelAnimationFrame(S.raf);
+    }
+  }
+
   function boot() {
     const canvas = document.querySelector(CONFIG.canvasSelector);
     if (!canvas) {
@@ -288,15 +305,32 @@
         S.tmx = -9999; S.tmy = -9999;
         S.mx = -9999; S.my = -9999;
       });
+
+      if ('IntersectionObserver' in window) {
+        S.io = new IntersectionObserver((entries) => {
+          S.heroVisible = entries[0].isIntersecting;
+          updateRunning();
+        }, { threshold: 0 });
+        S.io.observe(hero);
+      }
     }
 
-    // Respect reduced motion
+    S.onVisibilityChange = () => {
+      S.tabVisible = document.visibilityState === 'visible';
+      updateRunning();
+    };
+    document.addEventListener('visibilitychange', S.onVisibilityChange);
+
+    // Respect reduced motion: skip the animation loop entirely and render
+    // a single static frame instead of recomputing it every frame for nothing.
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      S.speed = 0;
+      S.reducedMotion = true;
+      computeField(0);
+      drawTopographic();
+      return;
     }
 
-    S.running = true;
-    S.raf = requestAnimationFrame(tick);
+    updateRunning();
   }
 
   window.HeroBg = {
@@ -305,6 +339,8 @@
       S.running = false;
       cancelAnimationFrame(S.raf);
       window.removeEventListener('resize', resize);
+      if (S.io) S.io.disconnect();
+      if (S.onVisibilityChange) document.removeEventListener('visibilitychange', S.onVisibilityChange);
     },
   };
 
