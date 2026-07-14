@@ -1425,14 +1425,8 @@ body {
 
 .wave-separator svg {
     display: block;
-    width: 200%;
+    width: 100%;
     height: 100%;
-    animation: waveMove 8s linear infinite;
-}
-
-@keyframes waveMove {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
 }
 
 .wave-dark  { background: var(--color-primary); }
@@ -1467,11 +1461,6 @@ body {
     /* Grille de compétences : 2 colonnes sur tablette */
     .skills-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    /* Réduire l'amplitude des vagues sur petits écrans */
-    .wave-separator svg {
-        animation-duration: 12s;
     }
 }
 
