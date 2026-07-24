@@ -149,15 +149,24 @@ Catégories actuelles : `Géomatique & Cartographie`, `Analyse de Données`, `En
 ### `realisations.yml`
 
 ```yaml
-- id: "identifiant-unique"
-  titre: "Titre"
-  description: "Description courte"
-  type: "site|etude|astuce|outil"   # détermine le filtre et le badge
+- id: 10                              # entier, incrémental
+  title: "Titre"
+  desc: "Description courte"
+  type: "site|etude|astuce|outil|guide"  # détermine le filtre et le badge
   tags: ["Tag1", "Tag2"]
-  image: "/assets/images/preview-xxx.webp"
-  lien: "/realisations/ma-page.html"   # optionnel
-  lien_externe: "https://..."          # optionnel
+  emoji: "📈"                          # fallback si pas d'image
+  image: "/assets/images/preview-xxx.webp"  # optionnel
+  url: "/realisations/ma-page.html"    # interne ou externe (https://...)
+  featured: true                       # optionnel — remonte la carte sur l'accueil
 ```
+
+Les entrées `type: guide` sont sorties de la grille filtrable et rendues dans une section
+dédiée (`realisations/index.html`, filtre Liquid `where: "type", "guide"`).
+
+**`featured: true`** pilote la section « réalisations mises en avant » de `index.html`
+(3 cartes attendues). C'est le seul endroit où sélectionner les projets vitrine : aucun
+titre n'est codé en dur dans `index.html`. Les liens externes (`url` contenant `://`) sont
+détectés automatiquement et reçoivent `target="_blank"` + `rel="noopener noreferrer"`.
 
 ### `competences.yml`
 
@@ -202,6 +211,22 @@ Outils tiers (pas créés par Yves) affichés en section dédiée sur `outils.ht
 ---
 
 ## Système de design
+
+### Règle de rédaction — pas de tiret cadratin
+
+**Aucun `—` (tiret cadratin / em dash) dans le contenu publié.** C'est un marqueur de
+rédaction par IA que le propriétaire du site refuse. Utiliser deux-points, virgule,
+parenthèses ou une phrase courte à la place.
+
+Les tirets demi-cadratin des plages de dates (`2008 – 2011` dans `timeline.yml`) sont un
+caractère différent (`–`) et un usage typographique correct en français : ne pas y toucher.
+
+Contrôle :
+
+```bash
+grep -rn "—" _data/ _includes/ _layouts/ index.html outils.html cv/ realisations/ outils/
+# doit ne rien retourner
+```
 
 ### Variables CSS (`assets/css/style.css`)
 
