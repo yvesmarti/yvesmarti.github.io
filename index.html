@@ -38,7 +38,7 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
         <span class="highlight">Dix ans</span> à accompagner des <span class="highlight">collectivités normandes</span> sur la gestion des déchets ; d'abord comme <span class="highlight">analyste</span>, aujourd'hui comme <span class="highlight">pilote de projets opérationnels</span>.
     </p>
     <p class="lead">
-        Entre les deux : des <span class="highlight">cartes, des tableaux de bord, des outils web</span> construits pour des gens qui ont des <span class="highlight">décisions à prendre</span>, pas des données à déchiffrer.
+        Entre les deux : des <span class="highlight">cartes, des tableaux de bord, des outils web</span> que je construis <span class="highlight">moi-même</span>, <span class="highlight">sans dépendance à un éditeur privé</span>, pour des gens qui ont des <span class="highlight">décisions à prendre</span>, pas des données à déchiffrer.
     </p>
     <p class="lead">
         Mon domaine de prédilection, c'est <span class="highlight">les déchets</span>, mais ce qui me motive, c'est de <span class="highlight">faire parler des données utiles</span>.
@@ -200,32 +200,43 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
             Au fil des projets, je développe mes propres outils pratiques.
         </h2>
         <p>
-            Des applications web pour répondre à des besoins récurrents : calculer des isochrones, géocoder des adresses, extraire des données OpenStreetMap. Rien de spectaculaire, juste des outils qui font gagner du temps.
+            Des applications web pour des besoins que rien ne couvrait : calculer des isochrones, géocoder un fichier d'adresses, extraire des données OpenStreetMap, dimensionner une dalle de PAV. Treize outils, gratuits, exécutés entièrement dans le navigateur. Aucune donnée ne quitte le poste de celui qui les utilise.
         </p>
 
-        <div class="tools-teaser-grid">
-            <div class="tools-teaser tools-teaser--outils">
-                <h3>Divers outils</h3>
-                <p>Isochrones, géocodage, extraction OSM, visualisation de photos géolocalisées : des outils simples pour des tâches courantes.</p>
-                <a href="{{ '/outils' | relative_url }}" class="tools-link">
-                    Voir les outils
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-            </div>
+        {% assign featured = site.data.realisations | where: "featured", true %}
+        {% assign type_labels = "etude:Étude de cas,outil:Outil,astuce:Astuce,site:Site web,guide:Guide" | split: "," %}
 
-            <div class="tools-teaser tools-teaser--realisations">
-                <h3>Réalisations</h3>
-                <p>Sites web et applications développés : des projets concrets, de la conception à la mise en ligne.</p>
-                <a href="{{ '/realisations' | relative_url }}" class="tools-link tools-link--realisations">
-                    Voir les réalisations
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
+        <div class="skills-wide">
+            <div class="tools-teaser-grid tools-teaser-grid--featured">
+                {% for item in featured %}
+                <article class="tools-teaser tools-teaser--featured">
+                    {% for pair in type_labels %}{% assign kv = pair | split: ":" %}{% if kv[0] == item.type %}
+                    <span class="teaser-badge teaser-badge--{{ item.type }}">{{ kv[1] }}</span>
+                    {% endif %}{% endfor %}
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.desc }}</p>
+                    {% assign is_externe = false %}
+                    {% if item.url contains '://' %}{% assign is_externe = true %}{% endif %}
+                    <a href="{% if is_externe %}{{ item.url }}{% else %}{{ item.url | relative_url }}{% endif %}" class="tools-link"{% if is_externe %} target="_blank" rel="noopener noreferrer"{% endif %}>
+                        Voir le projet
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </article>
+                {% endfor %}
             </div>
         </div>
+
+        {% assign nb_outils = 0 %}
+        {% for categorie in site.data.outils %}{% for outil in categorie.outils %}{% if outil.actif %}{% assign nb_outils = nb_outils | plus: 1 %}{% endif %}{% endfor %}{% endfor %}
+        {% assign nb_realisations = site.data.realisations | size %}
+
+        <p class="catalog-links">
+            <a href="{{ '/outils' | relative_url }}">Boîte à outils SIG &amp; déchets : {{ nb_outils }} outils</a>
+            <span aria-hidden="true">·</span>
+            <a href="{{ '/realisations' | relative_url }}">Toutes les réalisations : {{ nb_realisations }} projets</a>
+        </p>
     </div>
 </section>
 

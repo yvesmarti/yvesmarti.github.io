@@ -14,6 +14,7 @@
   tags: ["Power Query", "Excel", "APIs"]
   emoji: "📊"
   url: "/realisations/etude-de-cas-redevance-speciale.html"
+  featured: true
 
 - id: 3
   title: "APIs open data utiles pour les données territoriales"
@@ -62,6 +63,7 @@
   tags: ["Marchés publics", "Commande publique", "HTML"]
   emoji: "📋"
   url: "https://yvesmarti.fr/guide-marches-publics/"
+  featured: true
 
 - id: 9
   title: "Guide de la comptabilité publique territoriale"
@@ -70,3 +72,12 @@
   tags: ["Comptabilité", "FPT", "HTML"]
   emoji: "📒"
   url: "https://yvesmarti.fr/guide-compta-fpt/"
+
+- id: 10
+  title: "Tableau de bord de suivi du déploiement PAV"
+  desc: "Suivi du déploiement des points d'apport volontaire sur 38 communes, à partir d'un classeur Excel de 6 onglets. Fonctionne entièrement dans le navigateur, sans serveur ni SIG lourd."
+  type: "etude"
+  tags: ["Excel", "JS", "Dataviz"]
+  emoji: "📈"
+  url: "/realisations/presentation-dashboard.html"
+  featured: true
