@@ -450,6 +450,19 @@ details.aide pre {
 #barre-etat .fort { color: var(--texte); font-weight: 700; }
 #barre-etat .alerte { color: var(--alerte); font-weight: 600; }
 
+/* ---------- Lien de retour vers la liste des outils ---------- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #6b7c75;
+  text-decoration: none;
+  transition: color .15s;
+}
+.back-link:hover { color: #3d8b6e; }
+
 /* ---------- Tablette : on empile verticalement ---------- */
 @media (max-width: 900px) {
   #corps { flex-direction: column; }
@@ -464,6 +477,10 @@ details.aide pre {
 
   <!-- ================= EN-TÊTE ================= -->
   <header id="entete">
+    <a href="/outils/" class="back-link" title="Retour à la liste des outils">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour aux outils
+    </a>
     <h1><i class="fa-solid fa-diagram-project"></i><span id="titre-outil">Générateur de diagrammes de Sankey</span></h1>
 
     <!-- Menu des jeux de données d'exemple -->
