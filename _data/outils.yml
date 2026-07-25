@@ -49,12 +49,6 @@
 - categorie: Analyse de Données
   cat_id: analyse
   outils:
-    - nom: Générateur de diagrammes de Sankey
-      emoji: "🔀"
-      description: Créez des diagrammes de flux (Sankey) personnalisables : nœuds, couleurs, libellés et export, pour visualiser des flux de déchets, de budgets ou de matières.
-      lien: outils/sankey-builder.html
-      actif: true
-
     - nom: Outil d'analyse statistique
       emoji: "📊"
       description: Emplacement disponible pour un outil d'analyse statistique.
