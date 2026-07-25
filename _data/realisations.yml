@@ -81,3 +81,12 @@
   emoji: "📈"
   url: "/realisations/presentation-dashboard.html"
   featured: true
+
+- id: 11
+  title: "Générateur de diagrammes de Sankey"
+  desc: "Créer des diagrammes de Sankey pour visualiser des flux de déchets, de matières ou de budgets, directement dans le navigateur, sans envoyer de données."
+  type: "outil"
+  tags: ["Sankey", "Dataviz", "JS"]
+  emoji: "🔀"
+  url: "/outils/sankey-builder.html"
+  featured: true
