@@ -80,4 +80,12 @@
   tags: ["Excel", "JS", "Dataviz"]
   emoji: "📈"
   url: "/realisations/presentation-dashboard.html"
+
+- id: 11
+  title: "Générateur de diagrammes de Sankey"
+  desc: "Un outil pour construire des diagrammes de flux personnalisables directement dans le navigateur : nœuds, couleurs, libellés et export, sans installation."
+  type: "outil"
+  tags: ["Sankey", "Dataviz", "JS"]
+  emoji: "🔀"
+  url: "/outils/sankey-builder.html"
   featured: true
