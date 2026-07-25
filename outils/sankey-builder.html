@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Générateur de diagrammes de Sankey</title>
+
+<!-- ============================================================
+     BIBLIOTHÈQUES EXTERNES (CDN imposés — ne pas changer d'hébergeur)
+     d3 : calculs et manipulation du SVG
+     d3-sankey : algorithme de mise en page des diagrammes de Sankey
+     Font Awesome : icônes des boutons
+     DM Sans : police principale (system-ui prend le relais si bloquée)
+     ============================================================ -->
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+/* ============================================================
+   FEUILLE DE STYLE — couleurs et espacements faciles à retoucher
+   ============================================================ */
+:root {
+  --fond-page: #eef1f5;        /* fond gris clair autour de l'outil */
+  --fond-panneau: #ffffff;     /* fond du panneau latéral */
+  --bordure: #d8dee6;          /* bordures fines */
+  --accent: #1e40af;           /* bleu des boutons et onglets actifs */
+  --accent-douce: #e8eefc;     /* bleu très pâle (survol, onglet actif) */
+  --texte: #1f2937;            /* couleur de texte principale */
+  --texte-doux: #6b7280;       /* texte secondaire */
+  --erreur: #b91c1c;           /* rouge des messages d'erreur */
+  --erreur-fond: #fef2f2;
+  --alerte: #b45309;           /* orange des avertissements */
+  --alerte-fond: #fffbeb;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--texte);
+  background: var(--fond-page);
+  overflow: hidden; /* la page ne défile pas, chaque zone gère son propre défilement */
+}
+
+/* ---------- Disposition générale : en-tête / corps / barre d'état ---------- */
+#application {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---------- En-tête ---------- */
+#entete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--fond-panneau);
+  border-bottom: 1px solid var(--bordure);
+  flex-wrap: wrap;
+}
+#entete h1 {
+  font-size: 17px;
+  margin: 0;
+  margin-right: auto; /* pousse les boutons à droite */
+  font-weight: 700;
+}
+#entete h1 .fa-diagram-project { color: var(--accent); margin-right: 8px; }
+
+/* Boutons génériques */
+.bouton {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texte);
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bouton:hover { background: var(--accent-douce); border-color: var(--accent); }
+.bouton i { margin-right: 6px; }
+.bouton.principal { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bouton.principal:hover { background: #1a388f; }
+
+select.champ-entete {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 260px;
+}
+
+/* Menu déroulant des exports */
+.menu-deroulant { position: relative; }
+.menu-deroulant .contenu-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  min-width: 220px;
+  z-index: 50;
+  padding: 4px;
+}
+.menu-deroulant.ouvert .contenu-menu { display: block; }
+.contenu-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--texte);
+}
+.contenu-menu button:hover { background: var(--accent-douce); }
+.contenu-menu button i { width: 18px; margin-right: 6px; color: var(--accent); }
+
+/* ---------- Corps : panneau + poignée + diagramme ---------- */
+#corps {
+  display: flex;
+  flex: 1;
+  min-height: 0; /* indispensable pour que les zones internes défilent */
+}
+
+/* Panneau latéral gauche */
+#panneau {
+  width: 380px;
+  min-width: 280px;
+  max-width: 640px;
+  background: var(--fond-panneau);
+  border-right: 1px solid var(--bordure);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Poignée de redimensionnement entre panneau et diagramme */
+#poignee {
+  width: 6px;
+  cursor: col-resize;
+  background: transparent;
+  flex: none;
+}
+#poignee:hover, #poignee.active { background: var(--accent); opacity: 0.35; }
+
+/* Onglets du panneau */
+#onglets {
+  display: flex;
+  border-bottom: 1px solid var(--bordure);
+  flex: none;
+}
+#onglets button {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  color: var(--texte-doux);
+}
+#onglets button.actif { color: var(--accent); border-bottom-color: var(--accent); }
+#onglets button:hover { color: var(--accent); }
+
+/* Contenu des onglets : une seule zone visible à la fois */
+.contenu-onglet {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: none;
+  min-height: 0;
+}
+.contenu-onglet.actif { display: flex; flex-direction: column; }
+
+/* Panneau d'aide repliable */
+details.aide {
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  background: var(--accent-douce);
+  margin-bottom: 10px;
+  font-size: 12.5px;
+}
+details.aide summary {
+  cursor: pointer;
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+details.aide .aide-corps { padding: 0 10px 10px; line-height: 1.5; }
+details.aide code {
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+details.aide pre {
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+/* Zone de saisie des flux */
+#zone-texte {
+  flex: 1;
+  min-height: 220px;
+  width: 100%;
+  resize: none;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--texte);
+}
+#zone-texte:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+
+/* Petits boutons d'action sous la zone de texte */
+.rangee-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.rangee-actions .bouton { font-size: 12px; padding: 5px 10px; }
+
+/* ---------- Contrôles de mise en forme (générés en JS) ---------- */
+.groupe-controles {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texte-doux);
+  margin: 16px 0 6px;
+  border-bottom: 1px solid var(--bordure);
+  padding-bottom: 4px;
+}
+.groupe-controles:first-child { margin-top: 0; }
+
+.controle { margin-bottom: 12px; }
+.controle .etiquette {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.controle .etiquette .valeur-courante {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.controle .etiquette .defaut { font-size: 11px; color: var(--texte-doux); font-weight: 400; }
+/* Icône d'aide « ? » : l'explication apparaît au survol (attribut title) */
+.icone-aide { color: var(--texte-doux); cursor: help; font-size: 12px; }
+
+.controle input[type="range"] { width: 100%; accent-color: var(--accent); }
+.controle input[type="number"],
+.controle input[type="text"],
+.controle select {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  width: 100%;
+}
+.controle input[type="color"] {
+  width: 48px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+/* Contrôle rendu inopérant parce qu'un autre réglage le neutralise
+   (ex. « Couleur de fond » quand le fond transparent est coché) */
+.controle.desactive { opacity: 0.4; pointer-events: none; }
+.controle.case .etiquette { cursor: pointer; }
+.controle.case input { accent-color: var(--accent); width: 15px; height: 15px; }
+.ligne-marges { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+#palette-couleurs {
+  width: 100%;
+  min-height: 90px;
+  font-family: 'Consolas', monospace;
+  font-size: 12.5px;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+}
+
+/* ---------- Zone de messages (erreurs et avertissements) ---------- */
+#messages {
+  flex: none;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 1px solid var(--bordure);
+  padding: 8px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  background: #fbfcfe;
+}
+#messages:empty { display: none; }
+.message { padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; }
+.message.erreur { background: var(--erreur-fond); color: var(--erreur); }
+.message.alerte { background: var(--alerte-fond); color: var(--alerte); }
+.message.info { background: var(--accent-douce); color: var(--accent); }
+.message i { margin-right: 6px; }
+
+/* ---------- Zone du diagramme ---------- */
+#zone-diagramme {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#diagramme {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  cursor: grab;
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.10); /* matérialise les bords du dessin */
+}
+#diagramme:active { cursor: grabbing; }
+
+/* Damier gris/blanc affiché DERRIÈRE le SVG quand « fond transparent » est coché.
+   C'est le même repère visuel que dans les logiciels de retouche d'image :
+   il n'est PAS exporté, il sert seulement à voir que le fond est bien vide. */
+#zone-diagramme.damier #diagramme {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(45deg, #d5dae2 25%, transparent 25%, transparent 75%, #d5dae2 75%),
+    linear-gradient(45deg, #d5dae2 25%, transparent 25%, transparent 75%, #d5dae2 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 9px 9px;
+}
+
+/* Bandeau d'information temporaire (collage Excel, copie d'image…) */
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.92);
+  color: #f9fafb;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  z-index: 90;
+  display: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  max-width: 80%;
+  text-align: center;
+}
+#toast i { margin-right: 6px; }
+
+/* Bouton flottant « Ajuster à la fenêtre » */
+#ajuster-fenetre {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+}
+
+/* Nœuds déplaçables : curseur dédié */
+#diagramme rect.noeud { cursor: move; }
+#diagramme text { user-select: none; }
+
+/* Infobulle flottante */
+#infobulle {
+  position: fixed;
+  pointer-events: none; /* ne bloque jamais la souris */
+  background: rgba(17, 24, 39, 0.92);
+  color: #f9fafb;
+  font-size: 12.5px;
+  line-height: 1.45;
+  padding: 7px 10px;
+  border-radius: 6px;
+  display: none;
+  z-index: 100;
+  max-width: 320px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Fenêtre d'édition d'un nœud (double-clic) */
+#editeur-noeud {
+  position: fixed;
+  z-index: 120;
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
+  padding: 14px;
+  width: 260px;
+  display: none;
+}
+#editeur-noeud h3 { margin: 0 0 10px; font-size: 14px; }
+#editeur-noeud label { display: block; font-size: 12.5px; margin-bottom: 8px; }
+#editeur-noeud input[type="text"] {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--bordure);
+  border-radius: 6px;
+  margin-top: 3px;
+}
+#editeur-noeud input[type="color"] { width: 100%; height: 30px; border: 1px solid var(--bordure); border-radius: 6px; margin-top: 3px; cursor: pointer; }
+#editeur-noeud .rangee-actions { justify-content: flex-end; margin-top: 12px; }
+
+/* ---------- Barre d'état ---------- */
+#barre-etat {
+  flex: none;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 6px 16px;
+  font-size: 12.5px;
+  color: var(--texte-doux);
+  background: var(--fond-panneau);
+  border-top: 1px solid var(--bordure);
+  flex-wrap: wrap;
+}
+#barre-etat .fort { color: var(--texte); font-weight: 700; }
+#barre-etat .alerte { color: var(--alerte); font-weight: 600; }
+
+/* ---------- Tablette : on empile verticalement ---------- */
+@media (max-width: 900px) {
+  #corps { flex-direction: column; }
+  #panneau { width: 100% !important; max-width: none; height: 45%; border-right: none; border-bottom: 1px solid var(--bordure); }
+  #poignee { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="application">
+
+  <!-- ================= EN-TÊTE ================= -->
+  <header id="entete">
+    <h1><i class="fa-solid fa-diagram-project"></i><span id="titre-outil">Générateur de diagrammes de Sankey</span></h1>
+
+    <!-- Menu des jeux de données d'exemple -->
+    <select id="select-exemples" class="champ-entete" title="Charger un jeu de données d'exemple">
+      <option value="">Exemples…</option>
+    </select>
+
+    <!-- Menu déroulant des exports -->
+    <div class="menu-deroulant" id="menu-export">
+      <button class="bouton principal" id="btn-export"><i class="fa-solid fa-download"></i>Exporter <i class="fa-solid fa-caret-down"></i></button>
+      <div class="contenu-menu">
+        <button id="copier-image"><i class="fa-solid fa-clipboard"></i>Copier l'image (Ctrl+V ailleurs)</button>
+        <button id="export-svg"><i class="fa-solid fa-file-code"></i>SVG (vectoriel)</button>
+        <button id="export-png-1"><i class="fa-solid fa-file-image"></i>PNG — échelle 1×</button>
+        <button id="export-png-2"><i class="fa-solid fa-file-image"></i>PNG — échelle 2×</button>
+        <button id="export-png-3"><i class="fa-solid fa-file-image"></i>PNG — échelle 3×</button>
+        <button id="export-csv"><i class="fa-solid fa-file-csv"></i>CSV des flux (Excel)</button>
+        <button id="copier-texte"><i class="fa-solid fa-copy"></i>Copier le texte</button>
+      </div>
+    </div>
+
+    <button class="bouton" id="btn-reinitialiser" title="Efface la sauvegarde locale et recharge l'exemple par défaut">
+      <i class="fa-solid fa-rotate-left"></i>Réinitialiser
+    </button>
+  </header>
+
+  <!-- ================= CORPS ================= -->
+  <div id="corps">
+
+    <!-- Panneau latéral gauche -->
+    <aside id="panneau">
+      <nav id="onglets">
+        <button data-onglet="donnees" class="actif"><i class="fa-solid fa-table-list"></i> Données</button>
+        <button data-onglet="forme"><i class="fa-solid fa-sliders"></i> Mise en forme</button>
+        <button data-onglet="couleurs"><i class="fa-solid fa-palette"></i> Couleurs</button>
+      </nav>
+
+      <!-- Onglet 1 : Données -->
+      <section class="contenu-onglet actif" id="onglet-donnees">
+        <details class="aide">
+          <summary><i class="fa-solid fa-circle-question"></i> Aide — la syntaxe en 6 lignes</summary>
+          <div class="aide-corps">
+            Un flux par ligne : <code>Source [valeur] Cible</code>.<br/>
+            Commentaires : lignes commençant par <code>//</code> ou <code>'</code>.<br/>
+            Couleur d'un nœud : <code>:Nom #1b9e77</code>.<br/>
+            <code>&lt;&lt;</code> colore les liens entrants, <code>&gt;&gt;</code> les sortants.<br/>
+            Position figée : <code>:Nom x=0.45 y=0.30</code> (entre 0 et 1).<br/>
+            Virgule ou point décimal acceptés, espaces de milliers aussi.<br/>
+            <b>Astuce Excel</b> : copiez 3 colonnes (Source / Cible / Valeur) et collez-les
+            ici avec Ctrl+V — la conversion est automatique.
+            <pre>Ordures ménagères [12 500] Incinération
+:Incinération #d95f02 &lt;&lt;</pre>
+          </div>
+        </details>
+
+        <textarea id="zone-texte" spellcheck="false" placeholder="Saisissez vos flux pour commencer&#10;Exemple : Ordures ménagères [12500] Incinération"></textarea>
+
+        <div class="rangee-actions">
+          <button class="bouton" id="btn-enregistrer-projet" title="Télécharge un fichier .json contenant texte, paramètres et positions">
+            <i class="fa-solid fa-floppy-disk"></i>Enregistrer le projet
+          </button>
+          <button class="bouton" id="btn-ouvrir-projet" title="Recharge un fichier .json précédemment enregistré">
+            <i class="fa-solid fa-folder-open"></i>Ouvrir un projet
+          </button>
+          <input type="file" id="fichier-projet" accept=".json,application/json" style="display:none"/>
+        </div>
+      </section>
+
+      <!-- Onglet 2 : Mise en forme (rempli automatiquement par le script) -->
+      <section class="contenu-onglet" id="onglet-forme"></section>
+
+      <!-- Onglet 3 : Couleurs -->
+      <section class="contenu-onglet" id="onglet-couleurs"></section>
+
+      <!-- Zone de messages : erreurs de saisie et avertissements -->
+      <div id="messages"></div>
+    </aside>
+
+    <!-- Poignée pour redimensionner le panneau à la souris -->
+    <div id="poignee" title="Glissez pour redimensionner le panneau"></div>
+
+    <!-- Zone centrale : le diagramme -->
+    <section id="zone-diagramme">
+      <button class="bouton" id="ajuster-fenetre" title="Recadre le diagramme pour qu'il tienne dans la fenêtre">
+        <i class="fa-solid fa-expand"></i>Ajuster à la fenêtre
+      </button>
+      <svg id="diagramme" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="toast"></div>
+    </section>
+  </div>
+
+  <!-- ================= BARRE D'ÉTAT ================= -->
+  <footer id="barre-etat">
+    <span>Nœuds : <span class="fort" id="stat-noeuds">0</span></span>
+    <span>Flux : <span class="fort" id="stat-flux">0</span></span>
+    <span>Total entrant : <span class="fort" id="stat-entrant">0</span></span>
+    <span>Total sortant : <span class="fort" id="stat-sortant">0</span></span>
+    <span id="stat-alertes"></span>
+  </footer>
+</div>
+
+<!-- Infobulle et fenêtre d'édition : éléments flottants communs -->
+<div id="infobulle"></div>
+<div id="editeur-noeud">
+  <h3><i class="fa-solid fa-pen"></i> Modifier le nœud</h3>
+  <label>Libellé
+    <input type="text" id="edit-libelle"/>
+  </label>
+  <label>Couleur
+    <input type="color" id="edit-couleur"/>
+  </label>
+  <div class="rangee-actions">
+    <button class="bouton" id="edit-annuler">Annuler</button>
+    <button class="bouton principal" id="edit-valider">Valider</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ############################################################
+   GÉNÉRATEUR DE DIAGRAMMES DE SANKEY — script principal
+   Tout le code est commenté en français, bloc par bloc.
+   ############################################################ */
+
+/* ============================================================
+   PARAMÈTRES MODIFIABLES — modifier ici sans risque
+   (couleurs par défaut, valeurs des curseurs, unité, titres)
+   ============================================================ */
+
+// Palette utilisée pour colorer automatiquement les nœuds, dans l'ordre d'apparition
+const PALETTE_DEFAUT = ['#1e40af', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2'];
+
+// Palettes proposées dans l'onglet « Couleurs ». Ajouter une entrée ici suffit.
+const PALETTES = [
+  { nom: 'Standard (défaut)',      couleurs: PALETTE_DEFAUT },
+  { nom: 'Sûre pour daltoniens',   couleurs: ['#0072b2', '#009e73', '#e69f00', '#cc79a7', '#56b4e9', '#d55e00', '#f0e442'] },
+  { nom: 'Impression noir & blanc', couleurs: ['#1f2937', '#4b5563', '#6b7280', '#9ca3af', '#b9bfc9', '#d1d5db'] },
+  { nom: 'Déchets / valorisation', couleurs: ['#1b9e77', '#66a61e', '#a6761d', '#e6ab02', '#d95f02', '#7570b3', '#666666'] },
+  { nom: 'Pastel doux',            couleurs: ['#8ecae6', '#95d5b2', '#ffd6a5', '#ffadad', '#cdb4db', '#a2d2ff'] }
+];
+
+// Formats de sortie prêts à l'emploi (largeur × hauteur en pixels)
+const FORMATS = [
+  { nom: 'Libre',                        l: null, h: null },
+  { nom: 'Diaporama 16:9 (PowerPoint)',  l: 1280, h: 720 },
+  { nom: 'Diaporama 4:3',                l: 1200, h: 900 },
+  { nom: 'A4 paysage (rapport)',         l: 1750, h: 1240 },
+  { nom: 'Portrait (pleine page)',       l: 1240, h: 1600 },
+  { nom: 'Carré (réseaux sociaux)',      l: 1080, h: 1080 },
+  { nom: 'Bandeau large',                l: 1600, h: 600 }
+];
+
+// Valeurs par défaut de tous les réglages de l'onglet « Mise en forme »
+const PARAMS_DEFAUT = {
+  // Dimensions et disposition
+  largeur: 1200,            // largeur du SVG en pixels (600 à 2400)
+  hauteur: 700,             // hauteur du SVG en pixels (400 à 1600)
+  margeHaut: 20,
+  margeBas: 20,
+  margeGauche: 40,
+  margeDroite: 40,
+  epaisseurNoeud: 18,       // épaisseur des rectangles de nœuds (4 à 60 px)
+  espacementNoeuds: 12,     // espace vertical entre deux nœuds (0 à 60 px)
+  alignement: 'justify',    // justify / left / right / center
+  iterations: 6,            // itérations de l'algorithme de placement (0 à 32)
+  sens: 'horizontal',       // horizontal / vertical
+  // Liens
+  courbure: 0.5,            // courbure des liens (0 = droit, 1 = très courbé)
+  opaciteLiens: 0.45,
+  opaciteSurvol: 0.8,
+  contourLiens: false,      // liseré sombre autour des liens
+  // Étiquettes et nombres
+  afficherEtiquettes: true,
+  afficherValeurs: true,
+  positionValeurs: 'ligne2', // apres / ligne2 / dedans
+  taillePolice: 13,
+  graisse: '600',           // 400 normal / 600 semi-gras / 700 gras
+  couleurTexte: '#1f2937',
+  prefixe: '',              // texte affiché avant chaque valeur (ex. « ≈ »)
+  suffixe: ' t',            // texte affiché après chaque valeur (unité)
+  sepMilliers: 'espace',    // espace / point / virgule / aucun
+  sepDecimal: 'virgule',    // virgule / point
+  decimales: 0,             // nombre de décimales affichées (0 à 3)
+  afficherPourcent: false,  // ajoute « (x %) » après la valeur des nœuds
+  // Fond et titre
+  couleurFond: '#ffffff',
+  fondTransparent: false,
+  titre: '',
+  sousTitre: '',
+  tailleTitre: 20,
+  tailleSousTitre: 13,
+  note: '',                 // mention de source affichée en bas à gauche (ex. « Source : SINOE 2025 »)
+  tailleNote: 11,
+  // Couleurs des liens (onglet Couleurs)
+  regleCouleurLiens: 'source',  // source / cible / fixe / gris
+  couleurLienFixe: '#64748b'
+};
+
+// Unité utilisée dans les exemples et l'infobulle quand le suffixe est vide
+const UNITE_DEFAUT = ' t';
+
+// Titre affiché dans l'en-tête de la page et l'onglet du navigateur
+const TITRE_OUTIL = 'Générateur de diagrammes de Sankey';
+
+// Police utilisée dans le SVG — la liste de repli garantit un rendu correct
+// à l'export PNG même si Google Fonts n'est pas accessible depuis le canvas
+const POLICE_SVG = "'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+
+// Clé utilisée pour la sauvegarde automatique dans le navigateur
+const CLE_SAUVEGARDE = 'sankeyBuilder.v1';
+
+/* ============================================================
+   JEUX DE DONNÉES D'EXEMPLE — modifiables librement
+   ============================================================ */
+const EXEMPLES = [
+  {
+    nom: 'Flux de déchets ménagers',
+    texte: `// Flux de déchets d'une collectivité — tonnages annuels
+Ordures ménagères résiduelles [12500] Incinération
+Emballages [3200] Centre de tri
+Verre [2800] Recyclage verre
+Déchèteries [9400] Tri déchèterie
+
+Centre de tri [2650] Recyclage matière
+Centre de tri [550] Refus de tri
+Refus de tri [550] Incinération
+
+Tri déchèterie [3100] Recyclage matière
+Tri déchèterie [2200] Valorisation bois
+Tri déchèterie [1800] Compostage
+Tri déchèterie [2300] Enfouissement
+
+Incinération [13050] Valorisation énergétique
+
+:Recyclage matière #1b9e77 <<
+:Recyclage verre #1b9e77 <<
+:Valorisation bois #66a61e <<
+:Compostage #a6761d <<
+:Valorisation énergétique #e6ab02 <<
+:Enfouissement #d95f02 <<
+:Refus de tri #d95f02`
+  },
+  {
+    nom: 'Répartition d\u2019un budget',
+    texte: `// Répartition du budget d'une collectivité — en k€
+Fiscalité locale [2600] Budget principal
+Produits des services [1500] Budget principal
+Subventions [900] Budget principal
+Emprunts [800] Budget principal
+
+Budget principal [4200] Fonctionnement
+Budget principal [1600] Investissement
+
+Fonctionnement [1500] Personnel
+Fonctionnement [900] Écoles et petite enfance
+Fonctionnement [700] Voirie et espaces publics
+Fonctionnement [600] Déchets et propreté
+Fonctionnement [500] Culture et sports
+
+Investissement [700] Rénovation bâtiments
+Investissement [600] Voirie
+Investissement [300] Équipements sportifs
+
+:Fonctionnement #1e40af >>
+:Investissement #1b9e77 >>
+:Déchets et propreté #d95f02`
+  },
+  {
+    nom: 'Bilan matière simple (3 nœuds)',
+    texte: `// Un flux simple pour comprendre la syntaxe en 10 secondes
+Collecte porte-à-porte [1200] Centre de tri
+Centre de tri [1200] Recyclage
+
+:Recyclage #1b9e77 <<`
+  }
+];
+
+/* ============================================================
+   ÉTAT GLOBAL DE L'APPLICATION
+   (texte courant, paramètres courants, positions déplacées)
+   ============================================================ */
+const etat = {
+  texte: '',                       // contenu de la zone de saisie
+  params: { ...PARAMS_DEFAUT },    // paramètres de mise en forme courants
+  positionsManuelles: {},          // positions enregistrées après déplacement souris
+  positionsTexte: {},              // positions déclarées par les lignes « :Nom x= y= »
+  graphe: null,                    // dernier graphe calculé (pour les interactions)
+  palette: [...PALETTE_DEFAUT]     // palette courante (modifiable onglet Couleurs)
+};
+
+/* ============================================================
+   PETITES FONCTIONS UTILITAIRES
+   ============================================================ */
+
+// Raccourci vers un élément du document par son identifiant
+function $(id) { return document.getElementById(id); }
+
+// Anti-rebond : retarde l'exécution d'une fonction tant qu'on retape
+function debounce(fonction, delai) {
+  let minuteur = null;
+  return function (...args) {
+    clearTimeout(minuteur);
+    minuteur = setTimeout(() => fonction.apply(this, args), delai);
+  };
+}
+
+// Formate un nombre selon les réglages (séparateurs, décimales) — format français
+function formaterNombre(valeur, p) {
+  // toFixed garantit le nombre de décimales demandé
+  const morceaux = Number(valeur).toFixed(p.decimales).split('.');
+  let entiere = morceaux[0];
+  const SEPARATEURS = { espace: '\u202F', point: '.', virgule: ',', aucun: '' };
+  const sep = SEPARATEURS[p.sepMilliers] ?? '\u202F';
+  // Insère le séparateur de milliers tous les 3 chiffres (espace fine insécable en français)
+  entiere = entiere.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+  const sepDec = p.sepDecimal === 'point' ? '.' : ',';
+  return morceaux[1] ? entiere + sepDec + morceaux[1] : entiere;
+}
+
+// Formate une valeur complète : préfixe + nombre + suffixe (ex. « 12 500,5 t »)
+function formaterValeur(valeur, p) {
+  return (p.prefixe || '') + formaterNombre(valeur, p) + (p.suffixe || '');
+}
+
+// Formate un pourcentage à la française : « 12,3 % »
+function formaterPourcent(ratio) {
+  return (ratio * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
+}
+
+// Date du jour au format AAAA-MM-JJ pour les noms de fichiers exportés
+function dateDuJour() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const jj = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${jj}`;
+}
+
+// Protège une chaîne pour une utilisation sûre dans une expression régulière
+function echapperRegex(texte) {
+  return texte.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/* ============================================================
+   ANALYSE DU TEXTE SAISI (parsing)
+   ⚠ NE PAS MODIFIER : une erreur ici fausse tout le diagramme
+   Transforme le texte en liste de flux + options de nœuds,
+   et produit les messages d'erreur / avertissement en français.
+   ============================================================ */
+function analyserTexte(texte) {
+  etat.positionsTexte = {};   // re-lues à chaque analyse (les lignes supprimées disparaissent)
+  const flux = [];            // { source, cible, valeur, ligne }
+  const options = {};         // nom -> { couleur, entrant, sortant, x, y }
+  const erreurs = [];         // lignes invalides (bloquantes pour la ligne seule)
+  const avertissements = [];  // anomalies non bloquantes
+  const lignes = texte.split('\n');
+
+  // --- Passe 1 : lecture ligne par ligne ---
+  lignes.forEach((ligneBrute, index) => {
+    const numero = index + 1;
+    const ligne = ligneBrute.trim();
+
+    // Lignes vides et commentaires (« // » ou apostrophe) : ignorées
+    if (!ligne || ligne.startsWith('//') || ligne.startsWith("'")) return;
+
+    // ----- Ligne d'options d'un nœud : « :Nom #couleur << >> x= y= » -----
+    if (ligne.startsWith(':')) {
+      const corps = ligne.slice(1).trim();
+      // Repère le premier jeton spécial pour isoler le nom du nœud
+      const repere = /(#[0-9a-fA-F]{3,8}\b|<<|>>|\bx\s*=|\by\s*=)/.exec(corps);
+      const nom = (repere ? corps.slice(0, repere.index) : corps).trim();
+      const reste = repere ? corps.slice(repere.index) : '';
+
+      if (!nom) {
+        erreurs.push({ ligne: numero, contenu: ligneBrute.trim(), cause: 'nom de nœud manquant après « : ».' });
+        return;
+      }
+      const opt = options[nom] || (options[nom] = {});
+
+      // Couleur imposée du nœud
+      const mCouleur = /#([0-9a-fA-F]{3,8})\b/.exec(reste);
+      if (mCouleur) opt.couleur = '#' + mCouleur[1];
+
+      // Marqueurs d'héritage de couleur des liens
+      if (reste.includes('<<')) opt.entrant = true;
+      if (reste.includes('>>')) opt.sortant = true;
+
+      // Position manuelle (coordonnées relatives entre 0 et 1)
+      const mX = /\bx\s*=\s*([0-9]+(?:[.,][0-9]+)?)/.exec(reste);
+      const mY = /\by\s*=\s*([0-9]+(?:[.,][0-9]+)?)/.exec(reste);
+      const lireCoord = (m) => m ? parseFloat(m[1].replace(',', '.')) : null;
+      const x = lireCoord(mX), y = lireCoord(mY);
+      if ((x !== null && (x < 0 || x > 1)) || (y !== null && (y < 0 || y > 1))) {
+        avertissements.push(`Ligne ${numero} : les coordonnées x et y doivent être comprises entre 0 et 1 — position ignorée.`);
+      } else {
+        if (x !== null || y !== null) {
+          opt.position = { x, y };
+          etat.positionsTexte[nom] = opt.position; // mémorisée pour les redessins
+        }
+      }
+
+      // Jeton non reconnu : on le signale sans bloquer
+      const resteNettoye = reste
+        .replace(/#[0-9a-fA-F]{3,8}\b/g, '').replace(/<<|>>/g, '')
+        .replace(/\bx\s*=\s*[0-9]+(?:[.,][0-9]+)?/g, '')
+        .replace(/\by\s*=\s*[0-9]+(?:[.,][0-9]+)?/g, '').trim();
+      if (resteNettoye) {
+        avertissements.push(`Ligne ${numero} : « ${resteNettoye} » n'est pas une option reconnue et a été ignoré.`);
+      }
+      return;
+    }
+
+    // ----- Ligne de flux : « Source [valeur] Cible » -----
+    const mFlux = /^(.+?)\[\s*([^\]]*?)\s*\]\s*(.*)$/.exec(ligne);
+
+    if (!mFlux) {
+      // La ligne ne contient pas de valeur entre crochets
+      erreurs.push({ ligne: numero, contenu: ligne, cause: 'valeur manquante entre crochets [ ].' });
+      return;
+    }
+    const source = mFlux[1].trim();
+    const valeurBrute = mFlux[2];
+    const cible = mFlux[3].trim();
+
+    if (!source) {
+      erreurs.push({ ligne: numero, contenu: ligne, cause: 'source manquante avant les crochets.' });
+      return;
+    }
+    if (!valeurBrute) {
+      erreurs.push({ ligne: numero, contenu: ligne, cause: 'valeur vide entre crochets [ ].' });
+      return;
+    }
+    if (!cible) {
+      erreurs.push({ ligne: numero, contenu: ligne, cause: 'cible manquante après la valeur.' });
+      return;
+    }
+
+    // Valeur : on tolère espaces/insécables comme séparateurs de milliers et la virgule décimale
+    const valeurNettoyee = valeurBrute.replace(/[\s\u00A0\u202F]/g, '').replace(',', '.');
+    const valeur = parseFloat(valeurNettoyee);
+    if (!isFinite(valeur)) {
+      erreurs.push({ ligne: numero, contenu: ligne, cause: `« ${valeurBrute} » n'est pas une valeur numérique.` });
+      return;
+    }
+    if (valeur <= 0) {
+      avertissements.push(`Ligne ${numero} : valeur nulle ou négative (${formaterNombre(valeur, etat.params)}) — ligne ignorée.`);
+      return;
+    }
+
+    flux.push({ source, cible, valeur, ligne: numero });
+  });
+
+  // --- Passe 2 : détection des cycles (d3-sankey ne sait pas les gérer) ---
+  // Pour chaque flux A → B, on refuse le flux si un chemin B → … → A existe déjà.
+  const adjacence = {}; // nom -> liste des cibles déjà acceptées
+  const fluxValides = [];
+  function cheminExiste(depart, arrivee, visites) {
+    if (depart === arrivee) return true;
+    if (visites.has(depart)) return false;
+    visites.add(depart);
+    return (adjacence[depart] || []).some(suivant => cheminExiste(suivant, arrivee, visites));
+  }
+  for (const f of flux) {
+    if (cheminExiste(f.cible, f.source, new Set())) {
+      avertissements.push(`Ligne ${f.ligne} : cycle détecté (${f.source} → ${f.cible} → … → ${f.source}) — ce flux n'est pas tracé, un diagramme de Sankey ne peut pas contenir de cycle.`);
+    } else {
+      (adjacence[f.source] = adjacence[f.source] || []).push(f.cible);
+      fluxValides.push(f);
+    }
+  }
+
+  // --- Passe 3 : contrôles de cohérence sur les flux valides ---
+  const totaux = {}; // nom -> { entrant, sortant }
+  const noeudsUtilises = new Set();
+  for (const f of fluxValides) {
+    noeudsUtilises.add(f.source);
+    noeudsUtilises.add(f.cible);
+    const tS = totaux[f.source] = totaux[f.source] || { entrant: 0, sortant: 0 };
+    const tC = totaux[f.cible] = totaux[f.cible] || { entrant: 0, sortant: 0 };
+    tS.sortant += f.valeur;
+    tC.entrant += f.valeur;
+  }
+  // Déséquilibre des nœuds intermédiaires (entrant ≠ sortant)
+  for (const [nom, t] of Object.entries(totaux)) {
+    if (t.entrant > 0 && t.sortant > 0 && Math.abs(t.entrant - t.sortant) > 1e-9) {
+      avertissements.push(`Déséquilibre — ${nom} : ${formaterNombre(t.entrant, etat.params)} entrant / ${formaterNombre(t.sortant, etat.params)} sortant, écart de ${formaterNombre(Math.abs(t.entrant - t.sortant), etat.params)}.`);
+    }
+  }
+  // Nœud déclaré en options mais absent de tout flux
+  for (const nom of Object.keys(options)) {
+    if (!noeudsUtilises.has(nom)) {
+      avertissements.push(`Nœud isolé — « ${nom} » a une option (couleur ou position) mais n'apparaît dans aucun flux.`);
+    }
+  }
+
+  return { flux: fluxValides, options, erreurs, avertissements, totaux, noeudsUtilises };
+}
+</script>
+
+<script>
+'use strict';
+/* ============================================================
+   DESSIN DU DIAGRAMME
+   ============================================================ */
+
+// Correspondance entre le réglage « Alignement » et les fonctions de d3-sankey
+const ALIGNEMENTS = {
+  justify: () => d3.sankeyJustify,
+  left:    () => d3.sankeyLeft,
+  right:   () => d3.sankeyRight,
+  center:  () => d3.sankeyCenter
+};
+
+// Générateur de chemin de lien en mode HORIZONTAL, avec courbure réglable
+// (d3-sankey impose une courbure fixe de 0,5 : on écrit la nôtre)
+function cheminLienHorizontal(lien, courbure) {
+  const x0 = lien.source.x1, x1 = lien.target.x0;
+  const y0 = lien.y0, y1 = lien.y1;
+  // Les deux points de contrôle avancent vers le milieu selon la courbure
+  const xc1 = x0 + (x1 - x0) * courbure;
+  const xc2 = x1 - (x1 - x0) * courbure;
+  return `M${x0},${y0}C${xc1},${y0} ${xc2},${y1} ${x1},${y1}`;
+}
+
+// Générateur de chemin de lien en mode VERTICAL (le flux descend de haut en bas)
+// En vertical, l'axe du flux est y (node.x*) et l'axe transversal est x (node.y*)
+function cheminLienVertical(lien, courbure) {
+  const x0 = lien.y0, x1 = lien.y1;              // positions transversales
+  const y0 = lien.source.x1, y1 = lien.target.x0; // positions le long du flux
+  const yc1 = y0 + (y1 - y0) * courbure;
+  const yc2 = y1 - (y1 - y0) * courbure;
+  return `M${x0},${y0}C${x0},${yc1} ${x1},${yc2} ${x1},${y1}`;
+}
+
+// Couleur d'un nœud : couleur imposée par « :Nom #hex », sinon palette automatique
+function couleurNoeud(nom, index, options) {
+  if (options[nom] && options[nom].couleur) return options[nom].couleur;
+  return etat.palette[index % etat.palette.length];
+}
+
+// Couleur d'un lien : marqueurs << / >> prioritaires, sinon règle globale
+function couleurLien(lien, options, p) {
+  const optSource = options[lien.source.name] || {};
+  const optCible = options[lien.target.name] || {};
+  if (optCible.entrant) return lien.target.color;   // << : entrants héritent du nœud
+  if (optSource.sortant) return lien.source.color;  // >> : sortants héritent du nœud
+  switch (p.regleCouleurLiens) {
+    case 'cible': return lien.target.color;
+    case 'fixe':  return p.couleurLienFixe;
+    case 'gris':  return '#9ca3af';
+    default:      return lien.source.color;         // « source » par défaut
+  }
+}
+
+/* Redessine entièrement le diagramme à partir de l'état courant.
+   Appelée après chaque frappe (avec délai) et chaque changement de réglage. */
+function dessiner() {
+  const p = etat.params;
+  const svg = d3.select('#diagramme');
+  const resultat = analyserTexte(etat.texte);
+
+  afficherMessages(resultat);
+  majBarreEtat(resultat);
+
+  // Réinitialise complètement le SVG
+  svg.selectAll('*').remove();
+  svg.attr('width', p.largeur)
+     .attr('height', p.hauteur)
+     // viewBox = système de coordonnées interne. Sans lui, un diagramme plus large
+     // que la fenêtre serait ROGNÉ ; avec lui, il est réduit proportionnellement.
+     .attr('viewBox', `0 0 ${p.largeur} ${p.hauteur}`)
+     .attr('preserveAspectRatio', 'xMidYMid meet')
+     .attr('font-family', POLICE_SVG);
+
+  // Fond du diagramme (visible sauf si l'option transparent est cochée)
+  if (!p.fondTransparent) {
+    svg.append('rect')
+      .attr('width', p.largeur).attr('height', p.hauteur)
+      .attr('fill', p.couleurFond);
+  }
+  // Damier gris/blanc à l'écran pour rendre la transparence visible (non exporté)
+  $('zone-diagramme').classList.toggle('damier', !!p.fondTransparent);
+
+  // Espace réservé en haut si un titre ou sous-titre est renseigné
+  let decalageTitre = 0;
+  if (p.titre) decalageTitre += p.tailleTitre + 8;
+  if (p.sousTitre) decalageTitre += p.tailleSousTitre + 6;
+  // Espace réservé en bas si une mention de source est renseignée
+  const decalageBas = p.note ? p.tailleNote + 10 : 0;
+
+  // Groupe racine sur lequel s'appliquent zoom et recadrage
+  const gVue = svg.append('g').attr('class', 'vue');
+
+  // Zone vide : message d'invite, aucune erreur
+  if (resultat.flux.length === 0) {
+    etat.graphe = null;
+    if (etat.texte.trim() === '') {
+      gVue.append('text')
+        .attr('x', p.largeur / 2).attr('y', p.hauteur / 2)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 16).attr('fill', '#9ca3af')
+        .text('Saisissez vos flux pour commencer');
+    }
+    dessinerTitres(svg, p);
+    activerZoom(svg, gVue);
+    return;
+  }
+
+  /* ----- Construction des nœuds et des liens pour d3-sankey -----
+     ⚠ NE PAS MODIFIER : d3-sankey attend des objets précis et réindexe tout */
+  const noms = [];
+  const indexNoeud = {};
+  for (const f of resultat.flux) {
+    for (const nom of [f.source, f.cible]) {
+      if (!(nom in indexNoeud)) { indexNoeud[nom] = noms.length; noms.push(nom); }
+    }
+  }
+  const noeuds = noms.map((nom, i) => ({
+    name: nom,
+    color: couleurNoeud(nom, i, resultat.options)
+  }));
+  const liens = resultat.flux.map(f => ({
+    source: indexNoeud[f.source],
+    target: indexNoeud[f.cible],
+    value: f.valeur
+  }));
+
+  // Zone utile du tracé : [x0, y0] en haut à gauche, [x1, y1] en bas à droite
+  // En mode vertical, l'axe du flux (x pour d3) devient la hauteur à l'écran
+  const X0 = p.margeGauche;
+  const X1 = p.largeur - p.margeDroite;
+  const Y0 = p.margeHaut + decalageTitre;
+  const Y1 = p.hauteur - p.margeBas - decalageBas;
+  const extent = p.sens === 'vertical'
+    ? [[Y0, X0], [Y1, X1]]   // axe du flux = hauteur, axe transversal = largeur
+    : [[X0, Y0], [X1, Y1]];
+
+  const generateur = d3.sankey()
+    .nodeWidth(p.epaisseurNoeud)
+    .nodePadding(p.espacementNoeuds)
+    .nodeAlign(ALIGNEMENTS[p.alignement] ? ALIGNEMENTS[p.alignement]() : d3.sankeyJustify)
+    .iterations(p.iterations)
+    .extent(extent);
+
+  let graphe;
+  try {
+    graphe = generateur({ nodes: noeuds, links: liens });
+  } catch (e) {
+    // Sécurité : un souci de mise en page ne doit jamais produire une page blanche
+    afficherMessages({ ...resultat, erreurs: [...resultat.erreurs, { ligne: 0, contenu: '', cause: 'impossible de calculer la mise en page (' + e.message + ').' }] });
+    return;
+  }
+
+  /* ----- Réapplication des positions manuelles -----
+     Priorité : positions déplacées à la souris > positions du texte */
+  const positionsEffectives = { ...etat.positionsTexte, ...etat.positionsManuelles };
+  appliquerPositionsManuelles(graphe, positionsEffectives, extent, p);
+  if (Object.keys(positionsEffectives).length) generateur.update(graphe);
+
+  etat.graphe = graphe;
+  etat.generateur = generateur;
+
+  const vertical = p.sens === 'vertical';
+  const cheminLien = l => vertical ? cheminLienVertical(l, p.courbure) : cheminLienHorizontal(l, p.courbure);
+
+  // ----- Dessin des liens (courbes épaisses), sous les nœuds -----
+  const gLiens = gVue.append('g').attr('class', 'liens');
+  if (p.contourLiens) {
+    // Liseré sombre : même courbe, un peu plus épaisse, dessinée dessous
+    gLiens.selectAll('path.contour').data(graphe.links).join('path')
+      .attr('class', 'contour')
+      .attr('d', cheminLien)
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(15, 23, 42, 0.30)')
+      .attr('stroke-width', l => Math.max(1, l.width) + 2.5);
+  }
+  const selectionLiens = gLiens.selectAll('path.lien').data(graphe.links).join('path')
+    .attr('class', 'lien')
+    .attr('d', cheminLien)
+    .attr('fill', 'none')
+    .attr('stroke', l => couleurLien(l, resultat.options, p))
+    .attr('stroke-width', l => Math.max(1, l.width))
+    .attr('stroke-opacity', p.opaciteLiens)
+    .style('cursor', 'default');
+
+  // ----- Dessin des nœuds (rectangles) -----
+  const gNoeuds = gVue.append('g').attr('class', 'noeuds');
+  const selectionNoeuds = gNoeuds.selectAll('rect.noeud').data(graphe.nodes).join('rect')
+    .attr('class', 'noeud')
+    .attr('x', d => vertical ? d.y0 : d.x0)
+    .attr('y', d => vertical ? d.x0 : d.y0)
+    .attr('width', d => vertical ? d.y1 - d.y0 : d.x1 - d.x0)
+    .attr('height', d => vertical ? d.x1 - d.x0 : d.y1 - d.y0)
+    .attr('rx', 2)
+    .attr('fill', d => d.color);
+
+  // ----- Étiquettes (nom + valeur) -----
+  const gEtiquettes = gVue.append('g').attr('class', 'etiquettes');
+  if (p.afficherEtiquettes) {
+    const selectionTextes = gEtiquettes.selectAll('text').data(graphe.nodes).join('text')
+      .attr('font-size', p.taillePolice)
+      .attr('font-weight', p.graisse)
+      .attr('fill', p.couleurTexte)
+      .style('cursor', 'default');
+    placerEtiquettes(selectionTextes, p, vertical, X0, X1);
+  }
+
+  // ----- Titre et sous-titre dans le SVG -----
+  dessinerTitres(svg, p);
+
+  // ----- Interactions : survol, déplacement, double-clic, zoom -----
+  activerSurvols(selectionLiens, selectionNoeuds, p, resultat);
+  activerDeplacement(selectionNoeuds, selectionLiens, gLiens, cheminLien, p, vertical, extent);
+  activerDoubleClic(selectionNoeuds);
+  activerZoom(svg, gVue);
+}
+
+// Place UNE étiquette : utilisée au dessin initial ET pendant le déplacement
+function positionnerEtiquette(t, d, p, vertical, X0, X1) {
+  const milieu = (X0 + X1) / 2;
+  t.selectAll('tspan').remove();
+  t.text(null);
+
+  const valeurTexte = formaterValeur(d.value, p) +
+    (p.afficherPourcent ? ' (' + formaterPourcent(d.value / (totalEntrantGlobal() || 1)) + ')' : '');
+
+  // En vertical, un nœud assez large accueille son étiquette à l'intérieur
+  const dedansAuto = vertical && (d.y1 - d.y0) >= 90;
+  const dedans = p.positionValeurs === 'dedans' || dedansAuto;
+
+  if (dedans) {
+    // Centrée dans le nœud, en blanc avec un léger liséré sombre (lisible sur toute couleur)
+    t.attr('x', vertical ? (d.y0 + d.y1) / 2 : (d.x0 + d.x1) / 2)
+     .attr('y', vertical ? (d.x0 + d.x1) / 2 : (d.y0 + d.y1) / 2)
+     .attr('text-anchor', 'middle')
+     .attr('dominant-baseline', 'middle')
+     .attr('fill', '#ffffff')
+     .attr('paint-order', 'stroke')
+     .attr('stroke', 'rgba(0, 0, 0, 0.35)')
+     .attr('stroke-width', 3);
+  } else if (vertical) {
+    // Nœud vertical trop étroit : étiquette à droite
+    t.attr('x', d.y1 + 6)
+     .attr('y', (d.x0 + d.x1) / 2)
+     .attr('text-anchor', 'start')
+     .attr('dominant-baseline', 'middle')
+     .attr('fill', p.couleurTexte)
+     .attr('stroke', null).attr('stroke-width', null);
+  } else {
+    // En horizontal : à droite des nœuds de gauche, à gauche des nœuds de droite
+    const aDroite = (d.x0 + d.x1) / 2 <= milieu;
+    t.attr('x', aDroite ? d.x1 + 6 : d.x0 - 6)
+     .attr('y', (d.y0 + d.y1) / 2)
+     .attr('text-anchor', aDroite ? 'start' : 'end')
+     .attr('dominant-baseline', 'middle')
+     .attr('fill', p.couleurTexte)
+     .attr('stroke', null).attr('stroke-width', null);
+  }
+
+  if (!p.afficherValeurs) { t.text(d.name); return; }
+
+  if (p.positionValeurs === 'dedans') {
+    t.text(valeurTexte); // valeur seule dans le nœud
+  } else if (p.positionValeurs === 'apres') {
+    t.text(`${d.name} — ${valeurTexte}`);
+  } else {
+    // Valeur sur une deuxième ligne, plus discrète
+    t.append('tspan').text(d.name);
+    t.append('tspan')
+      .attr('x', t.attr('x'))
+      .attr('dy', p.taillePolice + 2)
+      .attr('font-weight', '400')
+      .attr('opacity', 0.75)
+      .text(valeurTexte);
+  }
+}
+
+// Place le texte de toutes les étiquettes
+function placerEtiquettes(textes, p, vertical, X0, X1) {
+  textes.each(function (d) {
+    positionnerEtiquette(d3.select(this), d, p, vertical, X0, X1);
+  });
+}
+
+// Total des flux entrants au système (sources de premier niveau) — pour les %
+function totalEntrantGlobal() {
+  if (!etat.graphe) return 0;
+  // Une source de premier niveau n'a AUCUN lien entrant (targetLinks vide)
+  return etat.graphe.links
+    .filter(l => l.source.targetLinks.length === 0)
+    .reduce((s, l) => s + l.value, 0);
+}
+
+// Titre et sous-titre affichés dans le haut du SVG
+function dessinerTitres(svg, p) {
+  if (p.titre) {
+    svg.append('text')
+      .attr('x', p.largeur / 2).attr('y', p.margeHaut / 2 + p.tailleTitre / 2 + 4)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', p.tailleTitre).attr('font-weight', '700')
+      .attr('fill', p.couleurTexte)
+      .text(p.titre);
+  }
+  if (p.sousTitre) {
+    const y = p.margeHaut / 2 + (p.titre ? p.tailleTitre + p.tailleSousTitre / 2 + 6 : p.tailleSousTitre / 2 + 4);
+    svg.append('text')
+      .attr('x', p.largeur / 2).attr('y', y)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', p.tailleSousTitre).attr('font-weight', '400')
+      .attr('fill', p.couleurTexte).attr('opacity', 0.75)
+      .text(p.sousTitre);
+  }
+  // Mention de source, alignée à gauche tout en bas du dessin
+  if (p.note) {
+    svg.append('text')
+      .attr('x', p.margeGauche)
+      .attr('y', p.hauteur - p.margeBas / 2 - 2)
+      .attr('text-anchor', 'start')
+      .attr('font-size', p.tailleNote).attr('font-weight', '400')
+      .attr('fill', p.couleurTexte).attr('opacity', 0.65)
+      .text(p.note);
+  }
+}
+
+/* Réapplique les positions manuelles après la mise en page automatique.
+   Les positions sont relatives (0 à 1) à la zone utile, donc elles survivent
+   aux changements de dimensions ou de marges. */
+function appliquerPositionsManuelles(graphe, positions, extent, p) {
+  const [X0, X1] = [extent[0][0], extent[1][0]];
+  const [Y0, Y1] = [extent[0][1], extent[1][1]];
+  for (const noeud of graphe.nodes) {
+    const pos = positions[noeud.name];
+    if (!pos) continue;
+    const largeurNoeud = noeud.x1 - noeud.x0;
+    const hauteurNoeud = noeud.y1 - noeud.y0;
+    if (pos.x !== null && pos.x !== undefined) {
+      noeud.x0 = X0 + pos.x * Math.max(1, (X1 - X0) - largeurNoeud);
+      noeud.x1 = noeud.x0 + largeurNoeud;
+    }
+    if (pos.y !== null && pos.y !== undefined) {
+      noeud.y0 = Y0 + pos.y * Math.max(1, (Y1 - Y0) - hauteurNoeud);
+      noeud.y1 = noeud.y0 + hauteurNoeud;
+    }
+  }
+}
+
+/* ============================================================
+   AFFICHAGE DES MESSAGES ET DE LA BARRE D'ÉTAT
+   ============================================================ */
+function afficherMessages(resultat) {
+  const zone = $('messages');
+  zone.innerHTML = '';
+  for (const e of resultat.erreurs) {
+    const div = document.createElement('div');
+    div.className = 'message erreur';
+    div.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+    div.innerHTML += e.ligne > 0
+      ? `Ligne ${e.ligne} : « ${echapperHtml(e.contenu)} » — ${e.cause}`
+      : e.cause;
+    zone.appendChild(div);
+  }
+  for (const a of resultat.avertissements) {
+    const div = document.createElement('div');
+    div.className = 'message alerte';
+    div.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>' + echapperHtml(a);
+    zone.appendChild(div);
+  }
+}
+
+// Sécurise le contenu utilisateur avant insertion dans du HTML
+function echapperHtml(texte) {
+  return texte.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Met à jour la barre d'état : compteurs et totaux, au format français
+function majBarreEtat(resultat) {
+  const p = etat.params;
+  const nbNoeuds = resultat.noeudsUtilises ? resultat.noeudsUtilises.size : 0;
+  $('stat-noeuds').textContent = nbNoeuds;
+  $('stat-flux').textContent = resultat.flux.length;
+
+  // Total entrant : flux partant de sources pures ; total sortant : flux vers des puits
+  let entrant = 0, sortant = 0;
+  for (const f of resultat.flux) {
+    const tS = resultat.totaux[f.source];
+    const tC = resultat.totaux[f.cible];
+    if (tS && tS.entrant === 0) entrant += f.valeur;
+    if (tC && tC.sortant === 0) sortant += f.valeur;
+  }
+  $('stat-entrant').textContent = formaterValeur(entrant, p);
+  $('stat-sortant').textContent = formaterValeur(sortant, p);
+
+  const nb = resultat.avertissements.length;
+  $('stat-alertes').innerHTML = nb
+    ? `<span class="alerte"><i class="fa-solid fa-triangle-exclamation"></i> ${nb} avertissement${nb > 1 ? 's' : ''}</span>`
+    : '';
+}
+</script>
+
+<script>
+'use strict';
+/* ============================================================
+   INTERACTIONS : SURVOL, DÉPLACEMENT, DOUBLE-CLIC, ZOOM
+   ============================================================ */
+
+// Affiche l'infobulle près du curseur
+function montrerInfobulle(html, evenement) {
+  const bulle = $('infobulle');
+  bulle.innerHTML = html;
+  bulle.style.display = 'block';
+  // Décale légèrement pour ne pas passer sous le curseur
+  bulle.style.left = Math.min(evenement.clientX + 14, window.innerWidth - bulle.offsetWidth - 10) + 'px';
+  bulle.style.top = Math.min(evenement.clientY + 14, window.innerHeight - bulle.offsetHeight - 10) + 'px';
+}
+function cacherInfobulle() { $('infobulle').style.display = 'none'; }
+
+// Survol des liens et des nœuds : mise en évidence + infobulles
+function activerSurvols(liens, noeuds, p, resultat) {
+  // --- Survol d'un lien : opacité renforcée + infobulle source → cible ---
+  liens
+    .on('mouseenter', function (evenement, l) {
+      liens.attr('stroke-opacity', autre => autre === l ? p.opaciteSurvol : p.opaciteLiens * 0.4);
+      const part = l.source.value ? l.value / l.source.value : 0;
+      montrerInfobulle(
+        `<strong>${echapperHtml(l.source.name)} → ${echapperHtml(l.target.name)}</strong><br/>` +
+        `${formaterValeur(l.value, p)}<br/>` +
+        `<span style="opacity:.8">${formaterPourcent(part)} du flux sortant de « ${echapperHtml(l.source.name)} »</span>`,
+        evenement);
+    })
+    .on('mousemove', e => { const b = $('infobulle'); if (b.style.display === 'block') montrerInfobulle(b.innerHTML, e); })
+    .on('mouseleave', function () {
+      liens.attr('stroke-opacity', p.opaciteLiens);
+      cacherInfobulle();
+    });
+
+  // --- Survol d'un nœud : lui et ses liens sont mis en avant, le reste s'estompe ---
+  noeuds
+    .on('mouseenter', function (evenement, n) {
+      noeuds.attr('opacity', autre => autre === n ? 1 : 0.35);
+      d3.select(this).attr('stroke', '#111827').attr('stroke-width', 1.5);
+      liens.attr('stroke-opacity', l =>
+        (l.source === n || l.target === n) ? p.opaciteSurvol : p.opaciteLiens * 0.25);
+      const t = resultat.totaux[n.name] || { entrant: 0, sortant: 0 };
+      montrerInfobulle(
+        `<strong>${echapperHtml(n.name)}</strong><br/>` +
+        `Entrant : ${formaterValeur(t.entrant, p)}<br/>` +
+        `Sortant : ${formaterValeur(t.sortant, p)}`,
+        evenement);
+    })
+    .on('mousemove', e => { const b = $('infobulle'); if (b.style.display === 'block') montrerInfobulle(b.innerHTML, e); })
+    .on('mouseleave', function () {
+      noeuds.attr('opacity', 1).attr('stroke', null).attr('stroke-width', null);
+      liens.attr('stroke-opacity', p.opaciteLiens);
+      cacherInfobulle();
+    });
+}
+
+/* Déplacement des nœuds à la souris (vertical ET horizontal).
+   POINT CRITIQUE : pendant le glissement on n'appelle QUE sankey.update()
+   pour recalculer les courbes — jamais la mise en page complète, qui
+   écraserait les positions manuelles. La position est mémorisée au relâchement. */
+function activerDeplacement(noeuds, liens, gLiens, cheminLien, p, vertical, extent) {
+  const [X0, X1] = [extent[0][0], extent[1][0]];
+  const [Y0, Y1] = [extent[0][1], extent[1][1]];
+
+  const glisser = d3.drag()
+    .on('start', function (evenement) {
+      // Empêche le zoom/pan de capter ce glissement
+      evenement.sourceEvent.stopPropagation();
+      d3.select(this).attr('stroke', '#111827').attr('stroke-width', 1.5);
+    })
+    .on('drag', function (evenement, d) {
+      // En vertical, les axes écran et les axes du graphe sont croisés
+      const deplX = vertical ? evenement.dy : evenement.dx; // le long du flux
+      const deplY = vertical ? evenement.dx : evenement.dy; // transversal
+
+      const largeurNoeud = d.x1 - d.x0;
+      const hauteurNoeud = d.y1 - d.y0;
+      // On borne le déplacement à la zone utile
+      d.x0 = Math.min(Math.max(X0, d.x0 + deplX), X1 - largeurNoeud);
+      d.x1 = d.x0 + largeurNoeud;
+      d.y0 = Math.min(Math.max(Y0, d.y0 + deplY), Y1 - hauteurNoeud);
+      d.y1 = d.y0 + hauteurNoeud;
+
+      // Recalcule UNIQUEMENT les courbes des liens (pas la mise en page)
+      etat.generateur.update(etat.graphe);
+
+      // Met à jour l'affichage : rectangle, liens et éventuels liserés
+      d3.select(this)
+        .attr('x', vertical ? d.y0 : d.x0)
+        .attr('y', vertical ? d.x0 : d.y0);
+      liens.attr('d', cheminLien);
+      gLiens.selectAll('path.contour').attr('d', cheminLien);
+      // L'étiquette suit le nœud (même logique de placement qu'au dessin)
+      const etiquettes = d3.select('#diagramme').select('.etiquettes');
+      if (!etiquettes.empty()) {
+        etiquettes.selectAll('text').filter(t => t === d).each(function (td) {
+          positionnerEtiquette(d3.select(this), td, p, vertical, X0, X1);
+        });
+      }
+    })
+    .on('end', function (evenement, d) {
+      d3.select(this).attr('stroke', null).attr('stroke-width', null);
+      // Enregistre la position RELATIVE (0 à 1) : elle survivra aux redessins
+      const largeurNoeud = d.x1 - d.x0;
+      const hauteurNoeud = d.y1 - d.y0;
+      etat.positionsManuelles[d.name] = {
+        x: (d.x0 - X0) / Math.max(1, (X1 - X0) - largeurNoeud),
+        y: (d.y0 - Y0) / Math.max(1, (Y1 - Y0) - hauteurNoeud)
+      };
+      sauvegarderEtat();
+    });
+
+  noeuds.call(glisser);
+}
+
+// Double-clic sur un nœud : fenêtre pour changer libellé et couleur
+function activerDoubleClic(noeuds) {
+  noeuds.on('dblclick', function (evenement, d) {
+    evenement.stopPropagation();
+    const fenetre = $('editeur-noeud');
+    $('edit-libelle').value = d.name;
+    $('edit-couleur').value = d.color.length === 7 ? d.color : '#1e40af';
+    fenetre.style.display = 'block';
+    // Positionne la fenêtre près du clic, sans sortir de l'écran
+    fenetre.style.left = Math.min(evenement.clientX, window.innerWidth - 280) + 'px';
+    fenetre.style.top = Math.min(evenement.clientY, window.innerHeight - 220) + 'px';
+    $('edit-libelle').focus();
+    $('editeur-noeud').dataset.nomOriginal = d.name;
+  });
+}
+
+// Renomme un nœud partout dans le texte source (flux ET lignes d'options)
+function renommerNoeud(ancien, nouveau, couleur) {
+  const lignes = etat.texte.split('\n').map(ligneBrute => {
+    const ligne = ligneBrute.trim();
+    if (!ligne || ligne.startsWith('//') || ligne.startsWith("'")) return ligneBrute;
+
+    if (ligne.startsWith(':')) {
+      // Ligne d'options : remplace le nom s'il correspond exactement
+      const corps = ligne.slice(1);
+      const repere = /(#[0-9a-fA-F]{3,8}\b|<<|>>|\bx\s*=|\by\s*=)/.exec(corps);
+      const nom = (repere ? corps.slice(0, repere.index) : corps).trim();
+      const reste = repere ? corps.slice(repere.index) : '';
+      if (nom !== ancien) return ligneBrute;
+      const indent = ligneBrute.slice(0, ligneBrute.indexOf(':'));
+      let nouvelleReste = reste;
+      if (couleur) {
+        // Remplace la couleur existante ou l'ajoute
+        nouvelleReste = /#[0-9a-fA-F]{3,8}\b/.test(nouvelleReste)
+          ? nouvelleReste.replace(/#[0-9a-fA-F]{3,8}\b/, couleur)
+          : couleur + ' ' + nouvelleReste;
+      }
+      return indent + ':' + nouveau + (nouvelleReste ? ' ' + nouvelleReste.trim() : '');
+    }
+
+    // Ligne de flux : remplace source et/ou cible si correspondance exacte
+    const mFlux = /^(.+?)\[\s*([^\]]*?)\s*\]\s*(.*)$/.exec(ligne);
+    if (!mFlux) return ligneBrute;
+    const source = mFlux[1].trim() === ancien ? nouveau : mFlux[1].trim();
+    const cible = mFlux[3].trim() === ancien ? nouveau : mFlux[3].trim();
+    return `${source} [${mFlux[2]}] ${cible}`;
+  });
+  etat.texte = lignes.join('\n');
+
+  // Si aucune ligne d'options n'existait et qu'une couleur est demandée, on l'ajoute
+  if (couleur && !new RegExp('^\\s*:' + echapperRegex(nouveau) + '\\b', 'm').test(etat.texte)) {
+    etat.texte += `\n:${nouveau} ${couleur}`;
+  }
+
+  // Transfère la position manuelle éventuelle vers le nouveau nom
+  if (ancien !== nouveau && etat.positionsManuelles[ancien]) {
+    etat.positionsManuelles[nouveau] = etat.positionsManuelles[ancien];
+    delete etat.positionsManuelles[ancien];
+  }
+
+  $('zone-texte').value = etat.texte;
+  sauvegarderEtat();
+  dessiner();
+}
+
+// Zoom (molette, 50 % à 300 %) et recadrage (glisser sur le fond)
+let comportementZoom = null; // conservé pour le bouton « Ajuster à la fenêtre »
+function activerZoom(svg, gVue) {
+  comportementZoom = d3.zoom()
+    .scaleExtent([0.5, 3])
+    .on('zoom', evenement => gVue.attr('transform', evenement.transform));
+  svg.call(comportementZoom)
+    .on('dblclick.zoom', null); // le double-clic sert à éditer les nœuds, pas à zoomer
+  // Après un redessin, le groupe .vue est recréé : on réapplique le zoom courant
+  gVue.attr('transform', d3.zoomTransform(svg.node()));
+}
+
+/* Recadre le diagramme pour qu'il tienne entièrement dans le cadre du dessin.
+   ⚠ On raisonne en unités du SVG (rendues fiables par le viewBox), et non en
+   pixels d'écran : le résultat est le même quelle que soit la taille de la fenêtre. */
+function ajusterALaFenetre() {
+  const svg = d3.select('#diagramme');
+  const gVue = svg.select('.vue');
+  if (gVue.empty() || !etat.graphe) return;
+  const p = etat.params;
+  // getBBox() renvoie l'encombrement du contenu SANS le zoom courant : c'est
+  // exactement ce qu'il faut pour recalculer le zoom depuis zéro.
+  const cadre = gVue.node().getBBox();
+  if (!cadre.width || !cadre.height) return;
+  const marge = 24;
+  const echelle = Math.min(
+    (p.largeur - 2 * marge) / cadre.width,
+    (p.hauteur - 2 * marge) / cadre.height,
+    3
+  );
+  const tx = (p.largeur - cadre.width * echelle) / 2 - cadre.x * echelle;
+  const ty = (p.hauteur - cadre.height * echelle) / 2 - cadre.y * echelle;
+  svg.transition().duration(350)
+    .call(comportementZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(echelle));
+}
+</script>
+
+<script>
+'use strict';
+/* ============================================================
+   PANNEAU « MISE EN FORME » — généré à partir de cette liste.
+   Pour ajouter ou retirer un réglage, modifier uniquement ici
+   ET PARAMS_DEFAUT en haut du fichier.
+   ============================================================ */
+const CONTROLS_FORME = [
+  { groupe: 'Dimensions et disposition' },
+  { id: 'format',           label: 'Format prédéfini',      type: 'formats',
+    aide: 'Règle d\'un coup la largeur et la hauteur pour coller à un support (diapositive, page A4, publication). « Libre » laisse les deux curseurs à votre main.' },
+  { id: 'largeur',          label: 'Largeur du diagramme',  type: 'curseur', min: 600, max: 2400, pas: 10, unite: ' px' },
+  { id: 'hauteur',          label: 'Hauteur du diagramme',  type: 'curseur', min: 400, max: 1600, pas: 10, unite: ' px' },
+  { id: 'marges',           label: 'Marges',                type: 'marges' },
+  { id: 'epaisseurNoeud',   label: 'Épaisseur des nœuds',   type: 'curseur', min: 4, max: 60, pas: 1, unite: ' px' },
+  { id: 'espacementNoeuds', label: 'Espacement vertical entre nœuds', type: 'curseur', min: 0, max: 60, pas: 1, unite: ' px' },
+  { id: 'alignement',       label: 'Alignement des nœuds',  type: 'menu',
+    options: [['justify', 'Justifié'], ['left', 'Gauche'], ['right', 'Droite'], ['center', 'Centré']],
+    aide: 'Justifié : les nœuds sont répartis sur toute la largeur. Gauche/Droite : les nœuds sans parent/enfant se collent d\'un côté. Centré : les nœuds isolés se placent au milieu.' },
+  { id: 'iterations',       label: 'Itérations de l\u2019algorithme', type: 'curseur', min: 0, max: 32, pas: 1,
+    aide: 'Nombre de passes d\'optimisation du placement vertical. Plus il y en a, plus le dessin est ordonné (et lent). 0 = placement brut.' },
+  { id: 'sens',             label: 'Sens du diagramme',     type: 'menu',
+    options: [['horizontal', 'Horizontal'], ['vertical', 'Vertical']] },
+
+  { groupe: 'Liens' },
+  { id: 'courbure',      label: 'Courbure des liens',   type: 'curseur', min: 0, max: 1, pas: 0.05,
+    aide: '0 = liens presque droits, 1 = virage très arrondi. La valeur classique est 0,5.' },
+  { id: 'opaciteLiens',  label: 'Opacité des liens',    type: 'curseur', min: 0.1, max: 1, pas: 0.05 },
+  { id: 'opaciteSurvol', label: 'Opacité au survol',    type: 'curseur', min: 0.1, max: 1, pas: 0.05 },
+  { id: 'contourLiens',  label: 'Contour des liens',    type: 'case' },
+
+  { groupe: 'Étiquettes et nombres' },
+  { id: 'afficherEtiquettes', label: 'Afficher les étiquettes', type: 'case' },
+  { id: 'afficherValeurs',    label: 'Afficher les valeurs',    type: 'case' },
+  { id: 'positionValeurs',    label: 'Position des valeurs',    type: 'menu',
+    options: [['apres', 'Après le nom'], ['ligne2', 'Sur une 2e ligne'], ['dedans', 'Dans le nœud']] },
+  { id: 'taillePolice',  label: 'Taille de police',   type: 'curseur', min: 8, max: 28, pas: 1, unite: ' px' },
+  { id: 'graisse',       label: 'Graisse de police',  type: 'menu',
+    options: [['400', 'Normal'], ['600', 'Semi-gras'], ['700', 'Gras']] },
+  { id: 'couleurTexte',  label: 'Couleur du texte',   type: 'couleur' },
+  { id: 'prefixe',       label: 'Préfixe des valeurs', type: 'texte' },
+  { id: 'suffixe',       label: 'Suffixe / unité',     type: 'texte' },
+  { id: 'sepMilliers',   label: 'Séparateur de milliers', type: 'menu',
+    options: [['espace', 'Espace'], ['point', 'Point'], ['virgule', 'Virgule'], ['aucun', 'Aucun']] },
+  { id: 'sepDecimal',    label: 'Séparateur décimal', type: 'menu',
+    options: [['virgule', 'Virgule'], ['point', 'Point']] },
+  { id: 'decimales',     label: 'Décimales',          type: 'curseur', min: 0, max: 3, pas: 1 },
+  { id: 'afficherPourcent', label: 'Afficher le % du total', type: 'case' },
+
+  { groupe: 'Fond et titre' },
+  { id: 'fondTransparent', label: 'Fond transparent (SVG et PNG)',  type: 'case',
+    aide: 'Coché : aucun fond n\'est dessiné, le PNG et le SVG exportés se posent directement sur la couleur de votre diapositive ou de votre document. Le damier gris à l\'écran signale simplement le vide, il n\'est pas exporté.' },
+  { id: 'couleurFond',     label: 'Couleur de fond',   type: 'couleur' },
+  { id: 'titre',           label: 'Titre du diagramme', type: 'texte' },
+  { id: 'sousTitre',       label: 'Sous-titre',         type: 'texte' },
+  { id: 'tailleTitre',     label: 'Taille du titre',    type: 'curseur', min: 10, max: 40, pas: 1, unite: ' px' },
+  { id: 'tailleSousTitre', label: 'Taille du sous-titre', type: 'curseur', min: 8, max: 24, pas: 1, unite: ' px' },
+  { id: 'note',            label: 'Mention de source (bas de dessin)', type: 'texte',
+    aide: 'Petite ligne en bas à gauche, par exemple « Source : SINOE 2025 — traitement NCPA ». L\'espace nécessaire est réservé automatiquement.' },
+  { id: 'tailleNote',      label: 'Taille de la mention', type: 'curseur', min: 7, max: 18, pas: 1, unite: ' px' }
+];
+
+// Libellés des valeurs de menu, pour afficher la valeur par défaut lisiblement
+function libelleDefaut(controle) {
+  const defaut = PARAMS_DEFAUT[controle.id];
+  if (controle.type === 'menu') {
+    const trouve = controle.options.find(o => o[0] === defaut);
+    return trouve ? trouve[1] : defaut;
+  }
+  if (controle.type === 'case') return defaut ? 'coché' : 'décoché';
+  if (controle.type === 'texte') return defaut === '' ? 'vide' : `« ${defaut} »`;
+  return String(defaut).replace('.', ',') + (controle.unite || '');
+}
+
+/* Construit les contrôles de l'onglet « Mise en forme » dans le HTML.
+   Chaque contrôle est relié à etat.params : l'effet est immédiat. */
+function construireOngletForme() {
+  const conteneur = $('onglet-forme');
+  conteneur.innerHTML = '';
+
+  for (const controle of CONTROLS_FORME) {
+    // Titre de groupe de réglages
+    if (controle.groupe) {
+      const h = document.createElement('div');
+      h.className = 'groupe-controles';
+      h.textContent = controle.groupe;
+      conteneur.appendChild(h);
+      continue;
+    }
+
+    const boite = document.createElement('div');
+    boite.className = 'controle' + (controle.type === 'case' ? ' case' : '');
+    boite.id = 'controle-' + controle.id;   // permet de cibler un contrôle depuis le code
+
+    // --- Cas particulier : menu des formats prédéfinis (règle largeur + hauteur) ---
+    if (controle.type === 'formats') {
+      boite.innerHTML = `<div class="etiquette"><span>${controle.label}</span>
+        <i class="fa-solid fa-circle-question icone-aide" title="${controle.aide}"></i></div>`;
+      const menu = document.createElement('select');
+      FORMATS.forEach((fmt, i) => {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = fmt.l ? `${fmt.nom} — ${fmt.l} × ${fmt.h}` : fmt.nom;
+        menu.appendChild(opt);
+      });
+      menu.addEventListener('change', () => {
+        const fmt = FORMATS[Number(menu.value)];
+        if (!fmt || !fmt.l) return;            // « Libre » : on ne touche à rien
+        appliquerDimensions(fmt.l, fmt.h);
+        menu.value = '0';                      // le menu revient sur « Libre »
+      });
+      boite.appendChild(menu);
+      conteneur.appendChild(boite);
+      continue;
+    }
+
+    // --- Cas particulier : les 4 champs de marges regroupés ---
+    if (controle.type === 'marges') {
+      boite.innerHTML = `<div class="etiquette">${controle.label}
+        <span class="defaut">(défaut : ${PARAMS_DEFAUT.margeHaut} / ${PARAMS_DEFAUT.margeBas} / ${PARAMS_DEFAUT.margeGauche} / ${PARAMS_DEFAUT.margeDroite})</span></div>
+        <div class="ligne-marges">
+          ${[['margeHaut', 'Haut'], ['margeBas', 'Bas'], ['margeGauche', 'Gauche'], ['margeDroite', 'Droite']]
+            .map(([id, nom]) => `<label style="font-size:12px">${nom}
+              <input type="number" min="0" max="400" data-param="${id}" value="${etat.params[id]}"/></label>`).join('')}
+        </div>`;
+      boite.querySelectorAll('input').forEach(champ => {
+        champ.addEventListener('input', () => {
+          etat.params[champ.dataset.param] = Math.max(0, parseFloat(champ.value) || 0);
+          sauvegarderEtat();
+          dessiner();
+        });
+      });
+      conteneur.appendChild(boite);
+      continue;
+    }
+
+    // --- Étiquette commune : nom + aide éventuelle + valeur courante + défaut ---
+    const etiquette = document.createElement('div');
+    etiquette.className = 'etiquette';
+    etiquette.innerHTML = `<span>${controle.label}</span>` +
+      (controle.aide ? ` <i class="fa-solid fa-circle-question icone-aide" title="${controle.aide}"></i>` : '') +
+      `<span class="defaut">(défaut : ${libelleDefaut(controle)})</span>` +
+      (controle.type === 'curseur' ? '<span class="valeur-courante"></span>' : '');
+    boite.appendChild(etiquette);
+
+    // --- Le contrôle lui-même, selon son type ---
+    let champ;
+    if (controle.type === 'curseur') {
+      champ = document.createElement('input');
+      champ.type = 'range';
+      champ.min = controle.min; champ.max = controle.max; champ.step = controle.pas;
+      champ.value = etat.params[controle.id];
+      const affichage = etiquette.querySelector('.valeur-courante');
+      const majAffichage = () => affichage.textContent = String(champ.value).replace('.', ',') + (controle.unite || '');
+      majAffichage();
+      champ.addEventListener('input', () => {
+        etat.params[controle.id] = parseFloat(champ.value);
+        majAffichage();
+        sauvegarderEtat();
+        dessiner();
+      });
+    } else if (controle.type === 'menu') {
+      champ = document.createElement('select');
+      for (const [val, nom] of controle.options) {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = nom;
+        champ.appendChild(opt);
+      }
+      champ.value = etat.params[controle.id];
+      champ.addEventListener('change', () => {
+        etat.params[controle.id] = champ.value;
+        sauvegarderEtat();
+        dessiner();
+      });
+    } else if (controle.type === 'case') {
+      champ = document.createElement('input');
+      champ.type = 'checkbox';
+      champ.checked = !!etat.params[controle.id];
+      champ.addEventListener('change', () => {
+        etat.params[controle.id] = champ.checked;
+        majControlesLies();      // neutralise « Couleur de fond » si besoin
+        sauvegarderEtat();
+        dessiner();
+      });
+      // Case à cocher devant son libellé
+      boite.classList.add('case');
+      champ.dataset.param = controle.id;
+      etiquette.prepend(champ);
+      conteneur.appendChild(boite);
+      continue;
+    } else if (controle.type === 'couleur') {
+      champ = document.createElement('input');
+      champ.type = 'color';
+      champ.value = etat.params[controle.id];
+      champ.addEventListener('input', () => {
+        etat.params[controle.id] = champ.value;
+        sauvegarderEtat();
+        dessiner();
+      });
+    } else { // champ texte libre (préfixe, suffixe, titre…)
+      champ = document.createElement('input');
+      champ.type = 'text';
+      champ.value = etat.params[controle.id];
+      champ.addEventListener('input', debounce(() => {
+        etat.params[controle.id] = champ.value;
+        sauvegarderEtat();
+        dessiner();
+      }, 400));
+    }
+    champ.dataset.param = controle.id;   // sert à retrouver le champ depuis le code
+    boite.appendChild(champ);
+    conteneur.appendChild(boite);
+  }
+
+  majControlesLies();
+
+  // Boutons liés aux positions des nœuds
+  const actions = document.createElement('div');
+  actions.className = 'rangee-actions';
+  actions.innerHTML = `
+    <button class="bouton" id="btn-reinit-positions" title="Oublie les déplacements faits à la souris et retrouve la mise en page automatique">
+      <i class="fa-solid fa-arrows-up-down-left-right"></i>Réinitialiser les positions
+    </button>
+    <button class="bouton" id="btn-copier-positions" title="Ajoute les lignes « :Nom x=… y=… » dans le texte pour figer la mise en page">
+      <i class="fa-solid fa-thumbtack"></i>Copier les positions dans le texte
+    </button>`;
+  conteneur.appendChild(actions);
+
+  $('btn-reinit-positions').addEventListener('click', () => {
+    etat.positionsManuelles = {};
+    sauvegarderEtat();
+    dessiner();
+  });
+  $('btn-copier-positions').addEventListener('click', copierPositionsDansTexte);
+}
+
+/* Applique une largeur et une hauteur en mettant à jour les curseurs à l'écran.
+   On déclenche l'événement « input » du curseur : c'est lui qui met à jour
+   etat.params, l'affichage de la valeur, la sauvegarde et le redessin. */
+function appliquerDimensions(largeur, hauteur) {
+  const conteneur = $('onglet-forme');
+  [['largeur', largeur], ['hauteur', hauteur]].forEach(([id, valeur]) => {
+    const curseur = conteneur.querySelector(`input[data-param="${id}"]`);
+    if (!curseur) { etat.params[id] = valeur; return; }
+    // On borne la valeur aux limites du curseur pour rester cohérent
+    curseur.value = Math.min(Number(curseur.max), Math.max(Number(curseur.min), valeur));
+    curseur.dispatchEvent(new Event('input'));
+  });
+}
+
+// Grise les réglages devenus sans effet à cause d'un autre réglage
+function majControlesLies() {
+  const boite = $('controle-couleurFond');
+  if (boite) boite.classList.toggle('desactive', !!etat.params.fondTransparent);
+}
+
+// Ajoute (ou met à jour) les lignes « :Nom x=… y=… » dans la zone de saisie
+function copierPositionsDansTexte() {
+  if (!etat.graphe) return;
+  const p = etat.params;
+  // Mêmes bornes que dans dessiner(), titre compris, pour des positions cohérentes
+  let decalageTitre = 0;
+  if (p.titre) decalageTitre += p.tailleTitre + 8;
+  if (p.sousTitre) decalageTitre += p.tailleSousTitre + 6;
+  const decalageBas = p.note ? p.tailleNote + 10 : 0;
+  const X0 = p.margeGauche, X1 = p.largeur - p.margeDroite;
+  const Y0 = p.margeHaut + decalageTitre, Y1 = p.hauteur - p.margeBas - decalageBas;
+  const vertical = p.sens === 'vertical';
+  // En vertical, l'axe du flux (x) court sur la hauteur : on inverse les bornes
+  const [BX0, BX1, BY0, BY1] = vertical ? [Y0, Y1, X0, X1] : [X0, X1, Y0, Y1];
+
+  let lignes = etat.texte.split('\n');
+  const nomsTraites = new Set();
+
+  // Met à jour les lignes de position existantes
+  lignes = lignes.map(ligne => {
+    const m = /^\s*:(.+?)\s+(?:x\s*=\s*[0-9.,]+\s+y\s*=\s*[0-9.,]+|y\s*=\s*[0-9.,]+\s+x\s*=\s*[0-9.,]+)\s*$/.exec(ligne);
+    if (!m) return ligne;
+    const nom = m[1].trim();
+    const noeud = etat.graphe.nodes.find(n => n.name === nom);
+    if (!noeud) return ligne;
+    nomsTraites.add(nom);
+    const { rx, ry } = positionRelative(noeud, BX0, BX1, BY0, BY1);
+    return `:${nom} x=${rx} y=${ry}`;
+  });
+
+  // Ajoute les lignes manquantes pour les nœuds déplacés à la souris
+  for (const noeud of etat.graphe.nodes) {
+    if (nomsTraites.has(noeud.name)) continue;
+    if (!etat.positionsManuelles[noeud.name]) continue;
+    const { rx, ry } = positionRelative(noeud, BX0, BX1, BY0, BY1);
+    lignes.push(`:${noeud.name} x=${rx} y=${ry}`);
+  }
+
+  etat.texte = lignes.join('\n');
+  $('zone-texte').value = etat.texte;
+  sauvegarderEtat();
+  dessiner();
+}
+
+// Convertit la position absolue d'un nœud en coordonnées relatives arrondies
+function positionRelative(noeud, BX0, BX1, BY0, BY1) {
+  const rx = (noeud.x0 - BX0) / Math.max(1, (BX1 - BX0) - (noeud.x1 - noeud.x0));
+  const ry = (noeud.y0 - BY0) / Math.max(1, (BY1 - BY0) - (noeud.y1 - noeud.y0));
+  return { rx: rx.toFixed(2), ry: ry.toFixed(2) };
+}
+
+/* ============================================================
+   ONGLET « COULEURS »
+   ============================================================ */
+function construireOngletCouleurs() {
+  const conteneur = $('onglet-couleurs');
+  const p = etat.params;
+  conteneur.innerHTML = `
+    <div class="groupe-controles">Couleur des liens</div>
+    <div class="controle">
+      <div class="etiquette"><span>Règle globale</span>
+        <i class="fa-solid fa-circle-question icone-aide" title="Définit la couleur des liens, sauf pour les nœuds marqués « &lt;&lt; » ou « &gt;&gt; » dans le texte."></i>
+        <span class="defaut">(défaut : Couleur de la source)</span></div>
+      <select id="regle-liens">
+        <option value="source">Couleur de la source</option>
+        <option value="cible">Couleur de la cible</option>
+        <option value="fixe">Couleur fixe ci-dessous</option>
+        <option value="gris">Gris neutre</option>
+      </select>
+    </div>
+    <div class="controle">
+      <div class="etiquette"><span>Couleur fixe des liens</span> <span class="defaut">(défaut : ${PARAMS_DEFAUT.couleurLienFixe})</span></div>
+      <input type="color" id="couleur-lien-fixe" value="${p.couleurLienFixe}"/>
+    </div>
+    <div class="groupe-controles">Palette des nœuds</div>
+    <div class="controle">
+      <div class="etiquette"><span>Palette prédéfinie</span>
+        <i class="fa-solid fa-circle-question icone-aide" title="Remplace la liste de couleurs ci-dessous. « Sûre pour daltoniens » reste lisible pour environ 8 % des hommes ; « Impression noir &amp; blanc » garde des nuances distinctes une fois photocopié."></i></div>
+      <select id="palette-predefinie">
+        ${PALETTES.map((pal, i) => `<option value="${i}">${pal.nom}</option>`).join('')}
+      </select>
+      <div id="apercu-palette" style="display:flex;gap:3px;margin-top:6px;height:14px"></div>
+    </div>
+    <div class="controle">
+      <div class="etiquette"><span>Couleurs automatiques</span>
+        <i class="fa-solid fa-circle-question icone-aide" title="Une couleur par ligne, au format #hex. Elles sont attribuées aux nœuds dans leur ordre d'apparition. Une ligne « :Nom #hex » dans le texte a toujours priorité."></i></div>
+      <textarea id="palette-couleurs" spellcheck="false">${etat.palette.join('\n')}</textarea>
+    </div>
+    <div class="rangee-actions">
+      <button class="bouton" id="btn-palette-defaut"><i class="fa-solid fa-rotate-left"></i>Palette par défaut</button>
+    </div>`;
+
+  // Aperçu visuel de la palette courante (petits carrés de couleur)
+  const dessinerApercu = () => {
+    $('apercu-palette').innerHTML = etat.palette
+      .map(c => `<span style="flex:1;background:${c};border-radius:2px"></span>`).join('');
+  };
+  dessinerApercu();
+
+  $('palette-predefinie').addEventListener('change', e => {
+    const pal = PALETTES[Number(e.target.value)];
+    if (!pal) return;
+    etat.palette = [...pal.couleurs];
+    $('palette-couleurs').value = etat.palette.join('\n');
+    dessinerApercu();
+    sauvegarderEtat(); dessiner();
+  });
+
+  $('regle-liens').value = p.regleCouleurLiens;
+  $('regle-liens').addEventListener('change', e => {
+    etat.params.regleCouleurLiens = e.target.value;
+    sauvegarderEtat(); dessiner();
+  });
+  $('couleur-lien-fixe').addEventListener('input', e => {
+    etat.params.couleurLienFixe = e.target.value;
+    sauvegarderEtat(); dessiner();
+  });
+  $('palette-couleurs').addEventListener('input', debounce(e => {
+    const couleurs = e.target.value.split('\n')
+      .map(l => l.trim())
+      .filter(l => /^#[0-9a-fA-F]{6}$/.test(l) || /^#[0-9a-fA-F]{3}$/.test(l));
+    if (couleurs.length) {
+      etat.palette = couleurs;
+      dessinerApercu();
+      sauvegarderEtat();
+      dessiner();
+    }
+  }, 400));
+  $('btn-palette-defaut').addEventListener('click', () => {
+    etat.palette = [...PALETTE_DEFAUT];
+    $('palette-couleurs').value = etat.palette.join('\n');
+    $('palette-predefinie').value = '0';
+    dessinerApercu();
+    sauvegarderEtat(); dessiner();
+  });
+}
+</script>
+
+<script>
+'use strict';
+/* ============================================================
+   EXPORTS : SVG, PNG, CSV, COPIE DU TEXTE
+   ============================================================ */
+
+/* Affiche un petit bandeau temporaire au-dessus du diagramme.
+   Sert aux retours immédiats (copie réussie, collage Excel converti…). */
+let minuteurToast = null;
+function afficherToast(message, estAlerte) {
+  const zone = $('toast');
+  zone.innerHTML = (estAlerte ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-circle-check"></i>') + message;
+  zone.style.background = estAlerte ? 'rgba(180, 83, 9, 0.95)' : 'rgba(17, 24, 39, 0.92)';
+  zone.style.display = 'block';
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => { zone.style.display = 'none'; }, 4500);
+}
+
+// Déclenche le téléchargement d'un fichier depuis le navigateur
+function telecharger(nomFichier, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nomFichier;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// Sérialise le SVG courant en texte autonome.
+// Tous les styles sont déjà en attributs (fill, font-*, opacity…) :
+// le fichier rouvert dans Inkscape ou Word conserve la mise en forme.
+function serialiserSVG() {
+  const p = etat.params;
+  const svg = $('diagramme').cloneNode(true);
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  // viewBox = « système de coordonnées interne ». Sans lui, redimensionner le SVG
+  // dans Word ou Inkscape rogne le dessin au lieu de l'agrandir proprement.
+  svg.setAttribute('viewBox', `0 0 ${p.largeur} ${p.hauteur}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  svg.removeAttribute('style');
+  // L'export ignore le zoom/recadrage de l'écran : on exporte le diagramme complet
+  const groupeVue = svg.querySelector('.vue');
+  if (groupeVue) groupeVue.removeAttribute('transform');
+  return new XMLSerializer().serializeToString(svg);
+}
+
+// Export SVG vectoriel
+function exporterSVG() {
+  if (!etat.graphe) return;
+  const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + serialiserSVG()], { type: 'image/svg+xml;charset=utf-8' });
+  telecharger(`sankey_${dateDuJour()}.svg`, blob);
+}
+
+/* Export PNG : SVG → Image → canvas → PNG, sans html2canvas.
+   ⚠ Les polices Google Fonts ne sont pas embarquées dans le SVG autonome :
+   le navigateur utilise alors automatiquement le repli system-ui
+   (déclaré dans POLICE_SVG), le rendu reste propre. */
+function construirePNG(echelle, quandPret) {
+  if (!etat.graphe) return;
+  const p = etat.params;
+  const image = new Image();
+  const url = URL.createObjectURL(new Blob([serialiserSVG()], { type: 'image/svg+xml;charset=utf-8' }));
+  image.onload = () => {
+    const toile = document.createElement('canvas');
+    toile.width = p.largeur * echelle;
+    toile.height = p.hauteur * echelle;
+    const pinceau = toile.getContext('2d');
+    // Fond appliqué seulement si l'option « fond transparent » est décochée
+    if (!p.fondTransparent) {
+      pinceau.fillStyle = p.couleurFond;
+      pinceau.fillRect(0, 0, toile.width, toile.height);
+    }
+    pinceau.drawImage(image, 0, 0, toile.width, toile.height);
+    URL.revokeObjectURL(url);
+    toile.toBlob(blob => { if (blob) quandPret(blob); }, 'image/png');
+  };
+  image.onerror = () => {
+    URL.revokeObjectURL(url);
+    const zone = $('messages');
+    const div = document.createElement('div');
+    div.className = 'message erreur';
+    div.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>La génération du PNG a échoué (SVG illisible par le navigateur).';
+    zone.appendChild(div);
+  };
+  image.src = url;
+}
+
+// Téléchargement du PNG
+function exporterPNG(echelle) {
+  construirePNG(echelle, blob => telecharger(`sankey_${dateDuJour()}_${echelle}x.png`, blob));
+}
+
+/* Copie l'image dans le presse-papier : un simple Ctrl+V la colle ensuite
+   dans Word, PowerPoint, Outlook ou LibreOffice, sans passer par un fichier.
+   Nécessite une page en https ou en local (file://, localhost). */
+function copierImage() {
+  if (!etat.graphe) return;
+  const possible = navigator.clipboard && window.ClipboardItem && navigator.clipboard.write;
+  if (!possible) {
+    afficherToast('Votre navigateur refuse la copie d\u2019image — utilisez « PNG 2× » puis insérez le fichier.', true);
+    return;
+  }
+  construirePNG(2, blob => {
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+      .then(() => afficherToast('Image copiée — collez-la avec Ctrl+V dans Word ou PowerPoint.'))
+      .catch(() => afficherToast('Copie refusée par le navigateur — utilisez « PNG 2× » à la place.', true));
+  });
+}
+
+// Export CSV des flux : point-virgule + BOM UTF-8 pour Excel français
+function exporterCSV() {
+  const resultat = analyserTexte(etat.texte);
+  if (!resultat.flux.length) return;
+  const lignes = ['Source;Cible;Valeur'];
+  for (const f of resultat.flux) {
+    // Décimale avec virgule pour Excel FR ; point-virgule comme séparateur
+    const valeur = String(f.valeur).replace('.', ',');
+    lignes.push(`${f.source};${f.cible};${valeur}`);
+  }
+  // \uFEFF = BOM UTF-8 : garantit l'affichage correct des accents dans Excel
+  const blob = new Blob(['\uFEFF' + lignes.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  telecharger(`sankey_flux_${dateDuJour()}.csv`, blob);
+}
+
+// Copie le texte de saisie dans le presse-papier
+function copierTexte() {
+  const texte = $('zone-texte').value;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(texte);
+  } else {
+    // Repli pour les contextes sans API presse-papier
+    $('zone-texte').select();
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+  }
+}
+
+/* ============================================================
+   SAUVEGARDE : localStorage automatique + projet .json
+   ============================================================ */
+
+// Sauvegarde automatique (texte + paramètres + positions) dans le navigateur
+function sauvegarderEtat() {
+  try {
+    localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify({
+      texte: etat.texte,
+      params: etat.params,
+      positions: etat.positionsManuelles,
+      palette: etat.palette
+    }));
+  } catch (e) {
+    // Quota dépassé ou navigation privée : on ignore silencieusement
+  }
+}
+
+// Restaure la sauvegarde au chargement ; renvoie false si rien à restaurer
+function restaurerEtat() {
+  try {
+    const brut = localStorage.getItem(CLE_SAUVEGARDE);
+    if (!brut) return false;
+    const donnees = JSON.parse(brut);
+    if (typeof donnees.texte === 'string') etat.texte = donnees.texte;
+    if (donnees.params) etat.params = { ...PARAMS_DEFAUT, ...donnees.params };
+    if (donnees.positions) etat.positionsManuelles = donnees.positions;
+    if (Array.isArray(donnees.palette) && donnees.palette.length) etat.palette = donnees.palette;
+    return true;
+  } catch (e) {
+    return false; // sauvegarde corrompue : on repart sur l'exemple
+  }
+}
+
+// Bouton « Enregistrer le projet » : télécharge un .json complet
+function enregistrerProjet() {
+  const projet = {
+    texte: etat.texte,
+    parametres: etat.params,
+    positions: etat.positionsManuelles,
+    palette: etat.palette
+  };
+  const blob = new Blob([JSON.stringify(projet, null, 2)], { type: 'application/json;charset=utf-8' });
+  telecharger(`sankey_projet_${dateDuJour()}.json`, blob);
+}
+
+// Bouton « Ouvrir un projet » : recharge le .json
+function ouvrirProjet(fichier) {
+  const lecteur = new FileReader();
+  lecteur.onload = () => {
+    try {
+      const projet = JSON.parse(lecteur.result);
+      if (typeof projet.texte !== 'string') throw new Error('champ « texte » absent');
+      etat.texte = projet.texte;
+      etat.params = { ...PARAMS_DEFAUT, ...(projet.parametres || {}) };
+      etat.positionsManuelles = projet.positions || {};
+      if (Array.isArray(projet.palette) && projet.palette.length) etat.palette = projet.palette;
+      $('zone-texte').value = etat.texte;
+      construireOngletForme();    // reconstruit les contrôles avec les nouvelles valeurs
+      construireOngletCouleurs();
+      sauvegarderEtat();
+      dessiner();
+    } catch (e) {
+      const div = document.createElement('div');
+      div.className = 'message erreur';
+      div.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>Fichier de projet illisible : ' + echapperHtml(e.message) + '.';
+      $('messages').appendChild(div);
+    }
+  };
+  lecteur.readAsText(fichier);
+}
+
+/* ============================================================
+   COLLAGE DEPUIS UN TABLEUR (Excel, LibreOffice, CSV)
+   Quand on copie 3 colonnes dans Excel et qu'on les colle ici,
+   le texte arrive avec des TABULATIONS entre les colonnes.
+   On le traduit automatiquement en « Source [valeur] Cible ».
+   ============================================================ */
+
+// Une cellule est-elle lisible comme un nombre ? (« 12 500 », « 1,5 », « 300 t »)
+function celluleNumerique(texte) {
+  if (!texte) return false;
+  const v = parseFloat(String(texte).replace(/[\s\u00A0\u202F]/g, '').replace(',', '.'));
+  return isFinite(v);
+}
+
+/* Tente de convertir un collage de tableur en lignes de flux.
+   Renvoie null si le texte collé n'a pas l'allure d'un tableau : dans ce cas
+   le collage se fait normalement, sans transformation. */
+function convertirTableur(texteBrut) {
+  const lignes = texteBrut.replace(/\r/g, '').split('\n').filter(l => l.trim() !== '');
+  if (!lignes.length) return null;
+
+  // Séparateur : tabulation (copier/coller Excel) ou point-virgule (fichier CSV français)
+  const sep = lignes[0].includes('\t') ? '\t' : (lignes[0].includes(';') ? ';' : null);
+  if (!sep) return null;
+
+  const cellules = lignes.map(l => l.split(sep).map(c => c.trim()));
+  // On ignore la première ligne si elle ne contient aucun nombre : c'est un en-tête
+  const debut = (!celluleNumerique(cellules[0][1]) && !celluleNumerique(cellules[0][2])) ? 1 : 0;
+  const donnees = cellules.slice(debut).filter(c => c.length >= 3);
+  if (!donnees.length) return null;
+
+  // La colonne des valeurs est celle qui contient le plus de nombres (2e ou 3e colonne)
+  const score1 = donnees.filter(c => celluleNumerique(c[1])).length;
+  const score2 = donnees.filter(c => celluleNumerique(c[2])).length;
+  if (Math.max(score1, score2) === 0) return null;
+  const iValeur = score2 >= score1 ? 2 : 1;
+  const iCible  = iValeur === 2 ? 1 : 2;
+
+  // Ne garde que le nombre : « 12 500 t » ou « 3 200 € » deviennent « 12500 » / « 3200 »
+  const nettoyerValeur = t => String(t).replace(/[\s\u00A0\u202F]/g, '').replace(/[^0-9.,-]/g, '');
+  const sortie = donnees
+    .filter(c => c[0] && c[iCible] && celluleNumerique(c[iValeur]))
+    .map(c => `${c[0]} [${nettoyerValeur(c[iValeur])}] ${c[iCible]}`);
+  if (!sortie.length) return null;
+
+  return { lignes: sortie, ignorees: donnees.length - sortie.length, colonneValeur: iValeur + 1 };
+}
+
+// Interception du collage dans la zone de saisie
+function activerCollageTableur() {
+  $('zone-texte').addEventListener('paste', evenement => {
+    const presse = evenement.clipboardData || window.clipboardData;
+    if (!presse) return;
+    const resultat = convertirTableur(presse.getData('text'));
+    if (!resultat) return;   // pas un tableau : collage normal
+
+    evenement.preventDefault();
+    const zone = $('zone-texte');
+    const avant = zone.value.slice(0, zone.selectionStart);
+    const apres = zone.value.slice(zone.selectionEnd);
+    const saut = (avant === '' || avant.endsWith('\n')) ? '' : '\n';
+    zone.value = avant + saut + resultat.lignes.join('\n') + '\n' + apres;
+
+    etat.texte = zone.value;
+    sauvegarderEtat();
+    dessiner();
+    afficherToast(`${resultat.lignes.length} flux convertis depuis le tableur ` +
+      `(valeurs lues en colonne ${resultat.colonneValeur})` +
+      (resultat.ignorees ? ` — ${resultat.ignorees} ligne(s) incomplète(s) ignorée(s).` : '.'));
+  });
+}
+
+/* ============================================================
+   NAVIGATION DANS L'INTERFACE : onglets, redimensionnement, menus
+   ============================================================ */
+
+// Bascule entre les trois onglets du panneau
+function activerOnglets() {
+  document.querySelectorAll('#onglets button').forEach(bouton => {
+    bouton.addEventListener('click', () => {
+      document.querySelectorAll('#onglets button').forEach(b => b.classList.remove('actif'));
+      document.querySelectorAll('.contenu-onglet').forEach(s => s.classList.remove('actif'));
+      bouton.classList.add('actif');
+      $('onglet-' + bouton.dataset.onglet).classList.add('actif');
+    });
+  });
+}
+
+// Redimensionnement du panneau latéral à la souris
+function activerPoignee() {
+  const poignee = $('poignee');
+  const panneau = $('panneau');
+  poignee.addEventListener('mousedown', e => {
+    e.preventDefault();
+    poignee.classList.add('active');
+    const bouger = ev => {
+      const largeur = Math.min(640, Math.max(280, ev.clientX));
+      panneau.style.width = largeur + 'px';
+    };
+    const lacher = () => {
+      poignee.classList.remove('active');
+      document.removeEventListener('mousemove', bouger);
+      document.removeEventListener('mouseup', lacher);
+    };
+    document.addEventListener('mousemove', bouger);
+    document.addEventListener('mouseup', lacher);
+  });
+}
+
+// Menu déroulant « Exporter » : ouverture/fermeture
+function activerMenuExport() {
+  const menu = $('menu-export');
+  $('btn-export').addEventListener('click', e => {
+    e.stopPropagation();
+    menu.classList.toggle('ouvert');
+  });
+  document.addEventListener('click', () => menu.classList.remove('ouvert'));
+  $('export-svg').addEventListener('click', exporterSVG);
+  $('export-png-1').addEventListener('click', () => exporterPNG(1));
+  $('export-png-2').addEventListener('click', () => exporterPNG(2));
+  $('export-png-3').addEventListener('click', () => exporterPNG(3));
+  $('export-csv').addEventListener('click', exporterCSV);
+  $('copier-image').addEventListener('click', copierImage);
+  $('copier-texte').addEventListener('click', copierTexte);
+}
+
+// Fenêtre d'édition d'un nœud : validation et annulation
+function activerEditeurNoeud() {
+  const fermer = () => { $('editeur-noeud').style.display = 'none'; };
+  $('edit-annuler').addEventListener('click', fermer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fermer(); });
+  $('edit-valider').addEventListener('click', () => {
+    const ancien = $('editeur-noeud').dataset.nomOriginal;
+    const nouveau = $('edit-libelle').value.trim();
+    const couleur = $('edit-couleur').value;
+    if (!nouveau) { $('edit-libelle').focus(); return; }
+    renommerNoeud(ancien, nouveau, couleur);
+    fermer();
+  });
+}
+
+/* ============================================================
+   INITIALISATION — exécutée une fois la page chargée
+   ============================================================ */
+function initialiser() {
+  // Vérifie que les bibliothèques CDN sont bien chargées
+  if (typeof d3 === 'undefined' || typeof d3.sankey === 'undefined') {
+    $('messages').innerHTML = '<div class="message erreur"><i class="fa-solid fa-circle-xmark"></i>' +
+      'Les bibliothèques graphiques n\u2019ont pas pu être chargées (réseau restreint ?). ' +
+      'Vérifiez votre connexion puis rechargez la page.</div>';
+    return;
+  }
+
+  // Titre de l'outil dans l'en-tête et l'onglet navigateur
+  $('titre-outil').textContent = TITRE_OUTIL;
+  document.title = TITRE_OUTIL;
+
+  // Menu des exemples
+  const select = $('select-exemples');
+  EXEMPLES.forEach((ex, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = ex.nom;
+    select.appendChild(opt);
+  });
+  select.addEventListener('change', () => {
+    if (select.value === '') return;
+    etat.texte = EXEMPLES[parseInt(select.value, 10)].texte;
+    etat.positionsManuelles = {};
+    $('zone-texte').value = etat.texte;
+    select.value = '';
+    sauvegarderEtat();
+    dessiner();
+  });
+
+  // Restaure la session précédente, sinon charge l'exemple 1
+  if (!restaurerEtat()) {
+    etat.texte = EXEMPLES[0].texte;
+  }
+  $('zone-texte').value = etat.texte;
+
+  // Saisie en temps réel : redessine 400 ms après la dernière frappe
+  $('zone-texte').addEventListener('input', debounce(() => {
+    etat.texte = $('zone-texte').value;
+    sauvegarderEtat();
+    dessiner();
+  }, 400));
+
+  // Boutons de l'en-tête et de l'onglet Données
+  $('btn-reinitialiser').addEventListener('click', () => {
+    if (!confirm('Réinitialiser l\u2019outil ? Votre texte et vos réglages seront remplacés par l\u2019exemple par défaut.')) return;
+    localStorage.removeItem(CLE_SAUVEGARDE);
+    etat.texte = EXEMPLES[0].texte;
+    etat.params = { ...PARAMS_DEFAUT };
+    etat.positionsManuelles = {};
+    etat.palette = [...PALETTE_DEFAUT];
+    $('zone-texte').value = etat.texte;
+    construireOngletForme();
+    construireOngletCouleurs();
+    sauvegarderEtat();
+    dessiner();
+  });
+  $('btn-enregistrer-projet').addEventListener('click', enregistrerProjet);
+  $('btn-ouvrir-projet').addEventListener('click', () => $('fichier-projet').click());
+  $('fichier-projet').addEventListener('change', e => {
+    if (e.target.files.length) ouvrirProjet(e.target.files[0]);
+    e.target.value = ''; // permet de rouvrir le même fichier
+  });
+  $('ajuster-fenetre').addEventListener('click', ajusterALaFenetre);
+
+  // Construction des panneaux et activation de l'interface
+  construireOngletForme();
+  construireOngletCouleurs();
+  activerOnglets();
+  activerPoignee();
+  activerMenuExport();
+  activerEditeurNoeud();
+  activerCollageTableur();
+
+  // Premier rendu : l'exemple s'affiche sans aucune action
+  dessiner();
+}
+
+// Lance l'application quand le document est prêt
+document.addEventListener('DOMContentLoaded', initialiser);
+</script>
+</body>
+</html>
