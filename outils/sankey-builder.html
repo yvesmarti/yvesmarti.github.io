@@ -5,34 +5,137 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Générateur de diagrammes de Sankey</title>
 
+<link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png"/>
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png"/>
+
+<!-- SEO -->
+<meta name="description" content="Créez des diagrammes de Sankey pour visualiser des flux (tonnages, budgets, matières) directement dans le navigateur, sans serveur ni transfert de données."/>
+<meta name="author" content="Yves Marti"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://yvesmarti.fr/outils/sankey-builder.html"/>
+<meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)"/>
+
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Générateur de diagrammes de Sankey - Yves Marti"/>
+<meta property="og:description" content="Créez des diagrammes de Sankey pour visualiser des flux (tonnages, budgets, matières) directement dans le navigateur, sans serveur ni transfert de données."/>
+<meta property="og:url" content="https://yvesmarti.fr/outils/sankey-builder.html"/>
+<meta property="og:locale" content="fr_FR"/>
+<meta property="og:site_name" content="Yves Marti - Chargé de mission déchets &amp; SIG"/>
+<meta property="og:image" content="https://yvesmarti.fr/assets/images/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Générateur de diagrammes de Sankey - Yves Marti"/>
+<meta name="twitter:description" content="Créez des diagrammes de Sankey pour visualiser des flux (tonnages, budgets, matières) directement dans le navigateur."/>
+<meta name="twitter:image" content="https://yvesmarti.fr/assets/images/og-image.png"/>
+<meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie"/>
+<meta name="twitter:creator" content="@yvesmarti"/>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication",
+ "name":"Générateur de diagrammes de Sankey",
+ "url":"https://yvesmarti.fr/outils/sankey-builder.html",
+ "applicationCategory":"BusinessApplication","operatingSystem":"Web",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
+ "author":{"@type":"Person","name":"Yves Marti","url":"https://yvesmarti.fr"}}
+</script>
+
 <!-- ============================================================
-     BIBLIOTHÈQUES EXTERNES (CDN imposés — ne pas changer d'hébergeur)
+     BIBLIOTHÈQUES EXTERNES (CDN imposés : ne pas changer d'hébergeur)
      d3 : calculs et manipulation du SVG
      d3-sankey : algorithme de mise en page des diagrammes de Sankey
      Font Awesome : icônes des boutons
-     DM Sans : police principale (system-ui prend le relais si bloquée)
+     Polices : DM Serif Display (titres) + Source Sans 3 (corps), les deux
+     familles du portfolio. La pile système prend le relais si elles sont
+     bloquées.
      ============================================================ -->
 <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
 <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<!-- Thème : lecture anticipée pour éviter le flash (FOUC).
+     La clé « theme » est partagée avec le reste du site : arriver depuis
+     /outils.html en mode nuit ouvre l'outil déjà en mode nuit. -->
+<script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
 
 <style>
 /* ============================================================
-   FEUILLE DE STYLE — couleurs et espacements faciles à retoucher
+   FEUILLE DE STYLE : couleurs et espacements faciles à retoucher
+
+   Deux couches de variables :
+   1. les tokens de la charte du site (--color-*, --font-*), copiés
+      à l'identique de assets/css/style.css ;
+   2. les rôles propres à l'outil (--fond-panneau, --accent-douce…),
+      définis à partir des premiers.
+   Le mode sombre plus bas ne fait que redéfinir ces variables : aucune
+   couleur ne doit être écrite en dur ailleurs dans cette feuille.
    ============================================================ */
 :root {
-  --fond-page: #eef1f5;        /* fond gris clair autour de l'outil */
-  --fond-panneau: #ffffff;     /* fond du panneau latéral */
-  --bordure: #d8dee6;          /* bordures fines */
-  --accent: #1e40af;           /* bleu des boutons et onglets actifs */
-  --accent-douce: #e8eefc;     /* bleu très pâle (survol, onglet actif) */
-  --texte: #1f2937;            /* couleur de texte principale */
-  --texte-doux: #6b7280;       /* texte secondaire */
-  --erreur: #b91c1c;           /* rouge des messages d'erreur */
+  /* ---- Tokens de la charte (assets/css/style.css) ---- */
+  --color-primary:      #1a3a32;
+  --color-accent:       #3d8b6e;
+  --color-accent-light: #9ed4b8;
+  --color-light:        #f7f9f8;
+  --color-warm:         #e8ded4;
+  --color-text:         #2c2c2c;
+  --color-muted:        #6b7c75;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* ---- Surfaces ---- */
+  --fond-page: #e7ece9;                 /* plan de travail derrière le diagramme */
+  --fond-panneau: #ffffff;              /* en-tête, panneau, barre d'état, popovers */
+  --fond-controle: #ffffff;             /* champs de saisie et boutons secondaires */
+  --fond-doux: var(--color-light);      /* zone de messages, code et pre de l'aide */
+  --bordure: #dde3e0;                   /* bordures fines */
+
+  /* ---- Accent ---- */
+  --accent: var(--color-accent);            /* boutons, onglets actifs, curseurs */
+  --accent-fort: var(--color-primary);      /* survol du bouton principal */
+  --accent-douce: #e8f4f0;                  /* vert très pâle (survol, aide, info) */
+  --accent-texte: #1a5c4a;                  /* accent posé SUR --accent-douce (contraste) */
+  --accent-contraste: #ffffff;              /* texte posé SUR --accent */
+
+  /* ---- Texte ---- */
+  --texte: var(--color-text);
+  --texte-doux: var(--color-muted);
+
+  /* ---- États ---- */
+  --erreur: #b91c1c;
   --erreur-fond: #fef2f2;
-  --alerte: #b45309;           /* orange des avertissements */
+  --alerte: #b45309;
   --alerte-fond: #fffbeb;
+
+  /* ---- Sur-couches (toast, infobulle) ---- */
+  --surcouche: rgba(26, 58, 50, 0.94);
+  --surcouche-alerte: rgba(180, 83, 9, 0.95);
+  --surcouche-texte: #f0f6f3;
+
+  /* ---- Damier de transparence ---- */
+  --damier-a: #ffffff;
+  --damier-b: #d7ded9;
+
+  /* ---- Rayons ---- */
+  --r-xs: 4px;
+  --r-s:  6px;
+  --r-m:  10px;
+  --r-l:  14px;
+
+  /* ---- Ombres ---- */
+  --ombre-xs: 0 1px 8px   rgba(26, 58, 50, 0.10);
+  --ombre-s:  0 2px 10px  rgba(26, 58, 50, 0.12);
+  --ombre-m:  0 8px 24px  rgba(26, 58, 50, 0.15);
+  --ombre-l:  0 14px 36px rgba(26, 58, 50, 0.16);
+
+  color-scheme: light dark;
 }
 
 * { box-sizing: border-box; }
@@ -40,7 +143,7 @@
 html, body {
   margin: 0;
   height: 100%;
-  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
   color: var(--texte);
   background: var(--fond-page);
   overflow: hidden; /* la page ne défile pas, chaque zone gère son propre défilement */
@@ -64,12 +167,26 @@ html, body {
   flex-wrap: wrap;
 }
 #entete h1 {
-  font-size: 17px;
+  /* DM Serif Display n'existe qu'en 400 : on fixe la graisse pour éviter
+     que le navigateur ne synthétise un faux gras. Un serif d'affichage
+     paraissant plus petit à taille égale, on passe de 17 à 19 px. */
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 19px;
   margin: 0;
   margin-right: auto; /* pousse les boutons à droite */
-  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -.01em;
 }
 #entete h1 .fa-diagram-project { color: var(--accent); margin-right: 8px; }
+
+/* Bouton de bascule clair / sombre */
+#theme-toggle { padding: 6px 9px; line-height: 1; }
+#theme-toggle i { margin-right: 0; }
+.theme-icon--sun { display: none; }
+.theme-icon--moon { display: inline-block; }
+[data-theme="dark"] .theme-icon--sun { display: inline-block; }
+[data-theme="dark"] .theme-icon--moon { display: none; }
 
 /* Boutons génériques */
 .bouton {
@@ -77,25 +194,27 @@ html, body {
   font-size: 13px;
   font-weight: 600;
   color: var(--texte);
-  background: #fff;
+  background: var(--fond-controle);
   border: 1px solid var(--bordure);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 6px 12px;
   cursor: pointer;
   white-space: nowrap;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
-.bouton:hover { background: var(--accent-douce); border-color: var(--accent); }
+.bouton:hover { background: var(--accent-douce); border-color: var(--accent); color: var(--accent-texte); }
 .bouton i { margin-right: 6px; }
-.bouton.principal { background: var(--accent); color: #fff; border-color: var(--accent); }
-.bouton.principal:hover { background: #1a388f; }
+.bouton.principal { background: var(--accent); color: var(--accent-contraste); border-color: var(--accent); }
+.bouton.principal:hover { background: var(--accent-fort); border-color: var(--accent-fort); color: var(--accent-contraste); }
 
 select.champ-entete {
   font-family: inherit;
   font-size: 13px;
   padding: 6px 8px;
   border: 1px solid var(--bordure);
-  border-radius: 6px;
-  background: #fff;
+  border-radius: var(--r-s);
+  background: var(--fond-controle);
+  color: var(--texte);
   max-width: 260px;
 }
 
@@ -106,10 +225,10 @@ select.champ-entete {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: #fff;
+  background: var(--fond-panneau);
   border: 1px solid var(--bordure);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  border-radius: var(--r-m);
+  box-shadow: var(--ombre-m);
   min-width: 220px;
   z-index: 50;
   padding: 4px;
@@ -124,11 +243,11 @@ select.champ-entete {
   font-family: inherit;
   font-size: 13px;
   padding: 8px 10px;
-  border-radius: 5px;
+  border-radius: var(--r-s);
   cursor: pointer;
   color: var(--texte);
 }
-.contenu-menu button:hover { background: var(--accent-douce); }
+.contenu-menu button:hover { background: var(--accent-douce); color: var(--accent-texte); }
 .contenu-menu button i { width: 18px; margin-right: 6px; color: var(--accent); }
 
 /* ---------- Corps : panneau + poignée + diagramme ---------- */
@@ -177,8 +296,8 @@ select.champ-entete {
   cursor: pointer;
   color: var(--texte-doux);
 }
-#onglets button.actif { color: var(--accent); border-bottom-color: var(--accent); }
-#onglets button:hover { color: var(--accent); }
+#onglets button.actif { color: var(--accent-texte); border-bottom-color: var(--accent); background: var(--accent-douce); }
+#onglets button:hover { color: var(--accent-texte); }
 
 /* Contenu des onglets : une seule zone visible à la fois */
 .contenu-onglet {
@@ -193,7 +312,7 @@ select.champ-entete {
 /* Panneau d'aide repliable */
 details.aide {
   border: 1px solid var(--bordure);
-  border-radius: 8px;
+  border-radius: var(--r-m);
   background: var(--accent-douce);
   margin-bottom: 10px;
   font-size: 12.5px;
@@ -202,21 +321,23 @@ details.aide summary {
   cursor: pointer;
   padding: 8px 10px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-texte);
 }
 details.aide .aide-corps { padding: 0 10px 10px; line-height: 1.5; }
 details.aide code {
-  background: #fff;
+  background: var(--fond-controle);
   border: 1px solid var(--bordure);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   padding: 0 4px;
+  font-family: var(--font-mono);
   font-size: 12px;
 }
 details.aide pre {
-  background: #fff;
+  background: var(--fond-controle);
   border: 1px solid var(--bordure);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 8px;
+  font-family: var(--font-mono);
   font-size: 12px;
   overflow-x: auto;
 }
@@ -227,15 +348,17 @@ details.aide pre {
   min-height: 220px;
   width: 100%;
   resize: none;
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.55;
   border: 1px solid var(--bordure);
-  border-radius: 8px;
+  border-radius: var(--r-m);
   padding: 10px;
   color: var(--texte);
+  background: var(--fond-controle);
 }
 #zone-texte:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+#zone-texte::placeholder, #palette-couleurs::placeholder { color: var(--texte-doux); }
 
 /* Petits boutons d'action sous la zone de texte */
 .rangee-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -281,16 +404,18 @@ details.aide pre {
   font-size: 13px;
   padding: 5px 8px;
   border: 1px solid var(--bordure);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   width: 100%;
+  background: var(--fond-controle);
+  color: var(--texte);
 }
 .controle input[type="color"] {
   width: 48px;
   height: 28px;
   padding: 0;
   border: 1px solid var(--bordure);
-  border-radius: 6px;
-  background: #fff;
+  border-radius: var(--r-s);
+  background: var(--fond-controle);
   cursor: pointer;
 }
 /* Contrôle rendu inopérant parce qu'un autre réglage le neutralise
@@ -303,12 +428,28 @@ details.aide pre {
 #palette-couleurs {
   width: 100%;
   min-height: 90px;
-  font-family: 'Consolas', monospace;
+  font-family: var(--font-mono);
   font-size: 12.5px;
   border: 1px solid var(--bordure);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   padding: 8px;
   resize: vertical;
+  background: var(--fond-controle);
+  color: var(--texte);
+}
+
+/* Focus visible sur tous les contrôles interactifs */
+.bouton:focus-visible,
+#onglets button:focus-visible,
+.contenu-menu button:focus-visible,
+select.champ-entete:focus-visible,
+.controle input:focus-visible,
+.controle select:focus-visible,
+#palette-couleurs:focus-visible,
+#editeur-noeud input:focus-visible,
+.back-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ---------- Zone de messages (erreurs et avertissements) ---------- */
@@ -320,13 +461,13 @@ details.aide pre {
   padding: 8px 14px;
   font-size: 12.5px;
   line-height: 1.5;
-  background: #fbfcfe;
+  background: var(--fond-doux);
 }
 #messages:empty { display: none; }
-.message { padding: 6px 8px; border-radius: 6px; margin-bottom: 4px; }
+.message { padding: 6px 8px; border-radius: var(--r-s); margin-bottom: 4px; }
 .message.erreur { background: var(--erreur-fond); color: var(--erreur); }
 .message.alerte { background: var(--alerte-fond); color: var(--alerte); }
-.message.info { background: var(--accent-douce); color: var(--accent); }
+.message.info { background: var(--accent-douce); color: var(--accent-texte); }
 .message i { margin-right: 6px; }
 
 /* ---------- Zone du diagramme ---------- */
@@ -344,7 +485,7 @@ details.aide pre {
   max-height: 100%;
   display: block;
   cursor: grab;
-  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.10); /* matérialise les bords du dessin */
+  box-shadow: var(--ombre-xs); /* matérialise les bords du dessin */
 }
 #diagramme:active { cursor: grabbing; }
 
@@ -352,10 +493,10 @@ details.aide pre {
    C'est le même repère visuel que dans les logiciels de retouche d'image :
    il n'est PAS exporté, il sert seulement à voir que le fond est bien vide. */
 #zone-diagramme.damier #diagramme {
-  background-color: #ffffff;
+  background-color: var(--damier-a);
   background-image:
-    linear-gradient(45deg, #d5dae2 25%, transparent 25%, transparent 75%, #d5dae2 75%),
-    linear-gradient(45deg, #d5dae2 25%, transparent 25%, transparent 75%, #d5dae2 75%);
+    linear-gradient(45deg, var(--damier-b) 25%, transparent 25%, transparent 75%, var(--damier-b) 75%),
+    linear-gradient(45deg, var(--damier-b) 25%, transparent 25%, transparent 75%, var(--damier-b) 75%);
   background-size: 18px 18px;
   background-position: 0 0, 9px 9px;
 }
@@ -366,17 +507,18 @@ details.aide pre {
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  background: rgba(17, 24, 39, 0.92);
-  color: #f9fafb;
+  background: var(--surcouche);
+  color: var(--surcouche-texte);
   font-size: 12.5px;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-m);
   z-index: 90;
   display: none;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--ombre-m);
   max-width: 80%;
   text-align: center;
 }
+#toast.alerte { background: var(--surcouche-alerte); }
 #toast i { margin-right: 6px; }
 
 /* Bouton flottant « Ajuster à la fenêtre » */
@@ -385,7 +527,7 @@ details.aide pre {
   top: 12px;
   right: 12px;
   z-index: 10;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--ombre-s);
 }
 
 /* Nœuds déplaçables : curseur dédié */
@@ -396,31 +538,37 @@ details.aide pre {
 #infobulle {
   position: fixed;
   pointer-events: none; /* ne bloque jamais la souris */
-  background: rgba(17, 24, 39, 0.92);
-  color: #f9fafb;
+  background: var(--surcouche);
+  color: var(--surcouche-texte);
   font-size: 12.5px;
   line-height: 1.45;
   padding: 7px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-s);
   display: none;
   z-index: 100;
   max-width: 320px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--ombre-m);
 }
 
 /* Fenêtre d'édition d'un nœud (double-clic) */
 #editeur-noeud {
   position: fixed;
   z-index: 120;
-  background: #fff;
+  background: var(--fond-panneau);
   border: 1px solid var(--bordure);
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-l);
   padding: 14px;
   width: 260px;
   display: none;
 }
-#editeur-noeud h3 { margin: 0 0 10px; font-size: 14px; }
+#editeur-noeud h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--color-primary);
+}
 #editeur-noeud label { display: block; font-size: 12.5px; margin-bottom: 8px; }
 #editeur-noeud input[type="text"] {
   width: 100%;
@@ -428,10 +576,12 @@ details.aide pre {
   font-size: 13px;
   padding: 5px 8px;
   border: 1px solid var(--bordure);
-  border-radius: 6px;
+  border-radius: var(--r-s);
   margin-top: 3px;
+  background: var(--fond-controle);
+  color: var(--texte);
 }
-#editeur-noeud input[type="color"] { width: 100%; height: 30px; border: 1px solid var(--bordure); border-radius: 6px; margin-top: 3px; cursor: pointer; }
+#editeur-noeud input[type="color"] { width: 100%; height: 30px; border: 1px solid var(--bordure); border-radius: var(--r-s); margin-top: 3px; cursor: pointer; background: var(--fond-controle); }
 #editeur-noeud .rangee-actions { justify-content: flex-end; margin-top: 12px; }
 
 /* ---------- Barre d'état ---------- */
@@ -447,7 +597,7 @@ details.aide pre {
   border-top: 1px solid var(--bordure);
   flex-wrap: wrap;
 }
-#barre-etat .fort { color: var(--texte); font-weight: 700; }
+#barre-etat .fort { color: var(--texte); font-weight: 700; font-family: var(--font-mono); }
 #barre-etat .alerte { color: var(--alerte); font-weight: 600; }
 
 /* ---------- Lien de retour vers la liste des outils ---------- */
@@ -457,17 +607,83 @@ details.aide pre {
   gap: 6px;
   font-size: .85rem;
   font-weight: 600;
-  color: #6b7c75;
+  /* Les valeurs littérales de repli gardent un rendu clair strictement
+     identique aux autres outils, tout en suivant le thème ici. */
+  color: var(--texte-doux, #6b7c75);
   text-decoration: none;
   transition: color .15s;
 }
-.back-link:hover { color: #3d8b6e; }
+.back-link:hover { color: var(--accent, #3d8b6e); }
 
 /* ---------- Tablette : on empile verticalement ---------- */
 @media (max-width: 900px) {
   #corps { flex-direction: column; }
   #panneau { width: 100% !important; max-width: none; height: 45%; border-right: none; border-bottom: 1px solid var(--bordure); }
   #poignee { display: none; }
+}
+
+/* ============================================================
+   MODE SOMBRE
+
+   Enfermé dans @media screen : une impression reste toujours claire,
+   comme sur la page CV du site.
+
+   Le diagramme lui-même ne suit JAMAIS le thème. Sa couleur de fond est
+   un réglage de l'utilisateur (params.couleurFond), elle est écrite dans
+   le SVG exporté et peinte sur le PNG : la faire dépendre du thème
+   produirait des exports sur fond sombre inutilisables dans un rapport.
+   Le mode sombre habille le plan de travail autour de la feuille, pas la
+   feuille : c'est le comportement d'un éditeur de dessin.
+   ============================================================ */
+@media screen {
+  [data-theme="dark"] {
+    /* --color-primary est inversé : ici il ne sert qu'à colorer un titre,
+       jamais un fond de section comme sur le site. */
+    --color-primary: #b8d8c8;
+    --color-accent:  #5aad8a;
+    --color-light:   #131e17;
+    --color-warm:    #1c2a20;
+    --color-text:    #d4e8dc;
+    --color-muted:   #8aaa9a;
+
+    --fond-page:     #1c2a20;
+    --fond-panneau:  #1a2e24;
+    --fond-controle: #22382c;
+    --fond-doux:     #16241c;
+    --bordure:       #2a3d30;
+
+    --accent-fort:      #6ecba0;
+    --accent-douce:     #1a3028;
+    --accent-texte:     #6ecba0;
+    --accent-contraste: #10231a;
+
+    --erreur:      #ff9c94;
+    --erreur-fond: #3a1e1c;
+    --alerte:      #e6b25c;
+    --alerte-fond: #33280f;
+
+    --surcouche:        rgba(10, 26, 16, 0.94);
+    --surcouche-alerte: rgba(120, 72, 14, 0.96);
+    --surcouche-texte:  #d4e8dc;
+
+    --damier-a: #2a3d30;
+    --damier-b: #1c2a20;
+
+    --ombre-xs: 0 1px 10px  rgba(0, 0, 0, 0.40);
+    --ombre-s:  0 2px 12px  rgba(0, 0, 0, 0.40);
+    --ombre-m:  0 8px 24px  rgba(0, 0, 0, 0.45);
+    --ombre-l:  0 14px 36px rgba(0, 0, 0, 0.50);
+
+    color-scheme: dark;
+  }
+}
+
+/* Adoucit la bascule d'un thème à l'autre (mêmes durées que le site) */
+body, #entete, #panneau, #barre-etat, #messages, #zone-diagramme,
+.bouton, #zone-texte, #palette-couleurs, .contenu-menu, #editeur-noeud,
+details.aide, #onglets button, .controle input, .controle select,
+select.champ-entete {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease;
 }
 </style>
 </head>
@@ -494,9 +710,9 @@ details.aide pre {
       <div class="contenu-menu">
         <button id="copier-image"><i class="fa-solid fa-clipboard"></i>Copier l'image (Ctrl+V ailleurs)</button>
         <button id="export-svg"><i class="fa-solid fa-file-code"></i>SVG (vectoriel)</button>
-        <button id="export-png-1"><i class="fa-solid fa-file-image"></i>PNG — échelle 1×</button>
-        <button id="export-png-2"><i class="fa-solid fa-file-image"></i>PNG — échelle 2×</button>
-        <button id="export-png-3"><i class="fa-solid fa-file-image"></i>PNG — échelle 3×</button>
+        <button id="export-png-1"><i class="fa-solid fa-file-image"></i>PNG, échelle 1×</button>
+        <button id="export-png-2"><i class="fa-solid fa-file-image"></i>PNG, échelle 2×</button>
+        <button id="export-png-3"><i class="fa-solid fa-file-image"></i>PNG, échelle 3×</button>
         <button id="export-csv"><i class="fa-solid fa-file-csv"></i>CSV des flux (Excel)</button>
         <button id="copier-texte"><i class="fa-solid fa-copy"></i>Copier le texte</button>
       </div>
@@ -504,6 +720,12 @@ details.aide pre {
 
     <button class="bouton" id="btn-reinitialiser" title="Efface la sauvegarde locale et recharge l'exemple par défaut">
       <i class="fa-solid fa-rotate-left"></i>Réinitialiser
+    </button>
+
+    <!-- Bascule clair / sombre : partage la clé « theme » avec le reste du site -->
+    <button class="bouton" id="theme-toggle" aria-label="Basculer le thème clair ou sombre" title="Basculer le thème clair ou sombre">
+      <i class="fa-solid fa-sun theme-icon theme-icon--sun"></i>
+      <i class="fa-solid fa-moon theme-icon theme-icon--moon"></i>
     </button>
   </header>
 
@@ -521,7 +743,7 @@ details.aide pre {
       <!-- Onglet 1 : Données -->
       <section class="contenu-onglet actif" id="onglet-donnees">
         <details class="aide">
-          <summary><i class="fa-solid fa-circle-question"></i> Aide — la syntaxe en 6 lignes</summary>
+          <summary><i class="fa-solid fa-circle-question"></i> Aide : la syntaxe en 6 lignes</summary>
           <div class="aide-corps">
             Un flux par ligne : <code>Source [valeur] Cible</code>.<br/>
             Commentaires : lignes commençant par <code>//</code> ou <code>'</code>.<br/>
@@ -530,7 +752,7 @@ details.aide pre {
             Position figée : <code>:Nom x=0.45 y=0.30</code> (entre 0 et 1).<br/>
             Virgule ou point décimal acceptés, espaces de milliers aussi.<br/>
             <b>Astuce Excel</b> : copiez 3 colonnes (Source / Cible / Valeur) et collez-les
-            ici avec Ctrl+V — la conversion est automatique.
+            ici avec Ctrl+V, la conversion est automatique.
             <pre>Ordures ménagères [12 500] Incinération
 :Incinération #d95f02 &lt;&lt;</pre>
           </div>
@@ -601,12 +823,12 @@ details.aide pre {
 <script>
 'use strict';
 /* ############################################################
-   GÉNÉRATEUR DE DIAGRAMMES DE SANKEY — script principal
+   GÉNÉRATEUR DE DIAGRAMMES DE SANKEY : script principal
    Tout le code est commenté en français, bloc par bloc.
    ############################################################ */
 
 /* ============================================================
-   PARAMÈTRES MODIFIABLES — modifier ici sans risque
+   PARAMÈTRES MODIFIABLES : modifier ici sans risque
    (couleurs par défaut, valeurs des curseurs, unité, titres)
    ============================================================ */
 
@@ -685,20 +907,24 @@ const UNITE_DEFAUT = ' t';
 // Titre affiché dans l'en-tête de la page et l'onglet du navigateur
 const TITRE_OUTIL = 'Générateur de diagrammes de Sankey';
 
-// Police utilisée dans le SVG — la liste de repli garantit un rendu correct
-// à l'export PNG même si Google Fonts n'est pas accessible depuis le canvas
-const POLICE_SVG = "'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+// Police utilisée dans le SVG : la liste de repli garantit un rendu correct
+// à l'export PNG même si Google Fonts n'est pas accessible depuis le canvas.
+// On garde volontairement Source Sans 3 (et non le serif d'affichage du site) :
+// les étiquettes sont petites et denses, le réglage « graisse » a besoin d'une
+// famille à plusieurs graisses, et un repli sans-serif après une déclaration
+// sans-serif reste discret à l'export.
+const POLICE_SVG = "'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 // Clé utilisée pour la sauvegarde automatique dans le navigateur
 const CLE_SAUVEGARDE = 'sankeyBuilder.v1';
 
 /* ============================================================
-   JEUX DE DONNÉES D'EXEMPLE — modifiables librement
+   JEUX DE DONNÉES D'EXEMPLE : modifiables librement
    ============================================================ */
 const EXEMPLES = [
   {
     nom: 'Flux de déchets ménagers',
-    texte: `// Flux de déchets d'une collectivité — tonnages annuels
+    texte: `// Flux de déchets d'une collectivité, tonnages annuels
 Ordures ménagères résiduelles [12500] Incinération
 Emballages [3200] Centre de tri
 Verre [2800] Recyclage verre
@@ -725,7 +951,7 @@ Incinération [13050] Valorisation énergétique
   },
   {
     nom: 'Répartition d\u2019un budget',
-    texte: `// Répartition du budget d'une collectivité — en k€
+    texte: `// Répartition du budget d'une collectivité, en k€
 Fiscalité locale [2600] Budget principal
 Produits des services [1500] Budget principal
 Subventions [900] Budget principal
@@ -787,7 +1013,7 @@ function debounce(fonction, delai) {
   };
 }
 
-// Formate un nombre selon les réglages (séparateurs, décimales) — format français
+// Formate un nombre selon les réglages (séparateurs, décimales), format français
 function formaterNombre(valeur, p) {
   // toFixed garantit le nombre de décimales demandé
   const morceaux = Number(valeur).toFixed(p.decimales).split('.');
@@ -873,7 +1099,7 @@ function analyserTexte(texte) {
       const lireCoord = (m) => m ? parseFloat(m[1].replace(',', '.')) : null;
       const x = lireCoord(mX), y = lireCoord(mY);
       if ((x !== null && (x < 0 || x > 1)) || (y !== null && (y < 0 || y > 1))) {
-        avertissements.push(`Ligne ${numero} : les coordonnées x et y doivent être comprises entre 0 et 1 — position ignorée.`);
+        avertissements.push(`Ligne ${numero} : les coordonnées x et y doivent être comprises entre 0 et 1, position ignorée.`);
       } else {
         if (x !== null || y !== null) {
           opt.position = { x, y };
@@ -925,7 +1151,7 @@ function analyserTexte(texte) {
       return;
     }
     if (valeur <= 0) {
-      avertissements.push(`Ligne ${numero} : valeur nulle ou négative (${formaterNombre(valeur, etat.params)}) — ligne ignorée.`);
+      avertissements.push(`Ligne ${numero} : valeur nulle ou négative (${formaterNombre(valeur, etat.params)}), ligne ignorée.`);
       return;
     }
 
@@ -944,7 +1170,7 @@ function analyserTexte(texte) {
   }
   for (const f of flux) {
     if (cheminExiste(f.cible, f.source, new Set())) {
-      avertissements.push(`Ligne ${f.ligne} : cycle détecté (${f.source} → ${f.cible} → … → ${f.source}) — ce flux n'est pas tracé, un diagramme de Sankey ne peut pas contenir de cycle.`);
+      avertissements.push(`Ligne ${f.ligne} : cycle détecté (${f.source} → ${f.cible} → … → ${f.source}) : ce flux n'est pas tracé, un diagramme de Sankey ne peut pas contenir de cycle.`);
     } else {
       (adjacence[f.source] = adjacence[f.source] || []).push(f.cible);
       fluxValides.push(f);
@@ -965,13 +1191,13 @@ function analyserTexte(texte) {
   // Déséquilibre des nœuds intermédiaires (entrant ≠ sortant)
   for (const [nom, t] of Object.entries(totaux)) {
     if (t.entrant > 0 && t.sortant > 0 && Math.abs(t.entrant - t.sortant) > 1e-9) {
-      avertissements.push(`Déséquilibre — ${nom} : ${formaterNombre(t.entrant, etat.params)} entrant / ${formaterNombre(t.sortant, etat.params)} sortant, écart de ${formaterNombre(Math.abs(t.entrant - t.sortant), etat.params)}.`);
+      avertissements.push(`Déséquilibre sur ${nom} : ${formaterNombre(t.entrant, etat.params)} entrant / ${formaterNombre(t.sortant, etat.params)} sortant, écart de ${formaterNombre(Math.abs(t.entrant - t.sortant), etat.params)}.`);
     }
   }
   // Nœud déclaré en options mais absent de tout flux
   for (const nom of Object.keys(options)) {
     if (!noeudsUtilises.has(nom)) {
-      avertissements.push(`Nœud isolé — « ${nom} » a une option (couleur ou position) mais n'apparaît dans aucun flux.`);
+      avertissements.push(`Nœud isolé : « ${nom} » a une option (couleur ou position) mais n'apparaît dans aucun flux.`);
     }
   }
 
@@ -1080,7 +1306,7 @@ function dessiner() {
       gVue.append('text')
         .attr('x', p.largeur / 2).attr('y', p.hauteur / 2)
         .attr('text-anchor', 'middle')
-        .attr('font-size', 16).attr('fill', '#9ca3af')
+        .attr('font-size', 16).attr('fill', '#6b7c75')
         .text('Saisissez vos flux pour commencer');
     }
     dessinerTitres(svg, p);
@@ -1153,7 +1379,7 @@ function dessiner() {
       .attr('class', 'contour')
       .attr('d', cheminLien)
       .attr('fill', 'none')
-      .attr('stroke', 'rgba(15, 23, 42, 0.30)')
+      .attr('stroke', 'rgba(26, 58, 50, 0.30)')
       .attr('stroke-width', l => Math.max(1, l.width) + 2.5);
   }
   const selectionLiens = gLiens.selectAll('path.lien').data(graphe.links).join('path')
@@ -1244,7 +1470,7 @@ function positionnerEtiquette(t, d, p, vertical, X0, X1) {
   if (p.positionValeurs === 'dedans') {
     t.text(valeurTexte); // valeur seule dans le nœud
   } else if (p.positionValeurs === 'apres') {
-    t.text(`${d.name} — ${valeurTexte}`);
+    t.text(`${d.name} : ${valeurTexte}`);
   } else {
     // Valeur sur une deuxième ligne, plus discrète
     t.append('tspan').text(d.name);
@@ -1264,7 +1490,7 @@ function placerEtiquettes(textes, p, vertical, X0, X1) {
   });
 }
 
-// Total des flux entrants au système (sources de premier niveau) — pour les %
+// Total des flux entrants au système (sources de premier niveau), pour les %
 function totalEntrantGlobal() {
   if (!etat.graphe) return 0;
   // Une source de premier niveau n'a AUCUN lien entrant (targetLinks vide)
@@ -1337,7 +1563,7 @@ function afficherMessages(resultat) {
     div.className = 'message erreur';
     div.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
     div.innerHTML += e.ligne > 0
-      ? `Ligne ${e.ligne} : « ${echapperHtml(e.contenu)} » — ${e.cause}`
+      ? `Ligne ${e.ligne} : « ${echapperHtml(e.contenu)} » : ${e.cause}`
       : e.cause;
     zone.appendChild(div);
   }
@@ -1419,7 +1645,7 @@ function activerSurvols(liens, noeuds, p, resultat) {
   noeuds
     .on('mouseenter', function (evenement, n) {
       noeuds.attr('opacity', autre => autre === n ? 1 : 0.35);
-      d3.select(this).attr('stroke', '#111827').attr('stroke-width', 1.5);
+      d3.select(this).attr('stroke', '#1a3a32').attr('stroke-width', 1.5);
       liens.attr('stroke-opacity', l =>
         (l.source === n || l.target === n) ? p.opaciteSurvol : p.opaciteLiens * 0.25);
       const t = resultat.totaux[n.name] || { entrant: 0, sortant: 0 };
@@ -1439,7 +1665,7 @@ function activerSurvols(liens, noeuds, p, resultat) {
 
 /* Déplacement des nœuds à la souris (vertical ET horizontal).
    POINT CRITIQUE : pendant le glissement on n'appelle QUE sankey.update()
-   pour recalculer les courbes — jamais la mise en page complète, qui
+   pour recalculer les courbes, jamais la mise en page complète, qui
    écraserait les positions manuelles. La position est mémorisée au relâchement. */
 function activerDeplacement(noeuds, liens, gLiens, cheminLien, p, vertical, extent) {
   const [X0, X1] = [extent[0][0], extent[1][0]];
@@ -1449,7 +1675,7 @@ function activerDeplacement(noeuds, liens, gLiens, cheminLien, p, vertical, exte
     .on('start', function (evenement) {
       // Empêche le zoom/pan de capter ce glissement
       evenement.sourceEvent.stopPropagation();
-      d3.select(this).attr('stroke', '#111827').attr('stroke-width', 1.5);
+      d3.select(this).attr('stroke', '#1a3a32').attr('stroke-width', 1.5);
     })
     .on('drag', function (evenement, d) {
       // En vertical, les axes écran et les axes du graphe sont croisés
@@ -1601,7 +1827,7 @@ function ajusterALaFenetre() {
 <script>
 'use strict';
 /* ============================================================
-   PANNEAU « MISE EN FORME » — généré à partir de cette liste.
+   PANNEAU « MISE EN FORME » : généré à partir de cette liste.
    Pour ajouter ou retirer un réglage, modifier uniquement ici
    ET PARAMS_DEFAUT en haut du fichier.
    ============================================================ */
@@ -1656,7 +1882,7 @@ const CONTROLS_FORME = [
   { id: 'tailleTitre',     label: 'Taille du titre',    type: 'curseur', min: 10, max: 40, pas: 1, unite: ' px' },
   { id: 'tailleSousTitre', label: 'Taille du sous-titre', type: 'curseur', min: 8, max: 24, pas: 1, unite: ' px' },
   { id: 'note',            label: 'Mention de source (bas de dessin)', type: 'texte',
-    aide: 'Petite ligne en bas à gauche, par exemple « Source : SINOE 2025 — traitement NCPA ». L\'espace nécessaire est réservé automatiquement.' },
+    aide: 'Petite ligne en bas à gauche, par exemple « Source : SINOE 2025, traitement NCPA ». L\'espace nécessaire est réservé automatiquement.' },
   { id: 'tailleNote',      label: 'Taille de la mention', type: 'curseur', min: 7, max: 18, pas: 1, unite: ' px' }
 ];
 
@@ -1700,7 +1926,7 @@ function construireOngletForme() {
       FORMATS.forEach((fmt, i) => {
         const opt = document.createElement('option');
         opt.value = String(i);
-        opt.textContent = fmt.l ? `${fmt.nom} — ${fmt.l} × ${fmt.h}` : fmt.nom;
+        opt.textContent = fmt.l ? `${fmt.nom}, ${fmt.l} × ${fmt.h}` : fmt.nom;
         menu.appendChild(opt);
       });
       menu.addEventListener('change', () => {
@@ -2004,7 +2230,9 @@ let minuteurToast = null;
 function afficherToast(message, estAlerte) {
   const zone = $('toast');
   zone.innerHTML = (estAlerte ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-circle-check"></i>') + message;
-  zone.style.background = estAlerte ? 'rgba(180, 83, 9, 0.95)' : 'rgba(17, 24, 39, 0.92)';
+  // Une classe, et non un style en ligne : ce dernier l'emporterait sur les
+  // règles du mode sombre.
+  zone.classList.toggle('alerte', !!estAlerte);
   zone.style.display = 'block';
   clearTimeout(minuteurToast);
   minuteurToast = setTimeout(() => { zone.style.display = 'none'; }, 4500);
@@ -2093,13 +2321,13 @@ function copierImage() {
   if (!etat.graphe) return;
   const possible = navigator.clipboard && window.ClipboardItem && navigator.clipboard.write;
   if (!possible) {
-    afficherToast('Votre navigateur refuse la copie d\u2019image — utilisez « PNG 2× » puis insérez le fichier.', true);
+    afficherToast('Votre navigateur refuse la copie d\u2019image : utilisez « PNG 2× » puis insérez le fichier.', true);
     return;
   }
   construirePNG(2, blob => {
     navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-      .then(() => afficherToast('Image copiée — collez-la avec Ctrl+V dans Word ou PowerPoint.'))
-      .catch(() => afficherToast('Copie refusée par le navigateur — utilisez « PNG 2× » à la place.', true));
+      .then(() => afficherToast('Image copiée, collez-la avec Ctrl+V dans Word ou PowerPoint.'))
+      .catch(() => afficherToast('Copie refusée par le navigateur : utilisez « PNG 2× » à la place.', true));
   });
 }
 
@@ -2271,7 +2499,7 @@ function activerCollageTableur() {
     dessiner();
     afficherToast(`${resultat.lignes.length} flux convertis depuis le tableur ` +
       `(valeurs lues en colonne ${resultat.colonneValeur})` +
-      (resultat.ignorees ? ` — ${resultat.ignorees} ligne(s) incomplète(s) ignorée(s).` : '.'));
+      (resultat.ignorees ? `, ${resultat.ignorees} ligne(s) incomplète(s) ignorée(s).` : '.'));
   });
 }
 
@@ -2345,9 +2573,33 @@ function activerEditeurNoeud() {
 }
 
 /* ============================================================
-   INITIALISATION — exécutée une fois la page chargée
+   BASCULE CLAIR / SOMBRE
+
+   Même mécanique que le reste du site (assets/js/main.js) : l'attribut
+   data-theme est posé sur <html> et le choix est mémorisé sous la clé
+   « theme », partagée avec le portfolio. Le script anti-FOUC placé dans
+   le <head> se charge de la restaurer avant le premier rendu.
+   ============================================================ */
+function activerBasculeTheme() {
+  const bouton = $('theme-toggle');
+  if (!bouton) return;
+  bouton.addEventListener('click', () => {
+    const actuel = document.documentElement.getAttribute('data-theme');
+    const suivant = actuel === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', suivant);
+    try { localStorage.setItem('theme', suivant); } catch (e) {}
+  });
+}
+
+/* ============================================================
+   INITIALISATION : exécutée une fois la page chargée
    ============================================================ */
 function initialiser() {
+  // La bascule de thème ne dépend pas des bibliothèques de dessin : on
+  // l'active avant tout contrôle, pour qu'elle reste utilisable même si
+  // les CDN sont inaccessibles.
+  activerBasculeTheme();
+
   // Vérifie que les bibliothèques CDN sont bien chargées
   if (typeof d3 === 'undefined' || typeof d3.sankey === 'undefined') {
     $('messages').innerHTML = '<div class="message erreur"><i class="fa-solid fa-circle-xmark"></i>' +
@@ -2358,7 +2610,7 @@ function initialiser() {
 
   // Titre de l'outil dans l'en-tête et l'onglet navigateur
   $('titre-outil').textContent = TITRE_OUTIL;
-  document.title = TITRE_OUTIL;
+  document.title = TITRE_OUTIL + ' - Yves Marti';
 
   // Menu des exemples
   const select = $('select-exemples');

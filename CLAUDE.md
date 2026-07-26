@@ -280,15 +280,38 @@ Les vagues entre sections utilisent `<path fill="COULEUR_HARDCODÉE">`. Règle C
 | 768px | Skills grid 2 cols, layout mobile général |
 | 480px | Skills grid 1 col, hero réduit |
 
-### Incohérences de style à unifier (objectif futur)
+### Aligner un outil autonome sur la charte
 
-Trois systèmes de couleurs coexistent :
+Les pages de `outils/` n'ont pas de layout Jekyll : elles dupliquent les tokens au lieu de les
+importer. `outils/sankey-builder.html` est la **référence** de ce qu'est un outil aligné, et le
+premier à disposer du mode sombre. Le motif à reproduire :
 
-1. **Style principal** (`style.css`) — accent : `#3d8b6e`
-2. **Page CV** (`cv/index.html`, inline) — `--teal: #2a7a5e` (teinte différente), police Lora + Source Sans 3
-3. **Réalisations** (`realisations.css`) — `#2a7a65` hardcodé, `font-family: system-ui`
+1. **Deux couches de variables** dans `:root` : les tokens de charte copiés de `style.css`
+   (`--color-*`, `--font-*`), puis les rôles propres à l'outil (`--fond-panneau`, `--accent-douce`,
+   `--damier-a`…) définis à partir des premiers. Ajouter les échelles absentes de la charte
+   (`--r-xs/s/m/l`, `--ombre-xs/s/m/l`), que `style.css` ne tokenise pas.
+2. **Aucune couleur en dur hors de `:root`.** Contrôle :
+   `awk '/^<style>/{f=1;next} /^<\/style>/{f=0} f' outils/mon-outil.html | grep -E "#[0-9a-f]{3,8}|rgba?\("`
+   ne doit remonter que les définitions de variables (et les replis littéraux du `.back-link`).
+3. **Mode sombre** = un bloc `[data-theme="dark"]` qui redéfinit ces variables, enfermé dans
+   `@media screen` pour que l'impression reste claire (même parti pris que `cv/index.html`).
+   Attention aux champs (`input`, `select`, `textarea`) sans `background` déclaré : ils restent
+   blancs. Poser `color-scheme` pour que les curseurs, listes et ascenseurs natifs suivent.
+4. **Anti-FOUC + bascule** : copier le script inline de `_layouts/default.html` et répliquer
+   `initDarkMode` de `main.js`. La clé `localStorage` `theme` est partagée avec le site : venir de
+   `/outils.html` en mode nuit doit ouvrir l'outil déjà en nuit.
+5. **Contenu exporté** : pour un outil qui produit une image ou un PDF, le rendu ne suit **jamais**
+   le thème (sinon les exports du soir sortent sur fond sombre). Le mode sombre habille le plan de
+   travail, pas le document.
 
-La page CV est autonome pour permettre l'impression propre. Toute unification de ses couleurs se fait dans les variables CSS inline de `cv/index.html`.
+### Incohérences de style restantes (objectif futur)
+
+- **Page CV** (`cv/index.html`, inline) : `--teal: #2a7a5e`, teinte différente de `--color-accent`.
+  Autonome pour permettre l'impression propre ; toute unification passe par ses variables inline.
+- **Réalisations** (`realisations.css`) : `#2a7a65` hardcodé, `font-family: system-ui`.
+- **Autres outils de `outils/`** : chacun a encore sa palette locale (QR Forge `#1d5234` + Manrope,
+  encart-gps `#2d7db3` + Inter, implantation-pav `#B91E27`…) et aucun mode sombre. Le seul élément
+  déjà commun aux 13 outils est le composant `.back-link`.
 
 ---
 
@@ -402,7 +425,7 @@ Page entièrement autonome (sans layout Jekyll) :
 - `<head>` complet : charset, viewport, canonical, OG, Twitter Card, JSON-LD (Person + WebPage + BreadcrumbList)
 - Google Tag Manager (GTM-KC3LMQP2) dans `<head>` et `<body>`
 - Script anti-FOUC dark mode (inline avant CSS)
-- Chargement Google Fonts (6 familles)
+- Chargement Google Fonts (2 familles : DM Serif Display + Source Sans 3, une seule requête)
 - `{% include header.html %}`
 - `<main>{{ content }}</main>`
 - `{% include footer.html %}`
