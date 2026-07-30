@@ -88,7 +88,6 @@
   tags: ["Excel", "JS", "Dataviz"]
   emoji: "📈"
   url: "/realisations/presentation-dashboard.html"
-  featured: true
 
 - id: 11
   title: "Générateur de diagrammes de Sankey"
