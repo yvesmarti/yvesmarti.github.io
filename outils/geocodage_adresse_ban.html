@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
-    <title>Géocodage BAN - Amélioré</title>
+    <title>Géocodage d'adresses via la BAN</title>
 <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
@@ -13,6 +13,8 @@
     <meta name="author" content="Yves Marti">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.fr/outils/geocodage_adresse_ban.html">
+    <meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Géocodage d'adresses en masse via la BAN - Yves Marti">
     <meta property="og:description" content="Convertir un fichier CSV d'adresses en coordonnées géographiques avec la Base Adresse Nationale (BAN), sans installation.">
@@ -29,500 +31,763 @@
     <meta name="twitter:image" content="https://yvesmarti.fr/assets/images/og-image.png">
     <meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:creator" content="@yvesmarti">
-    
-    <!-- Leaflet pour la carte -->
+
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication",
+     "name":"Géocodage d'adresses via la BAN",
+     "url":"https://yvesmarti.fr/outils/geocodage_adresse_ban.html",
+     "applicationCategory":"BusinessApplication","operatingSystem":"Web",
+     "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
+     "author":{"@type":"Person","name":"Yves Marti","url":"https://yvesmarti.fr"}}
+    </script>
+
+    <!-- ============================================================
+         BIBLIOTHÈQUES EXTERNES (CDN imposés : ne pas changer d'hébergeur)
+         Leaflet : carte des résultats
+         PapaParse : lecture et écriture des CSV
+         SheetJS : lecture des .xlsx et export Excel. Distribution officielle
+           depuis le retrait de npm ; les versions 0.18.x portent la
+           CVE-2023-30533, déclenchée par la lecture de fichiers non fiables,
+           ce que fait précisément cet outil.
+         Font Awesome : icônes des boutons
+         Polices : DM Serif Display (titres) + Source Sans 3 (corps), les deux
+         familles du portfolio. La pile système prend le relais si elles sont
+         bloquées.
+         ============================================================ -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- PapaParse pour lire les CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <!-- SheetJS pour lire les Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            overflow: hidden;
-        }
-        
-        /* En-tête */
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-        
-        /* Zone principale */
-        .main-content {
-            padding: 30px;
-        }
-        
-        /* Section upload */
-        .upload-section {
-            background: #f8f9fa;
-            border: 3px dashed #3498db;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 30px;
-            transition: all 0.3s;
-        }
-        
-        .upload-section:hover {
-            border-color: #2980b9;
-            background: #f0f0f5;
-        }
-        
-        .upload-section input[type="file"] {
-            display: none;
-        }
-        
-        .upload-label {
-            display: inline-block;
-            padding: 15px 30px;
-            background: #2c3e50;
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: transform 0.2s;
-        }
-        
-        .upload-label:hover {
-            transform: scale(1.05);
-            background: #34495e;
-        }
-        
-        /* Tableau de prévisualisation */
-        .preview-section {
-            display: none;
-            margin-bottom: 30px;
-        }
-        
-        .preview-header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .preview-header h3 {
-            font-size: 1.3em;
-        }
-        
-        .selection-controls {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: white;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        
-        .btn-primary:hover {
-            background: #f0f0f5;
-        }
-        
-        .btn-success {
-            background: #27ae60;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
-            padding: 12px 25px;
-        }
-        
-        .btn-success:hover {
-            background: #229954;
-        }
-        
-        .btn-success:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 0 0 10px 10px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        
-        th {
-            background: #f8f9fa;
-            padding: 12px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 2px solid #2c3e50;
-        }
-        
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .checkbox-cell {
-            text-align: center;
-            width: 50px;
-        }
-        
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        /* Section actions */
-        .actions-section {
-            display: none;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        /* Barre de progression */
-        .progress-section {
-            display: none;
-            margin-bottom: 30px;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #ecf0f1;
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: #2c3e50;
-            width: 0%;
-            transition: width 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        /* Section carte */
-        .map-section {
-            display: none;
-            margin-top: 30px;
-        }
-        
-        .map-header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .basemap-selector {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            cursor: pointer;
-        }
-        
-        .column-select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        
-        .column-select:focus {
-            outline: none;
-            border-color: #2c3e50;
-        }
-        
-        #map {
-            height: 500px;
-            border-radius: 0 0 10px 10px;
-        }
-        
-        /* Statistiques */
-        .stats {
-            display: none;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 15px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        
-        .stat-label {
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        /* Export */
-        .export-section {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        /* Messages */
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.5.2/papaparse.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-        /* ── BACK LINK ─────────────────────────────────────────── */
-        .back-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin: 1.2rem 0 0.5rem;
-          font-size: .85rem;
-          font-weight: 600;
-          color: #6b7c75;
-          text-decoration: none;
-          transition: color .15s;
-        }
-        .back-link:hover { color: #3d8b6e; }
-    </style>
+    <!-- Thème : lecture anticipée pour éviter le flash (FOUC).
+         La clé « theme » est partagée avec le reste du site : arriver depuis
+         /outils.html en mode nuit ouvre l'outil déjà en mode nuit. -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
+
+<style>
+/* ============================================================
+   FEUILLE DE STYLE : couleurs et espacements faciles à retoucher
+
+   Deux couches de variables :
+   1. les tokens de la charte du site (--color-*, --font-*), copiés
+      à l'identique de assets/css/style.css ;
+   2. les rôles propres à l'outil (--fond-panneau, --accent-douce…),
+      définis à partir des premiers.
+   Le mode sombre plus bas ne fait que redéfinir ces variables : aucune
+   couleur ne doit être écrite en dur ailleurs dans cette feuille.
+   ============================================================ */
+:root {
+  /* ---- Tokens de la charte (assets/css/style.css) ---- */
+  --color-primary:      #1a3a32;
+  --color-accent:       #3d8b6e;
+  --color-accent-light: #9ed4b8;
+  --color-light:        #f7f9f8;
+  --color-warm:         #e8ded4;
+  --color-text:         #2c2c2c;
+  --color-muted:        #6b7c75;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* ---- Surfaces ---- */
+  --fond-page: #e7ece9;                 /* plan de travail derrière la carte de contenu */
+  --fond-panneau: #ffffff;              /* carte principale, panneaux, tableau */
+  --fond-controle: #ffffff;             /* champs de saisie et boutons secondaires */
+  --fond-doux: var(--color-light);      /* en-têtes de tableau, zones d'aide */
+  --bordure: #dde3e0;                   /* bordures fines */
+
+  /* ---- Accent ---- */
+  --accent: var(--color-accent);            /* boutons principaux, focus */
+  --accent-fort: var(--color-primary);      /* survol du bouton principal */
+  --accent-douce: #e8f4f0;                  /* vert très pâle (survol, aide, info) */
+  --accent-texte: #1a5c4a;                  /* accent posé SUR --accent-douce */
+  --accent-contraste: #ffffff;              /* texte posé SUR --accent */
+
+  /* ---- Texte ---- */
+  --texte: var(--color-text);
+  --texte-doux: var(--color-muted);
+
+  /* ---- États ---- */
+  --succes: #15803d;
+  --succes-fond: #eefaf2;
+  --erreur: #b91c1c;
+  --erreur-fond: #fef2f2;
+  --alerte: #b45309;
+  --alerte-fond: #fffbeb;
+
+  /* ---- Sur-couches (bandeau de message flottant) ---- */
+  --surcouche: rgba(26, 58, 50, 0.94);
+  --surcouche-texte: #f0f6f3;
+
+  /* ---- Niveaux de confiance du géocodage ----
+     Utilisés pour les pastilles de l'interface : ils suivent le thème. */
+  --qualite-bon: var(--succes);
+  --qualite-moyen: var(--alerte);
+  --qualite-faible: var(--erreur);
+
+  /* ---- Couleurs des marqueurs de carte ----
+     Elles ne suivent JAMAIS le thème : les tuiles restent claires en mode
+     nuit (c'est de la donnée, pas du châssis), donc les points doivent
+     rester lisibles sur un fond clair. Même parti pris que le diagramme de
+     sankey-builder.html, qui ne s'assombrit pas non plus. */
+  --carte-bon: #15803d;
+  --carte-moyen: #d97706;
+  --carte-faible: #b91c1c;
+  --carte-contour: #ffffff;
+
+  /* ---- Rayons ---- */
+  --r-xs: 4px;
+  --r-s:  6px;
+  --r-m:  10px;
+  --r-l:  14px;
+
+  /* ---- Ombres ---- */
+  --ombre-xs: 0 1px 8px   rgba(26, 58, 50, 0.10);
+  --ombre-s:  0 2px 10px  rgba(26, 58, 50, 0.12);
+  --ombre-m:  0 8px 24px  rgba(26, 58, 50, 0.15);
+  --ombre-l:  0 14px 36px rgba(26, 58, 50, 0.16);
+
+  color-scheme: light dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--texte);
+  background: var(--fond-page);
+}
+
+h1, h2, h3 {
+  /* DM Serif Display n'existe qu'en 400 : on fixe la graisse pour éviter
+     que le navigateur ne synthétise un faux gras. */
+  font-family: var(--font-display);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--fond-panneau);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-m);
+  overflow: hidden;
+}
+
+/* ---------- En-tête ---------- */
+.entete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  background: var(--fond-panneau);
+  border-bottom: 1px solid var(--bordure);
+}
+.entete__titres { margin-right: auto; }
+.entete h1 { font-size: 1.6rem; color: var(--color-primary); }
+.entete h1 i { color: var(--accent); margin-right: 8px; }
+.entete__baseline {
+  margin: 2px 0 0;
+  font-size: .92rem;
+  color: var(--texte-doux);
+}
+
+/* ---------- Lien de retour vers la liste des outils ---------- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  /* Les valeurs littérales de repli gardent un rendu clair strictement
+     identique aux autres outils, tout en suivant le thème ici. */
+  color: var(--texte-doux, #6b7c75);
+  text-decoration: none;
+  transition: color .15s;
+  flex-basis: 100%;
+}
+.back-link:hover { color: var(--accent, #3d8b6e); }
+
+/* ---------- Boutons ---------- */
+.bouton {
+  font-family: inherit;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--texte);
+  background: var(--fond-controle);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-s);
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.bouton:hover { background: var(--accent-douce); border-color: var(--accent); color: var(--accent-texte); }
+.bouton i { margin-right: 6px; }
+.bouton.principal { background: var(--accent); color: var(--accent-contraste); border-color: var(--accent); }
+.bouton.principal:hover { background: var(--accent-fort); border-color: var(--accent-fort); color: var(--accent-contraste); }
+.bouton.grand { font-size: 1rem; padding: 12px 26px; }
+.bouton:disabled,
+.bouton.principal:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  background: var(--fond-controle);
+  color: var(--texte-doux);
+  border-color: var(--bordure);
+}
+
+/* Bouton de bascule clair / sombre */
+#theme-toggle { padding: 8px 11px; line-height: 1; }
+#theme-toggle i { margin-right: 0; }
+.theme-icon--sun { display: none; }
+.theme-icon--moon { display: inline-block; }
+[data-theme="dark"] .theme-icon--sun { display: inline-block; }
+[data-theme="dark"] .theme-icon--moon { display: none; }
+
+/* Focus visible sur tous les contrôles interactifs */
+.bouton:focus-visible,
+.back-link:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Zone principale ---------- */
+.main-content { padding: 24px; }
+
+section { margin-bottom: 26px; }
+section:last-child { margin-bottom: 0; }
+
+/* ---------- Messages ---------- */
+#messages:empty { display: none; }
+#messages { margin-bottom: 20px; }
+.message {
+  padding: 11px 14px;
+  border-radius: var(--r-m);
+  margin-bottom: 8px;
+  font-size: .95rem;
+}
+.message i { margin-right: 8px; }
+.message.succes { background: var(--succes-fond); color: var(--succes); }
+.message.erreur { background: var(--erreur-fond); color: var(--erreur); }
+.message.alerte { background: var(--alerte-fond); color: var(--alerte); }
+.message.info   { background: var(--accent-douce); color: var(--accent-texte); }
+
+/* ---------- Carte d'aide repliable ---------- */
+details.aide {
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  background: var(--accent-douce);
+  margin-bottom: 24px;
+  font-size: .92rem;
+}
+details.aide summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--accent-texte);
+}
+details.aide summary i { margin-right: 8px; }
+details.aide .aide-corps { padding: 0 14px 14px; line-height: 1.6; }
+details.aide .aide-corps ul { margin: 8px 0 0; padding-left: 20px; }
+details.aide .aide-corps li { margin-bottom: 4px; }
+
+/* ---------- Section de chargement du fichier ---------- */
+.upload-section {
+  background: var(--fond-doux);
+  border: 2px dashed var(--bordure);
+  border-radius: var(--r-m);
+  padding: 32px 20px;
+  text-align: center;
+  transition: border-color .2s ease, background .2s ease;
+}
+.upload-section:hover,
+.upload-section.survol { border-color: var(--accent); background: var(--accent-douce); }
+.upload-section .icone-fichier { font-size: 2.6rem; color: var(--accent); margin-bottom: 12px; }
+.upload-section h2 { font-size: 1.25rem; color: var(--color-primary); margin-bottom: 8px; }
+.upload-section .indication { color: var(--texte-doux); margin: 0 0 18px; font-size: .92rem; }
+.upload-section input[type="file"] {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+.upload-label {
+  display: inline-block;
+  padding: 12px 26px;
+  background: var(--accent);
+  color: var(--accent-contraste);
+  border-radius: var(--r-m);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background .2s ease, transform .2s ease;
+}
+.upload-label:hover { background: var(--accent-fort); transform: scale(1.03); }
+.upload-section input[type="file"]:focus-visible + .upload-label {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Panneaux (mapping, prévisualisation, carte) ---------- */
+.panneau {
+  display: none;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  overflow: hidden;
+}
+.panneau__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--fond-doux);
+  border-bottom: 1px solid var(--bordure);
+}
+.panneau__entete h3 { font-size: 1.15rem; color: var(--color-primary); }
+.panneau__entete h3 i { color: var(--accent); margin-right: 8px; }
+.panneau__corps { padding: 18px 16px; background: var(--fond-panneau); }
+.panneau__indication { color: var(--texte-doux); margin: 0 0 18px; font-size: .92rem; }
+
+/* ---------- Grille de configuration des colonnes ---------- */
+.grille-mapping {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.champ-mapping {
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  padding: 14px;
+}
+.champ-mapping label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--color-primary);
+}
+.champ-mapping label i { color: var(--accent); margin-right: 6px; }
+.champ-mapping small { display: block; margin-top: 6px; color: var(--texte-doux); font-size: .82rem; }
+
+select {
+  width: 100%;
+  font-family: inherit;
+  font-size: .95rem;
+  padding: 8px 10px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-s);
+  background: var(--fond-controle);
+  color: var(--texte);
+  cursor: pointer;
+}
+select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+select.compact { width: auto; min-width: 180px; }
+
+.rangee-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---------- Tableau ---------- */
+.table-container {
+  max-height: 420px;
+  overflow: auto;
+  background: var(--fond-panneau);
+}
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th {
+  background: var(--fond-doux);
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--bordure);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+td { padding: 8px 12px; border-bottom: 1px solid var(--bordure); }
+tbody tr:hover { background: var(--fond-doux); }
+.checkbox-cell { text-align: center; width: 48px; }
+input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.cellule-num { color: var(--texte-doux); font-family: var(--font-mono); font-size: .82rem; }
+.note-troncature {
+  padding: 10px 16px;
+  background: var(--alerte-fond);
+  color: var(--alerte);
+  font-size: .88rem;
+  border-top: 1px solid var(--bordure);
+}
+.note-troncature:empty { display: none; }
+
+/* ---------- Pastilles de qualité ---------- */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: .82rem;
+  font-weight: 600;
+}
+.pastille::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pastille.bon    { color: var(--qualite-bon); }
+.pastille.moyen  { color: var(--qualite-moyen); }
+.pastille.faible { color: var(--qualite-faible); }
+.pastille.echec  { color: var(--texte-doux); }
+
+/* ---------- Actions et progression ---------- */
+.actions-section { display: none; text-align: center; }
+.actions-section .compteur { color: var(--texte-doux); margin: 10px 0 0; font-size: .92rem; }
+
+.progress-section { display: none; }
+.progress-section h3 { font-size: 1.1rem; color: var(--color-primary); margin-bottom: 10px; }
+.progress-bar {
+  width: 100%;
+  height: 26px;
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  color: var(--accent-contraste);
+  font-size: .82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width .25s ease;
+}
+.progress-section .rangee-actions { margin-top: 12px; }
+
+/* ---------- Statistiques ---------- */
+.stats { display: none; }
+.stats h3 { font-size: 1.15rem; color: var(--color-primary); margin-bottom: 14px; }
+.stats h3 i { color: var(--accent); margin-right: 8px; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.stat-card {
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  padding: 16px 12px;
+  text-align: center;
+}
+.stat-number { font-size: 1.9rem; font-weight: 700; color: var(--color-primary); line-height: 1.15; }
+.stat-number.bon    { color: var(--qualite-bon); }
+.stat-number.moyen  { color: var(--qualite-moyen); }
+.stat-number.faible { color: var(--qualite-faible); }
+.stat-label { color: var(--texte-doux); margin-top: 4px; font-size: .85rem; }
+
+/* ---------- Carte ---------- */
+#map {
+  height: 500px;
+  background: var(--fond-doux);
+}
+.legende-carte {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--fond-doux);
+  border-top: 1px solid var(--bordure);
+  font-size: .85rem;
+}
+
+/* Habillage Leaflet : seuls les contrôles et les infobulles suivent le
+   thème. Les tuiles restent telles quelles, c'est de la donnée. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--fond-panneau);
+  color: var(--texte);
+  box-shadow: var(--ombre-m);
+}
+.leaflet-popup-content { font-family: var(--font-body); font-size: .88rem; }
+.leaflet-popup-content dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.leaflet-popup-content dt { font-weight: 700; color: var(--texte-doux); }
+.leaflet-popup-content dd { margin: 0; word-break: break-word; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--texte-doux); }
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--fond-panneau);
+  color: var(--texte);
+  border-bottom-color: var(--bordure);
+}
+.leaflet-control-attribution {
+  background: var(--fond-panneau);
+  color: var(--texte-doux);
+}
+.leaflet-control-attribution a { color: var(--accent-texte); }
+
+/* ---------- Export ---------- */
+.export-section { display: none; text-align: center; }
+.export-section h3 { font-size: 1.15rem; color: var(--color-primary); margin-bottom: 12px; }
+.export-section h3 i { color: var(--accent); margin-right: 8px; }
+
+/* ---------- Adoucit la bascule d'un thème à l'autre ---------- */
+body, .container, .entete, .panneau, .panneau__entete, .panneau__corps,
+.upload-section, .champ-mapping, .stat-card, .table-container, th, td,
+.bouton, select, .progress-bar, .legende-carte, .message {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  #map { height: 420px; }
+}
+
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .main-content { padding: 18px 14px; }
+  .entete { padding: 14px 16px; }
+  .entete h1 { font-size: 1.35rem; }
+  .grille-mapping { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  #map { height: 340px; }
+  .panneau__entete { flex-direction: column; align-items: flex-start; }
+  select.compact { width: 100%; }
+  .rangee-actions .bouton { flex: 1 1 auto; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .bouton.grand { width: 100%; }
+  #map { height: 280px; }
+}
+
+/* ---------- Animations réduites ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  .upload-label:hover { transform: none; }
+}
+
+/* ============================================================
+   MODE SOMBRE
+
+   Enfermé dans @media screen : une impression reste toujours claire,
+   comme sur la page CV du site.
+
+   Les tuiles de carte ne suivent JAMAIS le thème, et les marqueurs non
+   plus : un fond cartographique clair sous des points assombris serait
+   illisible. Le mode sombre habille le châssis, pas la donnée.
+   ============================================================ */
+@media screen {
+  [data-theme="dark"] {
+    /* --color-primary est inversé : ici il ne sert qu'à colorer des titres,
+       jamais un fond de section comme sur le site. */
+    --color-primary: #b8d8c8;
+    --color-accent:  #5aad8a;
+    --color-light:   #131e17;
+    --color-warm:    #1c2a20;
+    --color-text:    #d4e8dc;
+    --color-muted:   #8aaa9a;
+
+    --fond-page:     #131e17;
+    --fond-panneau:  #1a2e24;
+    --fond-controle: #22382c;
+    --fond-doux:     #16241c;
+    --bordure:       #2a3d30;
+
+    --accent-fort:      #6ecba0;
+    --accent-douce:     #1a3028;
+    --accent-texte:     #6ecba0;
+    --accent-contraste: #10231a;
+
+    --succes:      #6ecba0;
+    --succes-fond: #14301f;
+    --erreur:      #ff9c94;
+    --erreur-fond: #3a1e1c;
+    --alerte:      #e6b25c;
+    --alerte-fond: #33280f;
+
+    --surcouche:       rgba(10, 26, 16, 0.94);
+    --surcouche-texte: #d4e8dc;
+
+    --ombre-xs: 0 1px 10px  rgba(0, 0, 0, 0.40);
+    --ombre-s:  0 2px 12px  rgba(0, 0, 0, 0.40);
+    --ombre-m:  0 8px 24px  rgba(0, 0, 0, 0.45);
+    --ombre-l:  0 14px 36px rgba(0, 0, 0, 0.50);
+
+    color-scheme: dark;
+  }
+}
+</style>
 </head>
 <body>
-    <a href="/outils/" class="back-link">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Retour aux outils
-    </a>
     <div class="container">
-        <!-- En-tête -->
-        <div class="header">
-            <h1><i class="fas fa-map-marker-alt"></i> Outil de géocodage BAN</h1>
-            <p>Importez, sélectionnez et géocodez vos adresses avec la Base Adresse Nationale</p>
-        </div>
-        
-        <div class="main-content">
-            <!-- Messages -->
-            <div id="messageSuccess" class="message success"></div>
-            <div id="messageError" class="message error"></div>
-            
-            <!-- Section upload -->
-            <div class="upload-section">
-                <i class="fas fa-file-csv" style="font-size: 3em; color: #2c3e50; margin-bottom: 15px;"></i>
-                <h2 style="margin-bottom: 15px;">Charger un fichier CSV ou Excel</h2>
-                <p style="color: #7f8c8d; margin-bottom: 20px;">
-                    Formats acceptés : .csv et .xlsx<br>
-                    Vous pourrez ensuite sélectionner les colonnes contenant les informations d'adresse
-                </p>
-                <input type="file" id="fileInput" accept=".csv,.xlsx" />
-                <label for="fileInput" class="upload-label">
-                    <i class="fas fa-upload"></i> Choisir un fichier
-                </label>
+
+        <header class="entete">
+            <a href="/outils.html" class="back-link" title="Retour à la liste des outils">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour aux outils
+            </a>
+            <div class="entete__titres">
+                <h1><i class="fa-solid fa-location-dot"></i> Géocodage d'adresses</h1>
+                <p class="entete__baseline">Importez, sélectionnez et géocodez vos adresses avec la Base Adresse Nationale</p>
             </div>
-            
-            <!-- Section mapping des colonnes -->
-            <div id="mappingSection" class="preview-section">
-                <div class="preview-header">
-                    <h3><i class="fas fa-columns"></i> Configuration des colonnes</h3>
+            <!-- Bascule clair / sombre : partage la clé « theme » avec le reste du site -->
+            <button class="bouton" id="theme-toggle" aria-label="Basculer le thème clair ou sombre" title="Basculer le thème clair ou sombre">
+              <i class="fa-solid fa-sun theme-icon theme-icon--sun"></i>
+              <i class="fa-solid fa-moon theme-icon theme-icon--moon"></i>
+            </button>
+        </header>
+
+        <main class="main-content">
+
+            <!-- Messages -->
+            <div id="messages" aria-live="polite"></div>
+
+            <!-- Aide -->
+            <details class="aide">
+                <summary><i class="fa-solid fa-circle-question"></i> Comment ça marche, et que deviennent mes données</summary>
+                <div class="aide-corps">
+                    <p>Chargez un fichier CSV ou Excel, indiquez quelles colonnes contiennent l'adresse, puis lancez le géocodage. Les coordonnées obtenues sont exportables en CSV, Excel ou GeoJSON.</p>
+                    <ul>
+                        <li><strong>Vos fichiers ne quittent pas votre navigateur.</strong> Seul le texte des adresses sélectionnées est envoyé à l'API publique de la Base Adresse Nationale, hébergée par l'État. Les autres colonnes ne sortent jamais de votre poste.</li>
+                        <li><strong>Niveaux de confiance :</strong> <span class="pastille bon">Adresse exacte</span> le numéro a été localisé, <span class="pastille moyen">À vérifier</span> seule la voie a été trouvée, le point est posé sur la rue, <span class="pastille faible">Commune seule</span> le point est le centre de la commune, à ne pas utiliser tel quel pour du terrain.</li>
+                        <li><strong>Si un code postal est renseigné</strong>, il sert à filtrer la recherche, ce qui départage les voies homonymes. En cas d'échec, une seconde tentative est faite sans ce filtre.</li>
+                        <li>Le géocodage se fait par lots parallèles. Vous pouvez l'interrompre à tout moment : les lignes déjà traitées restent exportables.</li>
+                    </ul>
                 </div>
-                <div style="padding: 20px; background: white;">
-                    <p style="color: #7f8c8d; margin-bottom: 20px;">
+            </details>
+
+            <!-- Section chargement du fichier -->
+            <section class="upload-section" id="dropZone">
+                <div class="icone-fichier"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <h2>Charger un fichier CSV ou Excel</h2>
+                <p class="indication">
+                    Formats acceptés : .csv, .xlsx et .xls<br>
+                    Glissez votre fichier ici, ou utilisez le bouton. Vous choisirez ensuite les colonnes d'adresse.
+                </p>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+                <label for="fileInput" class="upload-label">
+                    <i class="fa-solid fa-upload"></i> Choisir un fichier
+                </label>
+            </section>
+
+            <!-- Section configuration des colonnes -->
+            <section id="mappingSection" class="panneau">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-table-columns"></i> Configuration des colonnes</h3>
+                </div>
+                <div class="panneau__corps">
+                    <p class="panneau__indication">
                         Sélectionnez les colonnes de votre fichier pour construire l'adresse à géocoder.
-                        Vous pouvez soit utiliser une colonne "adresse complète", soit composer l'adresse à partir de plusieurs colonnes.
+                        Vous pouvez soit utiliser une colonne « adresse complète », soit composer l'adresse à partir de plusieurs colonnes.
                     </p>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
-                        <!-- Option 1 : Adresse complète -->
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
-                                <i class="fas fa-map-marker-alt"></i> Adresse complète
-                            </label>
-                            <select id="colAdresseComplete" class="column-select">
+
+                    <div class="grille-mapping">
+                        <div class="champ-mapping">
+                            <label for="colAdresseComplete"><i class="fa-solid fa-location-dot"></i> Adresse complète</label>
+                            <select id="colAdresseComplete">
                                 <option value="">-- Ne pas utiliser --</option>
                             </select>
-                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
-                                Ex: "15 Rue de la Paix 75002 Paris"
-                            </small>
+                            <small>Ex : « 15 Rue de la Paix 75002 Paris »</small>
                         </div>
-                        
-                        <!-- Option 2 : Numéro -->
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
-                                <i class="fas fa-hashtag"></i> Numéro de voie
-                            </label>
-                            <select id="colNumero" class="column-select">
+
+                        <div class="champ-mapping">
+                            <label for="colNumero"><i class="fa-solid fa-hashtag"></i> Numéro de voie</label>
+                            <select id="colNumero">
                                 <option value="">-- Optionnel --</option>
                             </select>
-                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
-                                Ex: "15" ou "15 bis"
-                            </small>
+                            <small>Ex : « 15 » ou « 15 bis »</small>
                         </div>
-                        
-                        <!-- Nom de voie -->
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
-                                <i class="fas fa-road"></i> Nom de la voie
-                            </label>
-                            <select id="colVoie" class="column-select">
+
+                        <div class="champ-mapping">
+                            <label for="colVoie"><i class="fa-solid fa-road"></i> Nom de la voie</label>
+                            <select id="colVoie">
                                 <option value="">-- Optionnel --</option>
                             </select>
-                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
-                                Ex: "Rue de la Paix" ou "Avenue Victor Hugo"
-                            </small>
+                            <small>Ex : « Rue de la Paix » ou « Avenue Victor Hugo »</small>
                         </div>
-                        
-                        <!-- Code postal -->
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
-                                <i class="fas fa-mail-bulk"></i> Code postal
-                            </label>
-                            <select id="colCodePostal" class="column-select">
+
+                        <div class="champ-mapping">
+                            <label for="colCodePostal"><i class="fa-solid fa-envelope"></i> Code postal</label>
+                            <select id="colCodePostal">
                                 <option value="">-- Optionnel --</option>
                             </select>
-                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
-                                Ex: "75002"
-                            </small>
+                            <small>Ex : « 14000 ». Sert aussi de filtre de recherche.</small>
                         </div>
-                        
-                        <!-- Commune -->
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #2c3e50;">
-                                <i class="fas fa-city"></i> Commune
-                            </label>
-                            <select id="colCommune" class="column-select">
+
+                        <div class="champ-mapping">
+                            <label for="colCommune"><i class="fa-solid fa-city"></i> Commune</label>
+                            <select id="colCommune">
                                 <option value="">-- Optionnel --</option>
                             </select>
-                            <small style="display: block; margin-top: 5px; color: #7f8c8d;">
-                                Ex: "Paris" ou "Lyon"
-                            </small>
+                            <small>Ex : « Caen » ou « Rouen »</small>
                         </div>
                     </div>
-                    
-                    <div style="text-align: center;">
-                        <button class="btn btn-success" onclick="validateMapping()" style="font-size: 1.1em; padding: 12px 30px;">
-                            <i class="fas fa-check"></i> Valider et continuer
+
+                    <div class="rangee-actions">
+                        <button class="bouton principal grand" id="btnValiderMapping">
+                            <i class="fa-solid fa-check"></i> Valider et continuer
                         </button>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Section carte (maintenant en premier) -->
-            <div id="mapSection" class="map-section">
-                <div class="map-header">
-                    <h3><i class="fas fa-map"></i> Carte des résultats</h3>
-                    <select class="basemap-selector" id="basemapSelector" onchange="changeBasemap()">
-                        <option value="osm">OpenStreetMap</option>
-                        <option value="satellite">Vue Satellite + Labels</option>
-                    </select>
-                </div>
-                <div id="map"></div>
-            </div>
-            
+            </section>
+
             <!-- Section prévisualisation -->
-            <div id="previewSection" class="preview-section">
-                <div class="preview-header">
-                    <h3><i class="fas fa-table"></i> Prévisualisation des données</h3>
-                    <div class="selection-controls">
-                        <button class="btn btn-primary" onclick="toggleSelectAll()">
-                            <i class="fas fa-check-square"></i> Tout sélectionner
+            <section id="previewSection" class="panneau">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-table"></i> Données du fichier</h3>
+                    <div class="rangee-actions">
+                        <select id="filtreQualite" class="compact" aria-label="Filtrer les lignes affichées" hidden>
+                            <option value="tous">Toutes les lignes</option>
+                            <option value="bon">Adresses exactes</option>
+                            <option value="moyen">À vérifier</option>
+                            <option value="faible">Commune seule</option>
+                            <option value="echec">Échecs</option>
+                        </select>
+                        <button class="bouton" id="btnToutSelectionner">
+                            <i class="fa-solid fa-square-check"></i> Tout sélectionner
                         </button>
-                        <button class="btn btn-primary" onclick="deselectAll()">
-                            <i class="fas fa-square"></i> Tout désélectionner
+                        <button class="bouton" id="btnToutDeselectionner">
+                            <i class="fa-regular fa-square"></i> Tout désélectionner
                         </button>
                     </div>
                 </div>
@@ -532,611 +797,1150 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-            </div>
-            
+                <p class="note-troncature" id="noteTroncature"></p>
+            </section>
+
             <!-- Section actions -->
-            <div id="actionsSection" class="actions-section">
-                <button class="btn btn-success" onclick="startGeocoding()">
-                    <i class="fas fa-location-arrow"></i> Géocoder les lignes sélectionnées
+            <section id="actionsSection" class="actions-section">
+                <button class="bouton principal grand" id="btnGeocoder">
+                    <i class="fa-solid fa-location-arrow"></i> Géocoder les lignes sélectionnées
                 </button>
-                <p style="color: #7f8c8d; margin-top: 10px;" id="selectedCount"></p>
-            </div>
-            
+                <p class="compteur" id="selectedCount"></p>
+            </section>
+
             <!-- Barre de progression -->
-            <div id="progressSection" class="progress-section">
-                <h3 style="margin-bottom: 10px;">Géocodage en cours...</h3>
-                <div class="progress-bar">
-                    <div id="progressFill" class="progress-fill">0%</div>
+            <section id="progressSection" class="progress-section">
+                <h3>Géocodage en cours</h3>
+                <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progression du géocodage">
+                    <div id="progressFill" class="progress-fill">0 %</div>
                 </div>
-            </div>
-            
+                <div class="rangee-actions">
+                    <button class="bouton" id="btnAnnuler"><i class="fa-solid fa-xmark"></i> Annuler</button>
+                </div>
+            </section>
+
             <!-- Statistiques -->
-            <div id="statsSection" class="stats">
-                <h3><i class="fas fa-chart-bar"></i> Résultats du géocodage</h3>
+            <section id="statsSection" class="stats">
+                <h3><i class="fa-solid fa-chart-simple"></i> Résultats du géocodage</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number" id="statTotal">0</div>
                         <div class="stat-label">Adresses traitées</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statSuccess" style="color: #27ae60;">0</div>
-                        <div class="stat-label">Géocodées avec succès</div>
+                        <div class="stat-number bon" id="statBon">0</div>
+                        <div class="stat-label">Adresses exactes</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statFailed" style="color: #e74c3c;">0</div>
+                        <div class="stat-number moyen" id="statMoyen">0</div>
+                        <div class="stat-label">À vérifier</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number faible" id="statFailed">0</div>
                         <div class="stat-label">Échecs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statRate">0%</div>
+                        <div class="stat-number" id="statRate">0 %</div>
                         <div class="stat-label">Taux de réussite</div>
                     </div>
                 </div>
-            </div>
-            
+            </section>
+
+            <!-- Carte -->
+            <section id="mapSection" class="panneau">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-map"></i> Carte des résultats</h3>
+                    <select class="compact" id="basemapSelector" aria-label="Choisir le fond de carte">
+                        <option value="osm">OpenStreetMap</option>
+                        <option value="satellite">Vue satellite + labels</option>
+                    </select>
+                </div>
+                <div id="map" aria-label="Carte des adresses géocodées" role="application"></div>
+                <div class="legende-carte">
+                    <span class="pastille bon">Adresse exacte</span>
+                    <span class="pastille moyen">À vérifier</span>
+                    <span class="pastille faible">Commune seule</span>
+                </div>
+            </section>
+
             <!-- Section export -->
-            <div id="exportSection" class="export-section">
-                <button class="btn btn-success" onclick="exportCSV()">
-                    <i class="fas fa-download"></i> Télécharger le CSV avec coordonnées
-                </button>
-            </div>
-        </div>
+            <section id="exportSection" class="export-section">
+                <h3><i class="fa-solid fa-download"></i> Exporter les résultats</h3>
+                <div class="rangee-actions">
+                    <button class="bouton principal" id="btnExportCSV">
+                        <i class="fa-solid fa-file-csv"></i> CSV
+                    </button>
+                    <button class="bouton" id="btnExportXLSX">
+                        <i class="fa-solid fa-file-excel"></i> Excel (.xlsx)
+                    </button>
+                    <button class="bouton" id="btnExportGeoJSON">
+                        <i class="fa-solid fa-earth-europe"></i> GeoJSON (QGIS)
+                    </button>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <script>
-        // ========================================
-        // VARIABLES GLOBALES
-        // ========================================
-        
-        let csvData = [];           // Données brutes du CSV
-        let selectedRows = [];      // Indices des lignes sélectionnées
-        let geocodedData = [];      // Données avec coordonnées
-        let map = null;             // Carte Leaflet
-        let markersLayer = null;    // Couche pour les marqueurs
-        let baseLayers = {};        // Fonds de carte disponibles
-        let columnMapping = {       // Mapping des colonnes
-            adresseComplete: '',
-            numero: '',
-            voie: '',
-            codePostal: '',
-            commune: ''
-        };
-        
-        // ========================================
-        // CHARGEMENT DU FICHIER CSV OU EXCEL
-        // ========================================
-        
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            // Détecter le type de fichier par son extension
-            const fileName = file.name.toLowerCase();
-            const isCSV = fileName.endsWith('.csv');
-            const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
-            
-            if (!isCSV && !isExcel) {
-                showMessage('error', '✗ Format non supporté. Utilisez .csv ou .xlsx');
-                return;
-            }
-            
-            if (isCSV) {
-                // Lecture du CSV avec PapaParse
-                Papa.parse(file, {
-                    header: true,           // Première ligne = en-têtes
-                    skipEmptyLines: true,   // Ignorer les lignes vides
-                    complete: function(results) {
-                        csvData = results.data;
-                        showColumnMapping(results.meta.fields);
-                        showMessage('success', `✓ ${csvData.length} lignes chargées depuis le CSV !`);
-                    },
-                    error: function(error) {
-                        showMessage('error', '✗ Erreur lors de la lecture du CSV : ' + error.message);
-                    }
-                });
-            } else {
-                // Lecture du fichier Excel avec SheetJS
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        // Lire le fichier Excel
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        
-                        // Prendre la première feuille
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        
-                        // Convertir en JSON (tableau d'objets)
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-                        
-                        if (jsonData.length === 0) {
-                            showMessage('error', '✗ Le fichier Excel est vide ou mal formaté');
-                            return;
-                        }
-                        
-                        csvData = jsonData;
-                        const columns = Object.keys(jsonData[0]);
-                        showColumnMapping(columns);
-                        showMessage('success', `✓ ${csvData.length} lignes chargées depuis Excel !`);
-                        
-                    } catch (error) {
-                        showMessage('error', '✗ Erreur lors de la lecture du fichier Excel : ' + error.message);
-                    }
-                };
-                
-                reader.onerror = function() {
-                    showMessage('error', '✗ Erreur lors de la lecture du fichier');
-                };
-                
-                // Lire le fichier comme un ArrayBuffer
-                reader.readAsArrayBuffer(file);
-            }
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     CONSTANTES
+     ============================================================ */
+
+  var API_BAN = 'https://api-adresse.data.gouv.fr/search/';
+
+  // Le quota public de la BAN est de 50 requêtes par seconde. 8 requêtes
+  // simultanées restent très en deçà tout en divisant la durée par environ
+  // dix par rapport à une boucle séquentielle.
+  var CONCURRENCE = 8;
+  var DELAI_REQUETE_MS = 10000;   // abandon d'une requête qui ne répond pas
+  var TENTATIVES_MAX = 3;         // par ligne, sur 429 et 5xx
+  var LIGNES_APERCU_MAX = 200;    // lignes réellement rendues dans le tableau
+
+  var COLONNES_RESULTAT = [
+    'adresse_geocodee', 'latitude', 'longitude', 'ban_label', 'ban_score',
+    'ban_type', 'ban_postcode', 'ban_citycode', 'ban_context',
+    'geocodage_qualite', 'geocodage_status'
+  ];
+
+  var LIBELLE_QUALITE = {
+    bon: 'Adresse exacte',
+    moyen: 'À vérifier',
+    faible: 'Commune seule',
+    echec: 'Non géocodée'
+  };
+
+  /* ============================================================
+     ÉTAT
+     ============================================================ */
+
+  var donnees = [];          // toutes les lignes du fichier
+  var colonnes = [];         // en-têtes du fichier, dans l'ordre
+  var resultats = [];        // même longueur et même indexation que donnees
+  var lignesFiltrees = [];   // indices retenus par le filtre de qualité
+  var lignesAffichees = [];  // indices réellement rendus dans le tableau
+  var geocodageFait = false;
+
+  /* La sélection est tenue ici et non dans les cases à cocher du tableau.
+     Celui-ci ne rend que les premières lignes d'un gros fichier : si la
+     sélection vivait dans le DOM, les lignes non rendues ne pourraient
+     jamais être géocodées. */
+  var selection = new Set();
+
+  var mapping = {
+    adresseComplete: '', numero: '', voie: '', codePostal: '', commune: ''
+  };
+
+  var carte = null;
+  var coucheMarqueurs = null;
+  var fondsCarte = {};
+
+  var annulation = null;        // AbortController du lot en cours
+  var attenteJusqua = 0;        // horodatage de fin de temporisation après un 429
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ============================================================
+     MESSAGES
+     ============================================================ */
+
+  function afficherMessage(type, texte) {
+    var zone = $('messages');
+    var div = document.createElement('div');
+    div.className = 'message ' + type;
+
+    var icone = document.createElement('i');
+    icone.className = 'fa-solid ' + (
+      type === 'succes' ? 'fa-circle-check' :
+      type === 'erreur' ? 'fa-circle-exclamation' :
+      type === 'alerte' ? 'fa-triangle-exclamation' : 'fa-circle-info'
+    );
+    div.appendChild(icone);
+    div.appendChild(document.createTextNode(texte));
+
+    zone.replaceChildren(div);
+
+    if (type === 'succes' || type === 'info') {
+      window.setTimeout(function () {
+        if (div.parentNode === zone) { div.remove(); }
+      }, 6000);
+    }
+  }
+
+  /* ============================================================
+     CHARGEMENT DU FICHIER
+     ============================================================ */
+
+  function chargerFichier(fichier) {
+    if (!fichier) { return; }
+
+    var nom = fichier.name.toLowerCase();
+    var estCSV = /\.csv$/.test(nom);
+    var estExcel = /\.xlsx?$/.test(nom);
+
+    if (!estCSV && !estExcel) {
+      afficherMessage('erreur', 'Format non supporté. Utilisez un fichier .csv, .xlsx ou .xls.');
+      return;
+    }
+
+    if (estCSV) {
+      if (!window.Papa) {
+        afficherMessage('erreur', 'La bibliothèque de lecture CSV n\'a pas pu être chargée. Vérifiez votre connexion puis rechargez la page.');
+        return;
+      }
+      window.Papa.parse(fichier, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (resultat) {
+          accepterDonnees(resultat.data, resultat.meta.fields, 'CSV');
+        },
+        error: function (erreur) {
+          afficherMessage('erreur', 'Erreur lors de la lecture du CSV : ' + erreur.message);
+        }
+      });
+      return;
+    }
+
+    if (!window.XLSX) {
+      afficherMessage('erreur', 'La bibliothèque de lecture Excel n\'a pas pu être chargée. Convertissez votre fichier en CSV, ou rechargez la page.');
+      return;
+    }
+
+    var lecteur = new FileReader();
+    lecteur.onload = function (e) {
+      try {
+        var classeur = window.XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        var feuille = classeur.Sheets[classeur.SheetNames[0]];
+        var lignes = window.XLSX.utils.sheet_to_json(feuille, { defval: '' });
+        if (!lignes.length) {
+          afficherMessage('erreur', 'Le fichier Excel est vide ou mal formaté.');
+          return;
+        }
+        accepterDonnees(lignes, Object.keys(lignes[0]), 'Excel');
+      } catch (erreur) {
+        afficherMessage('erreur', 'Erreur lors de la lecture du fichier Excel : ' + erreur.message);
+      }
+    };
+    lecteur.onerror = function () {
+      afficherMessage('erreur', 'Erreur lors de la lecture du fichier.');
+    };
+    lecteur.readAsArrayBuffer(fichier);
+  }
+
+  function accepterDonnees(lignes, champs, origine) {
+    if (!lignes || !lignes.length) {
+      afficherMessage('erreur', 'Le fichier ne contient aucune ligne exploitable.');
+      return;
+    }
+
+    donnees = lignes;
+    colonnes = (champs || Object.keys(lignes[0])).filter(function (c) { return c !== ''; });
+    resultats = donnees.map(function () { return null; });
+    selection = new Set();
+    lignesFiltrees = [];
+    lignesAffichees = [];
+    geocodageFait = false;
+
+    // Un nouveau fichier remet tout le parcours à zéro.
+    $('previewSection').style.display = 'none';
+    $('actionsSection').style.display = 'none';
+    $('progressSection').style.display = 'none';
+    $('statsSection').style.display = 'none';
+    $('mapSection').style.display = 'none';
+    $('exportSection').style.display = 'none';
+    $('filtreQualite').hidden = true;
+    $('filtreQualite').value = 'tous';
+
+    afficherMapping(colonnes);
+    afficherMessage('succes', lignes.length + ' ligne(s) chargée(s) depuis le fichier ' + origine + '.');
+  }
+
+  /* ============================================================
+     CONFIGURATION DES COLONNES
+     ============================================================ */
+
+  var SELECTS_MAPPING = ['colAdresseComplete', 'colNumero', 'colVoie', 'colCodePostal', 'colCommune'];
+
+  function afficherMapping(listeColonnes) {
+    SELECTS_MAPPING.forEach(function (id) {
+      var select = $(id);
+      var placeholder = select.options[0].cloneNode(true);
+      select.replaceChildren(placeholder);
+      listeColonnes.forEach(function (col) {
+        var option = document.createElement('option');
+        option.value = col;
+        option.textContent = col;
+        select.appendChild(option);
+      });
+      select.value = '';
+    });
+
+    detecterColonnes(listeColonnes);
+    $('mappingSection').style.display = 'block';
+  }
+
+  /* Détection automatique par score.
+
+     L'ancienne version enchaînait des « else if » : la dernière colonne
+     reconnue écrasait les précédentes, et une colonne « Complément
+     d'adresse » était prise pour l'adresse complète. Ici chaque colonne
+     reçoit un score par rôle, chaque rôle retient sa meilleure candidate,
+     et une colonne n'est attribuée qu'une seule fois. */
+  function detecterColonnes(listeColonnes) {
+    var REGLES = {
+      adresseComplete: [
+        { motif: /adresse\s*(complete|complète|compl)/, score: 100 },
+        { motif: /^adresse$/, score: 80 },
+        { motif: /^adr$/, score: 70 },
+        { motif: /adresse/, score: 40 }
+      ],
+      numero: [
+        { motif: /^(n|no|n°|num)$/, score: 100 },
+        { motif: /num[eé]ro\s*(de\s*)?(voie|rue)/, score: 95 },
+        { motif: /^num[eé]ro$/, score: 90 },
+        { motif: /num[eé]ro/, score: 60 }
+      ],
+      voie: [
+        { motif: /(nom|libell[eé])\s*(de\s*(la\s*)?)?(voie|rue)/, score: 100 },
+        { motif: /^(voie|rue)$/, score: 90 },
+        { motif: /voie|rue|avenue|boulevard/, score: 60 },
+        { motif: /libell[eé]/, score: 40 }
+      ],
+      codePostal: [
+        { motif: /^(cp|cod?e?_?postal)$/, score: 100 },
+        { motif: /code\s*postal/, score: 95 },
+        { motif: /postal|postcode|zip/, score: 60 }
+      ],
+      commune: [
+        { motif: /^(commune|ville|city)$/, score: 100 },
+        { motif: /nom\s*(de\s*la\s*)?commune/, score: 95 },
+        { motif: /commune|ville|city|localit/, score: 60 }
+      ]
+    };
+
+    // « Complément d'adresse », « adresse mail » et compagnie ne doivent
+    // jamais être pris pour une adresse postale.
+    var EXCLUSIONS = /compl[eé]ment|complementaire|mail|courriel|mel\b|email|ip\b/;
+
+    var normaliser = function (texte) {
+      return String(texte).toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[_\-.]+/g, ' ')
+        .trim();
+    };
+
+    var candidats = {};
+    Object.keys(REGLES).forEach(function (role) { candidats[role] = []; });
+
+    listeColonnes.forEach(function (col) {
+      var nom = normaliser(col);
+      if (EXCLUSIONS.test(nom)) { return; }
+      Object.keys(REGLES).forEach(function (role) {
+        var meilleur = 0;
+        REGLES[role].forEach(function (regle) {
+          if (regle.motif.test(nom) && regle.score > meilleur) { meilleur = regle.score; }
         });
-        
-        // ========================================
-        // AFFICHAGE DU MAPPING DES COLONNES
-        // ========================================
-        
-        function showColumnMapping(columns) {
-            const mappingSection = document.getElementById('mappingSection');
-            
-            // Remplir tous les sélecteurs avec les noms de colonnes
-            const selects = [
-                'colAdresseComplete',
-                'colNumero',
-                'colVoie',
-                'colCodePostal',
-                'colCommune'
-            ];
-            
-            selects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                // Vider les options existantes sauf la première
-                select.innerHTML = select.options[0].outerHTML;
-                
-                // Ajouter les colonnes
-                columns.forEach(col => {
-                    const option = document.createElement('option');
-                    option.value = col;
-                    option.textContent = col;
-                    select.appendChild(option);
-                });
-            });
-            
-            // Pré-sélection intelligente basée sur les noms de colonnes
-            autoDetectColumns(columns);
-            
-            // Afficher la section
-            mappingSection.style.display = 'block';
+        if (meilleur > 0) { candidats[role].push({ colonne: col, score: meilleur }); }
+      });
+    });
+
+    // Les rôles les plus spécifiques se servent en premier, et une colonne
+    // déjà attribuée n'est plus disponible pour un autre rôle.
+    var prises = {};
+    ['codePostal', 'commune', 'numero', 'voie', 'adresseComplete'].forEach(function (role) {
+      var liste = candidats[role]
+        .filter(function (c) { return !prises[c.colonne]; })
+        .sort(function (a, b) { return b.score - a.score; });
+      if (!liste.length) { return; }
+      var choisi = liste[0].colonne;
+      prises[choisi] = true;
+      $(idSelect(role)).value = choisi;
+    });
+  }
+
+  function idSelect(role) {
+    return {
+      adresseComplete: 'colAdresseComplete',
+      numero: 'colNumero',
+      voie: 'colVoie',
+      codePostal: 'colCodePostal',
+      commune: 'colCommune'
+    }[role];
+  }
+
+  function validerMapping() {
+    mapping.adresseComplete = $('colAdresseComplete').value;
+    mapping.numero = $('colNumero').value;
+    mapping.voie = $('colVoie').value;
+    mapping.codePostal = $('colCodePostal').value;
+    mapping.commune = $('colCommune').value;
+
+    var aAdresseComplete = mapping.adresseComplete !== '';
+    var aComposants = mapping.voie !== '' || mapping.commune !== '' || mapping.codePostal !== '';
+
+    if (!aAdresseComplete && !aComposants) {
+      afficherMessage('erreur', 'Sélectionnez au moins une colonne « adresse complète », ou des colonnes permettant de composer l\'adresse.');
+      return;
+    }
+
+    $('mappingSection').style.display = 'none';
+    // Tout est coché par défaut, y compris les lignes hors de l'aperçu.
+    selection = new Set(donnees.map(function (_, index) { return index; }));
+    afficherTableau();
+    $('actionsSection').style.display = 'block';
+  }
+
+  /* ============================================================
+     CONSTRUCTION DE L'ADRESSE
+     ============================================================ */
+
+  function valeur(ligne, colonne) {
+    if (!colonne) { return ''; }
+    var v = ligne[colonne];
+    return (v === undefined || v === null) ? '' : String(v).trim();
+  }
+
+  function construireAdresse(ligne) {
+    if (mapping.adresseComplete) {
+      var complete = valeur(ligne, mapping.adresseComplete);
+      if (complete) { return complete; }
+    }
+    return [
+      valeur(ligne, mapping.numero),
+      valeur(ligne, mapping.voie),
+      codePostalNormalise(ligne),
+      valeur(ligne, mapping.commune)
+    ].filter(Boolean).join(' ').trim();
+  }
+
+  /* Un code postal passé par Excel perd volontiers son zéro initial
+     (01000 devient 1000) : on le restitue avant d'en faire un filtre. */
+  function codePostalNormalise(ligne) {
+    var brut = valeur(ligne, mapping.codePostal).replace(/\s+/g, '');
+    if (!/^\d{4,5}$/.test(brut)) { return ''; }
+    return brut.padStart(5, '0');
+  }
+
+  /* ============================================================
+     GÉOCODAGE
+     ============================================================ */
+
+  function patienter(ms) {
+    return new Promise(function (resoudre) { window.setTimeout(resoudre, ms); });
+  }
+
+  function niveauQualite(props) {
+    var type = props.type;
+    var score = typeof props.score === 'number' ? props.score : 0;
+    if (type === 'housenumber' && score >= 0.7) { return 'bon'; }
+    if (type === 'housenumber' || type === 'street') { return 'moyen'; }
+    return 'faible';
+  }
+
+  function resultatEchec(adresse, statut) {
+    return {
+      adresse: adresse, statut: statut, qualite: 'echec',
+      latitude: '', longitude: '', props: null
+    };
+  }
+
+  /* Une requête BAN, avec délai maximal et reprise sur quota ou erreur
+     serveur. Renvoie la réponse analysée, ou lève une erreur nommée. */
+  function interrogerBAN(adresse, codePostal, signal) {
+    var url = new URL(API_BAN);
+    url.searchParams.set('q', adresse);
+    url.searchParams.set('limit', '1');
+    // Sans autocomplete=0 le moteur complète les préfixes, ce qui n'a pas de
+    // sens en traitement par lot et produit de faux positifs.
+    url.searchParams.set('autocomplete', '0');
+    if (codePostal) { url.searchParams.set('postcode', codePostal); }
+
+    var controleur = new AbortController();
+    var minuterie = window.setTimeout(function () { controleur.abort(); }, DELAI_REQUETE_MS);
+
+    var relayerAnnulation = function () { controleur.abort(); };
+    if (signal) { signal.addEventListener('abort', relayerAnnulation); }
+
+    return fetch(url.toString(), { signal: controleur.signal })
+      .then(function (reponse) {
+        if (reponse.status === 429) {
+          var erreur429 = new Error('quota');
+          erreur429.nom = 'quota';
+          throw erreur429;
         }
-        
-        // ========================================
-        // DÉTECTION AUTOMATIQUE DES COLONNES
-        // ========================================
-        
-        function autoDetectColumns(columns) {
-            columns.forEach(col => {
-                const colLower = col.toLowerCase();
-                
-                // Adresse complète
-                if (colLower.includes('adresse') && (colLower.includes('complet') || colLower.includes('complete') || !colLower.includes('complement'))) {
-                    document.getElementById('colAdresseComplete').value = col;
-                }
-                // Numéro
-                else if (colLower.includes('numero') || colLower.includes('numéro') || colLower === 'n°' || colLower === 'num') {
-                    document.getElementById('colNumero').value = col;
-                }
-                // Voie
-                else if (colLower.includes('voie') || colLower.includes('rue') || colLower.includes('avenue') || colLower.includes('libelle')) {
-                    document.getElementById('colVoie').value = col;
-                }
-                // Code postal
-                else if (colLower.includes('postal') || colLower === 'cp' || colLower === 'code_postal') {
-                    document.getElementById('colCodePostal').value = col;
-                }
-                // Commune
-                else if (colLower.includes('commune') || colLower.includes('ville') || colLower.includes('city')) {
-                    document.getElementById('colCommune').value = col;
-                }
-            });
+        if (!reponse.ok) {
+          var erreurHttp = new Error('http ' + reponse.status);
+          erreurHttp.nom = reponse.status >= 500 ? 'serveur' : 'http';
+          throw erreurHttp;
         }
-        
-        // ========================================
-        // VALIDATION DU MAPPING
-        // ========================================
-        
-        function validateMapping() {
-            // Récupérer les valeurs sélectionnées
-            columnMapping.adresseComplete = document.getElementById('colAdresseComplete').value;
-            columnMapping.numero = document.getElementById('colNumero').value;
-            columnMapping.voie = document.getElementById('colVoie').value;
-            columnMapping.codePostal = document.getElementById('colCodePostal').value;
-            columnMapping.commune = document.getElementById('colCommune').value;
-            
-            // Vérifier qu'au moins une option est sélectionnée
-            const hasAdresseComplete = columnMapping.adresseComplete !== '';
-            const hasComponents = columnMapping.voie !== '' || columnMapping.commune !== '' || columnMapping.codePostal !== '';
-            
-            if (!hasAdresseComplete && !hasComponents) {
-                showMessage('error', '✗ Veuillez sélectionner au moins une colonne "adresse complète" OU des colonnes pour composer l\'adresse');
-                return;
+        return reponse.json();
+      })
+      .finally(function () {
+        window.clearTimeout(minuterie);
+        if (signal) { signal.removeEventListener('abort', relayerAnnulation); }
+      });
+  }
+
+  function geocoderLigne(ligne, signal) {
+    var adresse = construireAdresse(ligne);
+    if (!adresse) {
+      return Promise.resolve(resultatEchec('', 'Adresse vide'));
+    }
+
+    var codePostal = codePostalNormalise(ligne);
+
+    var tenter = function (tentative, avecFiltreCP) {
+      // Temporisation globale : si un 429 a été reçu, toutes les requêtes
+      // attendent, plutôt que de continuer à marteler l'API.
+      var attente = Math.max(0, attenteJusqua - Date.now());
+
+      return patienter(attente)
+        .then(function () {
+          if (signal.aborted) { return null; }
+          return interrogerBAN(adresse, avecFiltreCP ? codePostal : '', signal);
+        })
+        .then(function (donneesBan) {
+          if (donneesBan === null) { return resultatEchec(adresse, 'Interrompu'); }
+
+          var trouve = donneesBan.features && donneesBan.features.length > 0;
+
+          // Le filtre par code postal peut écarter une adresse correcte si
+          // le code postal du fichier est erroné : on réessaie sans lui.
+          if (!trouve && avecFiltreCP && codePostal) {
+            return tenter(tentative, false);
+          }
+          if (!trouve) { return resultatEchec(adresse, 'Non trouvée'); }
+
+          var entite = donneesBan.features[0];
+          var props = entite.properties || {};
+          var coords = entite.geometry.coordinates;   // [lon, lat], ordre GeoJSON
+
+          return {
+            adresse: adresse,
+            statut: 'Succès',
+            qualite: niveauQualite(props),
+            longitude: coords[0],
+            latitude: coords[1],
+            props: props
+          };
+        })
+        .catch(function (erreur) {
+          if (signal.aborted) { return resultatEchec(adresse, 'Interrompu'); }
+
+          if (erreur.nom === 'quota') {
+            // Le compteur d'attente est partagé par toutes les requêtes.
+            attenteJusqua = Math.max(attenteJusqua, Date.now() + 1000 * tentative);
+            if (tentative < TENTATIVES_MAX) { return tenter(tentative + 1, avecFiltreCP); }
+            return resultatEchec(adresse, 'Quota API dépassé');
+          }
+          if (erreur.nom === 'serveur') {
+            if (tentative < TENTATIVES_MAX) {
+              return patienter(300 * tentative).then(function () { return tenter(tentative + 1, avecFiltreCP); });
             }
-            
-            // Masquer la section mapping
-            document.getElementById('mappingSection').style.display = 'none';
-            
-            // Afficher le tableau de prévisualisation
-            const allColumns = Object.keys(csvData[0]);
-            displayPreview(csvData, allColumns);
+            return resultatEchec(adresse, 'Erreur serveur BAN');
+          }
+          if (erreur.name === 'AbortError') {
+            return resultatEchec(adresse, 'Délai dépassé');
+          }
+          if (tentative < TENTATIVES_MAX) {
+            return patienter(300 * tentative).then(function () { return tenter(tentative + 1, avecFiltreCP); });
+          }
+          return resultatEchec(adresse, 'Erreur réseau');
+        });
+    };
+
+    return tenter(1, Boolean(codePostal));
+  }
+
+  function lancerGeocodage() {
+    // La sélection vient du modèle, pas du DOM : le tableau ne rend qu'un
+    // aperçu, mais le géocodage porte sur toutes les lignes cochées.
+    var indices = Array.from(selection).sort(function (a, b) { return a - b; });
+
+    if (!indices.length) {
+      afficherMessage('erreur', 'Sélectionnez au moins une ligne à géocoder.');
+      return;
+    }
+
+    annulation = new AbortController();
+    attenteJusqua = 0;
+
+    $('progressSection').style.display = 'block';
+    $('actionsSection').style.display = 'none';
+    $('btnAnnuler').disabled = false;
+    majProgression(0, indices.length);
+
+    var suivant = 0;
+    var termines = 0;
+
+    var travailleur = function () {
+      if (annulation.signal.aborted) { return Promise.resolve(); }
+      var position = suivant++;
+      if (position >= indices.length) { return Promise.resolve(); }
+
+      var index = indices[position];
+      return geocoderLigne(donnees[index], annulation.signal).then(function (resultat) {
+        resultats[index] = resultat;
+        termines++;
+        majProgression(termines, indices.length);
+        return travailleur();
+      });
+    };
+
+    var files = [];
+    for (var i = 0; i < Math.min(CONCURRENCE, indices.length); i++) {
+      files.push(travailleur());
+    }
+
+    Promise.all(files).then(function () {
+      var interrompu = annulation.signal.aborted;
+      annulation = null;
+
+      $('progressSection').style.display = 'none';
+      $('actionsSection').style.display = 'block';
+      geocodageFait = true;
+
+      afficherStatistiques(indices);
+      afficherTableau();
+      $('filtreQualite').hidden = false;
+      $('exportSection').style.display = 'block';
+
+      var reussis = indices.filter(function (i) {
+        return resultats[i] && resultats[i].statut === 'Succès';
+      }).length;
+
+      if (reussis > 0) { afficherCarte(); }
+
+      if (interrompu) {
+        afficherMessage('alerte', 'Géocodage interrompu : ' + termines + ' ligne(s) traitée(s) sur ' + indices.length + '. Les résultats obtenus restent exportables.');
+      } else {
+        afficherMessage('succes', 'Géocodage terminé : ' + reussis + ' réussite(s) sur ' + indices.length + ' ligne(s).');
+      }
+    });
+  }
+
+  function majProgression(faits, total) {
+    var pourcentage = total > 0 ? Math.round((faits / total) * 100) : 0;
+    var barre = $('progressFill');
+    barre.style.width = pourcentage + '%';
+    barre.textContent = pourcentage + ' %';
+    barre.parentNode.setAttribute('aria-valuenow', String(pourcentage));
+  }
+
+  function annulerGeocodage() {
+    if (annulation) {
+      annulation.abort();
+      $('btnAnnuler').disabled = true;
+    }
+  }
+
+  /* ============================================================
+     TABLEAU
+     ============================================================ */
+
+  function afficherTableau() {
+    var entete = $('tableHeader');
+    var corps = $('tableBody');
+    var filtre = $('filtreQualite').value;
+
+    // Lignes retenues par le filtre de qualité.
+    var indices = [];
+    donnees.forEach(function (ligne, index) {
+      if (!geocodageFait || filtre === 'tous') { indices.push(index); return; }
+      var resultat = resultats[index];
+      var qualite = resultat ? resultat.qualite : null;
+      if (filtre === 'echec' && (!resultat || qualite === 'echec')) { indices.push(index); }
+      else if (qualite === filtre) { indices.push(index); }
+    });
+
+    lignesFiltrees = indices;
+    lignesAffichees = indices.slice(0, LIGNES_APERCU_MAX);
+
+    // En-tête
+    var ligneEntete = document.createElement('tr');
+    ligneEntete.appendChild(celluleEntete('', 'checkbox-cell', caseToutSelectionner()));
+    ligneEntete.appendChild(celluleEntete('N°'));
+    if (geocodageFait) {
+      ligneEntete.appendChild(celluleEntete('Qualité'));
+      ligneEntete.appendChild(celluleEntete('Latitude'));
+      ligneEntete.appendChild(celluleEntete('Longitude'));
+      ligneEntete.appendChild(celluleEntete('Adresse BAN'));
+      ligneEntete.appendChild(celluleEntete('Statut'));
+    }
+    colonnes.forEach(function (col) { ligneEntete.appendChild(celluleEntete(col)); });
+    entete.replaceChildren(ligneEntete);
+
+    // Corps, assemblé hors du document puis inséré en une seule fois.
+    var fragment = document.createDocumentFragment();
+    lignesAffichees.forEach(function (index) {
+      var ligne = donnees[index];
+      var resultat = resultats[index];
+      var tr = document.createElement('tr');
+
+      var tdCase = document.createElement('td');
+      tdCase.className = 'checkbox-cell';
+      var caseLigne = document.createElement('input');
+      caseLigne.type = 'checkbox';
+      caseLigne.className = 'row-checkbox';
+      caseLigne.dataset.index = String(index);
+      caseLigne.checked = selection.has(index);
+      caseLigne.setAttribute('aria-label', 'Sélectionner la ligne ' + (index + 1));
+      caseLigne.addEventListener('change', function () {
+        if (caseLigne.checked) { selection.add(index); } else { selection.delete(index); }
+        majCaseGlobale();
+        majCompteur();
+      });
+      tdCase.appendChild(caseLigne);
+      tr.appendChild(tdCase);
+
+      tr.appendChild(cellule(String(index + 1), 'cellule-num'));
+
+      if (geocodageFait) {
+        var tdQualite = document.createElement('td');
+        if (resultat) {
+          var pastille = document.createElement('span');
+          pastille.className = 'pastille ' + resultat.qualite;
+          pastille.textContent = LIBELLE_QUALITE[resultat.qualite] || resultat.qualite;
+          tdQualite.appendChild(pastille);
+        } else {
+          tdQualite.textContent = 'Non traitée';
         }
-        
-        // ========================================
-        // AFFICHAGE DU TABLEAU DE PRÉVISUALISATION
-        // ========================================
-        
-        function displayPreview(data, columns) {
-            const previewSection = document.getElementById('previewSection');
-            const tableHeader = document.getElementById('tableHeader');
-            const tableBody = document.getElementById('tableBody');
-            const actionsSection = document.getElementById('actionsSection');
-            
-            // Vider le tableau
-            tableHeader.innerHTML = '';
-            tableBody.innerHTML = '';
-            
-            // Créer l'en-tête avec case à cocher pour tout sélectionner
-            let headerRow = '<tr>';
-            headerRow += '<th class="checkbox-cell"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" /></th>';
-            headerRow += '<th>N°</th>';  // Colonne de numéro de ligne
-            columns.forEach(col => {
-                headerRow += `<th>${col}</th>`;
-            });
-            headerRow += '</tr>';
-            tableHeader.innerHTML = headerRow;
-            
-            // Remplir le tableau avec les données
-            data.forEach((row, index) => {
-                let dataRow = '<tr>';
-                dataRow += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectedCount()" /></td>`;
-                dataRow += `<td>${index + 1}</td>`;  // Numéro de ligne
-                columns.forEach(col => {
-                    dataRow += `<td>${row[col] || ''}</td>`;
-                });
-                dataRow += '</tr>';
-                tableBody.innerHTML += dataRow;
-            });
-            
-            // Afficher les sections
-            previewSection.style.display = 'block';
-            actionsSection.style.display = 'block';
-            
-            // Tout sélectionner par défaut
-            toggleSelectAll();
-        }
-        
-        // ========================================
-        // GESTION DE LA SÉLECTION
-        // ========================================
-        
-        function toggleSelectAll() {
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            
-            checkboxes.forEach(cb => {
-                cb.checked = selectAllCheckbox.checked;
-            });
-            
-            updateSelectedCount();
-        }
-        
-        function deselectAll() {
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            
-            selectAllCheckbox.checked = false;
-            checkboxes.forEach(cb => {
-                cb.checked = false;
-            });
-            
-            updateSelectedCount();
-        }
-        
-        function updateSelectedCount() {
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            const count = checkboxes.length;
-            
-            document.getElementById('selectedCount').textContent = 
-                count > 0 ? `${count} ligne(s) sélectionnée(s)` : 'Aucune ligne sélectionnée';
-            
-            // Désactiver le bouton si aucune ligne sélectionnée
-            const geocodeBtn = document.querySelector('.actions-section .btn-success');
-            if (geocodeBtn) {
-                geocodeBtn.disabled = count === 0;
-            }
-        }
-        
-        // ========================================
-        // GÉOCODAGE
-        // ========================================
-        
-        async function startGeocoding() {
-            // Récupérer les indices des lignes sélectionnées
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            selectedRows = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
-            
-            if (selectedRows.length === 0) {
-                showMessage('error', '✗ Veuillez sélectionner au moins une ligne à géocoder');
-                return;
-            }
-            
-            // Afficher la barre de progression
-            document.getElementById('progressSection').style.display = 'block';
-            document.getElementById('actionsSection').style.display = 'none';
-            
-            // Réinitialiser les résultats
-            geocodedData = [];
-            let successCount = 0;
-            let failCount = 0;
-            
-            // Géocoder chaque ligne sélectionnée
-            for (let i = 0; i < selectedRows.length; i++) {
-                const rowIndex = selectedRows[i];
-                const row = csvData[rowIndex];
-                
-                // Construire l'adresse à partir du mapping
-                let address = '';
-                
-                // Option 1 : Utiliser l'adresse complète si disponible
-                if (columnMapping.adresseComplete && row[columnMapping.adresseComplete]) {
-                    address = row[columnMapping.adresseComplete];
-                }
-                // Option 2 : Composer l'adresse à partir des composants
-                else {
-                    const parts = [];
-                    if (columnMapping.numero && row[columnMapping.numero]) {
-                        parts.push(row[columnMapping.numero]);
-                    }
-                    if (columnMapping.voie && row[columnMapping.voie]) {
-                        parts.push(row[columnMapping.voie]);
-                    }
-                    if (columnMapping.codePostal && row[columnMapping.codePostal]) {
-                        parts.push(row[columnMapping.codePostal]);
-                    }
-                    if (columnMapping.commune && row[columnMapping.commune]) {
-                        parts.push(row[columnMapping.commune]);
-                    }
-                    address = parts.join(' ');
-                }
-                
-                // Vérifier qu'on a bien une adresse
-                if (!address || address.trim() === '') {
-                    failCount++;
-                    geocodedData.push({
-                        ...row,
-                        latitude: '',
-                        longitude: '',
-                        geocodage_status: 'Échec - Pas d\'adresse'
-                    });
-                    continue;
-                }
-                
-                try {
-                    // Appel à l'API BAN (Base Adresse Nationale)
-                    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`);
-                    const data = await response.json();
-                    
-                    if (data.features && data.features.length > 0) {
-                        const coords = data.features[0].geometry.coordinates;
-                        geocodedData.push({
-                            ...row,
-                            adresse_geocodee: address,  // Conserver l'adresse utilisée
-                            longitude: coords[0],
-                            latitude: coords[1],
-                            geocodage_score: data.features[0].properties.score,
-                            geocodage_status: 'Succès'
-                        });
-                        successCount++;
-                    } else {
-                        geocodedData.push({
-                            ...row,
-                            adresse_geocodee: address,
-                            latitude: '',
-                            longitude: '',
-                            geocodage_status: 'Échec - Adresse non trouvée'
-                        });
-                        failCount++;
-                    }
-                } catch (error) {
-                    geocodedData.push({
-                        ...row,
-                        adresse_geocodee: address,
-                        latitude: '',
-                        longitude: '',
-                        geocodage_status: 'Échec - Erreur API'
-                    });
-                    failCount++;
-                }
-                
-                // Mettre à jour la progression
-                const progress = Math.round(((i + 1) / selectedRows.length) * 100);
-                document.getElementById('progressFill').style.width = progress + '%';
-                document.getElementById('progressFill').textContent = progress + '%';
-                
-                // Pause de 200ms entre chaque requête (limite API BAN)
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-            
-            // Masquer la barre de progression
-            document.getElementById('progressSection').style.display = 'none';
-            
-            // Afficher les statistiques
-            displayStats(selectedRows.length, successCount, failCount);
-            
-            // Afficher la carte si au moins un succès
-            if (successCount > 0) {
-                displayMap();
-            }
-            
-            // Afficher le bouton d'export
-            document.getElementById('exportSection').style.display = 'block';
-            
-            showMessage('success', `✓ Géocodage terminé : ${successCount} succès, ${failCount} échecs`);
-        }
-        
-        // ========================================
-        // AFFICHAGE DES STATISTIQUES
-        // ========================================
-        
-        function displayStats(total, success, failed) {
-            const statsSection = document.getElementById('statsSection');
-            const rate = total > 0 ? Math.round((success / total) * 100) : 0;
-            
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statSuccess').textContent = success;
-            document.getElementById('statFailed').textContent = failed;
-            document.getElementById('statRate').textContent = rate + '%';
-            
-            statsSection.style.display = 'block';
-        }
-        
-        // ========================================
-        // AFFICHAGE DE LA CARTE
-        // ========================================
-        
-        function displayMap() {
-            const mapSection = document.getElementById('mapSection');
-            mapSection.style.display = 'block';
-            
-            // Initialiser la carte si elle n'existe pas
-            if (!map) {
-                map = L.map('map').setView([46.603354, 1.888334], 6);  // Centre de la France
-                
-                // Fond OpenStreetMap
-                baseLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(map);
-                
-                // Fond Satellite Esri + Labels
-                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: '© Esri',
-                    maxZoom: 19
-                });
-                
-                const labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: '© Esri',
-                    maxZoom: 19
-                });
-                
-                baseLayers.satellite = L.layerGroup([satelliteLayer, labelsLayer]);
-                
-                // Créer une couche pour les marqueurs
-                markersLayer = L.layerGroup().addTo(map);
-            } else {
-                // Vider les marqueurs existants
-                markersLayer.clearLayers();
-            }
-            
-            // Ajouter les marqueurs
-            const validPoints = geocodedData.filter(row => row.latitude && row.longitude);
-            
-            if (validPoints.length === 0) return;
-            
-            const bounds = [];
-            
-            validPoints.forEach(row => {
-                const lat = parseFloat(row.latitude);
-                const lon = parseFloat(row.longitude);
-                
-                if (!isNaN(lat) && !isNaN(lon)) {
-                    // Créer le marqueur
-                    const marker = L.marker([lat, lon]).addTo(markersLayer);
-                    
-                    // Créer le popup avec les infos
-                    let popupContent = '<div style="min-width: 200px;">';
-                    Object.keys(row).forEach(key => {
-                        if (row[key] && key !== 'geocodage_status') {
-                            popupContent += `<b>${key}:</b> ${row[key]}<br>`;
-                        }
-                    });
-                    popupContent += '</div>';
-                    marker.bindPopup(popupContent);
-                    
-                    bounds.push([lat, lon]);
-                }
-            });
-            
-            // Ajuster la vue pour afficher tous les points
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-        }
-        
-        // ========================================
-        // CHANGEMENT DE FOND DE CARTE
-        // ========================================
-        
-        function changeBasemap() {
-            const selector = document.getElementById('basemapSelector');
-            const selected = selector.value;
-            
-            // Retirer tous les fonds de carte
-            Object.values(baseLayers).forEach(layer => {
-                map.removeLayer(layer);
-            });
-            
-            // Ajouter le fond sélectionné
-            if (baseLayers[selected]) {
-                baseLayers[selected].addTo(map);
-            }
-        }
-        
-        // ========================================
-        // EXPORT CSV
-        // ========================================
-        
-        function exportCSV() {
-            if (geocodedData.length === 0) {
-                showMessage('error', '✗ Aucune donnée à exporter');
-                return;
-            }
-            
-            // Convertir en CSV
-            const csv = Papa.unparse(geocodedData);
-            
-            // Créer un blob et déclencher le téléchargement
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'geocodage_resultat.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showMessage('success', '✓ Fichier CSV téléchargé avec succès !');
-        }
-        
-        // ========================================
-        // AFFICHAGE DES MESSAGES
-        // ========================================
-        
-        function showMessage(type, text) {
-            const messageEl = type === 'success' ? 
-                document.getElementById('messageSuccess') : 
-                document.getElementById('messageError');
-            
-            messageEl.textContent = text;
-            messageEl.style.display = 'block';
-            
-            // Masquer automatiquement après 5 secondes
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 5000);
-        }
-    </script>
+        tr.appendChild(tdQualite);
+        tr.appendChild(cellule(coordonneeLisible(resultat && resultat.latitude)));
+        tr.appendChild(cellule(coordonneeLisible(resultat && resultat.longitude)));
+        tr.appendChild(cellule(resultat && resultat.props ? (resultat.props.label || '') : ''));
+        tr.appendChild(cellule(resultat ? resultat.statut : 'Non traitée'));
+      }
+
+      colonnes.forEach(function (col) { tr.appendChild(cellule(valeur(ligne, col))); });
+      fragment.appendChild(tr);
+    });
+    corps.replaceChildren(fragment);
+
+    var note = $('noteTroncature');
+    if (indices.length > LIGNES_APERCU_MAX) {
+      note.textContent = 'Aperçu limité aux ' + LIGNES_APERCU_MAX + ' premières lignes sur ' +
+        indices.length + '. La sélection et le géocodage portent bien sur la totalité des lignes, pas seulement sur celles affichées.';
+    } else {
+      note.textContent = '';
+    }
+
+    $('previewSection').style.display = 'block';
+    majCaseGlobale();
+    majCompteur();
+  }
+
+  /* Arrondi d'affichage seulement : six décimales valent une dizaine de
+     centimètres, c'est déjà plus fin que la BAN. Les exports conservent la
+     valeur exacte renvoyée par l'API. */
+  function coordonneeLisible(valeurBrute) {
+    var nombre = parseFloat(valeurBrute);
+    return isNaN(nombre) ? '' : nombre.toFixed(6);
+  }
+
+  function celluleEntete(texte, classe, noeud) {
+    var th = document.createElement('th');
+    if (classe) { th.className = classe; }
+    if (noeud) { th.appendChild(noeud); } else { th.textContent = texte; }
+    return th;
+  }
+
+  // textContent partout : une valeur du fichier ne doit jamais être
+  // interprétée comme du HTML.
+  function cellule(texte, classe) {
+    var td = document.createElement('td');
+    if (classe) { td.className = classe; }
+    td.textContent = texte;
+    return td;
+  }
+
+  function caseToutSelectionner() {
+    var caseGlobale = document.createElement('input');
+    caseGlobale.type = 'checkbox';
+    caseGlobale.id = 'selectAllCheckbox';
+    caseGlobale.setAttribute('aria-label', 'Tout sélectionner');
+    caseGlobale.addEventListener('change', function () { toutSelectionner(caseGlobale.checked); });
+    return caseGlobale;
+  }
+
+  /* La case d'en-tête porte sur toutes les lignes retenues par le filtre,
+     pas seulement sur celles que l'aperçu a eu la place d'afficher. */
+  function toutSelectionner(etat) {
+    lignesFiltrees.forEach(function (index) {
+      if (etat) { selection.add(index); } else { selection.delete(index); }
+    });
+    document.querySelectorAll('.row-checkbox').forEach(function (cb) { cb.checked = etat; });
+    majCaseGlobale();
+    majCompteur();
+  }
+
+  function majCaseGlobale() {
+    var caseGlobale = $('selectAllCheckbox');
+    if (!caseGlobale) { return; }
+    var cochees = lignesFiltrees.filter(function (index) { return selection.has(index); }).length;
+    caseGlobale.checked = cochees > 0 && cochees === lignesFiltrees.length;
+    caseGlobale.indeterminate = cochees > 0 && cochees < lignesFiltrees.length;
+  }
+
+  function majCompteur() {
+    var nombre = selection.size;
+    $('selectedCount').textContent = nombre > 0
+      ? nombre + ' ligne(s) sélectionnée(s)'
+      : 'Aucune ligne sélectionnée';
+    $('btnGeocoder').disabled = nombre === 0;
+  }
+
+  /* ============================================================
+     STATISTIQUES
+     ============================================================ */
+
+  function afficherStatistiques(indices) {
+    var compte = { bon: 0, moyen: 0, faible: 0, echec: 0 };
+    indices.forEach(function (index) {
+      var resultat = resultats[index];
+      if (!resultat) { return; }
+      compte[resultat.qualite] = (compte[resultat.qualite] || 0) + 1;
+    });
+
+    var traites = indices.length;
+    var reussis = compte.bon + compte.moyen + compte.faible;
+    var taux = traites > 0 ? Math.round((reussis / traites) * 100) : 0;
+
+    $('statTotal').textContent = String(traites);
+    $('statBon').textContent = String(compte.bon);
+    $('statMoyen').textContent = String(compte.moyen + compte.faible);
+    $('statFailed').textContent = String(compte.echec);
+    $('statRate').textContent = taux + ' %';
+    $('statsSection').style.display = 'block';
+  }
+
+  /* ============================================================
+     CARTE
+     ============================================================ */
+
+  function couleurMarqueur(qualite) {
+    var styles = getComputedStyle(document.documentElement);
+    return styles.getPropertyValue('--carte-' + qualite).trim() ||
+           styles.getPropertyValue('--carte-moyen').trim();
+  }
+
+  function afficherCarte() {
+    if (!window.L) {
+      afficherMessage('alerte', 'La bibliothèque cartographique n\'a pas pu être chargée : la carte n\'est pas disponible, mais les exports fonctionnent.');
+      return;
+    }
+
+    var section = $('mapSection');
+    section.style.display = 'block';
+
+    if (!carte) {
+      carte = window.L.map('map').setView([46.603354, 1.888334], 6);   // centre de la France
+
+      fondsCarte.osm = window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(carte);
+
+      fondsCarte.satellite = window.L.layerGroup([
+        window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© Esri', maxZoom: 19
+        }),
+        window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© Esri', maxZoom: 19
+        })
+      ]);
+
+      coucheMarqueurs = window.L.layerGroup().addTo(carte);
+      $('basemapSelector').disabled = false;
+    } else {
+      coucheMarqueurs.clearLayers();
+    }
+
+    var limites = [];
+    var contour = getComputedStyle(document.documentElement).getPropertyValue('--carte-contour').trim();
+
+    donnees.forEach(function (ligne, index) {
+      var resultat = resultats[index];
+      if (!resultat || resultat.statut !== 'Succès') { return; }
+
+      var lat = parseFloat(resultat.latitude);
+      var lon = parseFloat(resultat.longitude);
+      if (isNaN(lat) || isNaN(lon)) { return; }
+
+      var marqueur = window.L.circleMarker([lat, lon], {
+        radius: 7,
+        color: contour,
+        weight: 2,
+        fillColor: couleurMarqueur(resultat.qualite),
+        fillOpacity: 0.9
+      }).addTo(coucheMarqueurs);
+
+      marqueur.bindPopup(contenuPopup(ligne, resultat));
+      limites.push([lat, lon]);
+    });
+
+    // La carte vient de passer de display:none à block : sans ce recalcul,
+    // Leaflet garde une taille nulle et n'affiche que des tuiles grises.
+    window.requestAnimationFrame(function () {
+      carte.invalidateSize();
+      if (limites.length) { carte.fitBounds(limites, { padding: [50, 50] }); }
+    });
+  }
+
+  // Construit un noeud DOM, jamais une chaîne HTML.
+  function contenuPopup(ligne, resultat) {
+    var conteneur = document.createElement('div');
+
+    var titre = document.createElement('strong');
+    titre.textContent = (resultat.props && resultat.props.label) || resultat.adresse;
+    conteneur.appendChild(titre);
+
+    var pastille = document.createElement('div');
+    pastille.className = 'pastille ' + resultat.qualite;
+    pastille.textContent = LIBELLE_QUALITE[resultat.qualite] || resultat.qualite;
+    conteneur.appendChild(pastille);
+
+    var liste = document.createElement('dl');
+    colonnes.forEach(function (col) {
+      var v = valeur(ligne, col);
+      if (!v) { return; }
+      var dt = document.createElement('dt');
+      dt.textContent = col;
+      var dd = document.createElement('dd');
+      dd.textContent = v;
+      liste.appendChild(dt);
+      liste.appendChild(dd);
+    });
+    conteneur.appendChild(liste);
+
+    return conteneur;
+  }
+
+  function changerFondCarte() {
+    if (!carte) { return; }
+    var choix = $('basemapSelector').value;
+    Object.keys(fondsCarte).forEach(function (cle) { carte.removeLayer(fondsCarte[cle]); });
+    if (fondsCarte[choix]) { fondsCarte[choix].addTo(carte); }
+  }
+
+  /* ============================================================
+     EXPORTS
+
+     Toutes les lignes du fichier sont exportées, y compris celles qui
+     n'étaient pas cochées : l'export ne doit jamais amputer le fichier
+     d'origine. Les lignes non traitées portent simplement le statut
+     correspondant et des coordonnées vides.
+     ============================================================ */
+
+  // Si le fichier possède déjà une colonne « latitude », la colonne
+  // produite est suffixée pour ne pas écraser la donnée d'origine.
+  function nomsColonnesResultat() {
+    var noms = {};
+    COLONNES_RESULTAT.forEach(function (nom) {
+      noms[nom] = colonnes.indexOf(nom) === -1 ? nom : nom + '_ban';
+    });
+    return noms;
+  }
+
+  function lignesExport() {
+    var noms = nomsColonnesResultat();
+    return donnees.map(function (ligne, index) {
+      var resultat = resultats[index];
+      var sortie = {};
+      colonnes.forEach(function (col) { sortie[col] = valeur(ligne, col); });
+
+      var props = (resultat && resultat.props) || {};
+      sortie[noms.adresse_geocodee] = resultat ? resultat.adresse : '';
+      sortie[noms.latitude] = resultat ? resultat.latitude : '';
+      sortie[noms.longitude] = resultat ? resultat.longitude : '';
+      sortie[noms.ban_label] = props.label || '';
+      sortie[noms.ban_score] = props.score !== undefined ? props.score : '';
+      sortie[noms.ban_type] = props.type || '';
+      sortie[noms.ban_postcode] = props.postcode || '';
+      sortie[noms.ban_citycode] = props.citycode || '';
+      sortie[noms.ban_context] = props.context || '';
+      sortie[noms.geocodage_qualite] = resultat ? (LIBELLE_QUALITE[resultat.qualite] || '') : '';
+      sortie[noms.geocodage_status] = resultat ? resultat.statut : 'Non traitée';
+      return sortie;
+    });
+  }
+
+  function enTetesExport() {
+    var noms = nomsColonnesResultat();
+    return colonnes.concat(COLONNES_RESULTAT.map(function (nom) { return noms[nom]; }));
+  }
+
+  function nomFichier(extension) {
+    return 'geocodage_' + new Date().toISOString().slice(0, 10) + '.' + extension;
+  }
+
+  function telecharger(blob, nom) {
+    var url = URL.createObjectURL(blob);
+    var lien = document.createElement('a');
+    lien.href = url;
+    lien.download = nom;
+    document.body.appendChild(lien);
+    lien.click();
+    lien.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exporterCSV() {
+    if (!verifierResultats()) { return; }
+    var csv = window.Papa.unparse({ fields: enTetesExport(), data: lignesExport() });
+    // Le BOM UTF-8 est indispensable : sans lui, Excel en français ouvre le
+    // fichier en ANSI et casse tous les accents.
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    telecharger(blob, nomFichier('csv'));
+    afficherMessage('succes', 'Fichier CSV téléchargé.');
+  }
+
+  function exporterXLSX() {
+    if (!verifierResultats()) { return; }
+    if (!window.XLSX) {
+      afficherMessage('erreur', 'La bibliothèque Excel n\'a pas pu être chargée. Utilisez l\'export CSV.');
+      return;
+    }
+    var feuille = window.XLSX.utils.json_to_sheet(lignesExport(), { header: enTetesExport() });
+    var classeur = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(classeur, feuille, 'Géocodage');
+    window.XLSX.writeFile(classeur, nomFichier('xlsx'));
+    afficherMessage('succes', 'Fichier Excel téléchargé.');
+  }
+
+  function exporterGeoJSON() {
+    if (!verifierResultats()) { return; }
+
+    var entites = [];
+    donnees.forEach(function (ligne, index) {
+      var resultat = resultats[index];
+      if (!resultat || resultat.statut !== 'Succès') { return; }
+
+      var proprietes = {};
+      colonnes.forEach(function (col) { proprietes[col] = valeur(ligne, col); });
+      var props = resultat.props || {};
+      proprietes.adresse_geocodee = resultat.adresse;
+      proprietes.ban_label = props.label || '';
+      proprietes.ban_score = props.score !== undefined ? props.score : '';
+      proprietes.ban_type = props.type || '';
+      proprietes.ban_postcode = props.postcode || '';
+      proprietes.ban_citycode = props.citycode || '';
+      proprietes.ban_context = props.context || '';
+      proprietes.geocodage_qualite = LIBELLE_QUALITE[resultat.qualite] || '';
+
+      entites.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [resultat.longitude, resultat.latitude] },
+        properties: proprietes
+      });
+    });
+
+    if (!entites.length) {
+      afficherMessage('erreur', 'Aucun point géocodé à exporter en GeoJSON.');
+      return;
+    }
+
+    var geojson = {
+      type: 'FeatureCollection',
+      // WGS84, système par défaut du GeoJSON : QGIS l'ouvre sans reprojection.
+      crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+      features: entites
+    };
+
+    var blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+    telecharger(blob, nomFichier('geojson'));
+    afficherMessage('succes', entites.length + ' point(s) exporté(s) en GeoJSON.');
+  }
+
+  function verifierResultats() {
+    if (!donnees.length) {
+      afficherMessage('erreur', 'Aucune donnée à exporter.');
+      return false;
+    }
+    return true;
+  }
+
+  /* ============================================================
+     BASCULE CLAIR / SOMBRE
+
+     Même mécanique que le reste du site (assets/js/main.js) : l'attribut
+     data-theme est posé sur <html> et le choix est mémorisé sous la clé
+     « theme », partagée avec le portfolio. Le script anti-FOUC placé dans
+     le <head> se charge de la restaurer avant le premier rendu.
+     ============================================================ */
+  function activerBasculeTheme() {
+    var bouton = $('theme-toggle');
+    if (!bouton) { return; }
+    bouton.addEventListener('click', function () {
+      var actuel = document.documentElement.getAttribute('data-theme');
+      var suivant = actuel === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', suivant);
+      try { localStorage.setItem('theme', suivant); } catch (e) {}
+    });
+  }
+
+  /* ============================================================
+     INITIALISATION
+     ============================================================ */
+
+  function initialiser() {
+    // La bascule de thème ne dépend d'aucune bibliothèque : on l'active
+    // avant tout contrôle, pour qu'elle reste utilisable même si les CDN
+    // sont inaccessibles.
+    activerBasculeTheme();
+
+    $('fileInput').addEventListener('change', function (e) {
+      chargerFichier(e.target.files[0]);
+      e.target.value = '';   // permet de recharger deux fois le même fichier
+    });
+
+    var zone = $('dropZone');
+    ['dragenter', 'dragover'].forEach(function (evenement) {
+      zone.addEventListener(evenement, function (e) {
+        e.preventDefault();
+        zone.classList.add('survol');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (evenement) {
+      zone.addEventListener(evenement, function (e) {
+        e.preventDefault();
+        zone.classList.remove('survol');
+      });
+    });
+    zone.addEventListener('drop', function (e) {
+      if (e.dataTransfer && e.dataTransfer.files.length) {
+        chargerFichier(e.dataTransfer.files[0]);
+      }
+    });
+
+    $('btnValiderMapping').addEventListener('click', validerMapping);
+    $('btnToutSelectionner').addEventListener('click', function () { toutSelectionner(true); });
+    $('btnToutDeselectionner').addEventListener('click', function () { toutSelectionner(false); });
+    $('btnGeocoder').addEventListener('click', lancerGeocodage);
+    $('btnAnnuler').addEventListener('click', annulerGeocodage);
+    $('filtreQualite').addEventListener('change', afficherTableau);
+    $('basemapSelector').addEventListener('change', changerFondCarte);
+    $('basemapSelector').disabled = true;
+    $('btnExportCSV').addEventListener('click', exporterCSV);
+    $('btnExportXLSX').addEventListener('click', exporterXLSX);
+    $('btnExportGeoJSON').addEventListener('click', exporterGeoJSON);
+
+    // Les bibliothèques absentes désactivent leur fonction, pas la page.
+    if (!window.Papa) {
+      $('btnExportCSV').disabled = true;
+      afficherMessage('alerte', 'La bibliothèque de lecture CSV n\'a pas pu être chargée. Vérifiez votre connexion puis rechargez la page.');
+    }
+    if (!window.XLSX) {
+      $('btnExportXLSX').disabled = true;
+      $('btnExportXLSX').title = 'Bibliothèque Excel indisponible';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initialiser);
+}());
+</script>
 </body>
 </html>
