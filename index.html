@@ -228,6 +228,30 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
             </div>
         </div>
 
+        {% assign raccourcis = "outils/geocodage_adresse_ban.html,outils/geocodage_inverse_ban.html" | split: "," %}
+
+        <div class="skills-wide">
+            <div class="tools-shortcuts">
+                <p class="tools-shortcuts__label">Accès direct</p>
+                <ul class="tools-shortcuts__list">
+                    {% for lien in raccourcis %}{% for categorie in site.data.outils %}{% for outil in categorie.outils %}{% if outil.lien == lien and outil.actif %}
+                    <li>
+                        <a class="tools-shortcut" href="{{ outil.lien | relative_url }}">
+                            <span class="tools-shortcut__icon" aria-hidden="true">{{ outil.emoji }}</span>
+                            <span class="tools-shortcut__body">
+                                <span class="tools-shortcut__title">{{ outil.nom }}</span>
+                                <span class="tools-shortcut__desc">{{ outil.description }}</span>
+                            </span>
+                            <svg class="tools-shortcut__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </li>
+                    {% endif %}{% endfor %}{% endfor %}{% endfor %}
+                </ul>
+            </div>
+        </div>
+
         {% assign nb_outils = 0 %}
         {% for categorie in site.data.outils %}{% for outil in categorie.outils %}{% if outil.actif %}{% assign nb_outils = nb_outils | plus: 1 %}{% endif %}{% endfor %}{% endfor %}
         {% assign nb_realisations = site.data.realisations | size %}
