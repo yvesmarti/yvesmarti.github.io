@@ -168,6 +168,20 @@ dédiée (`realisations/index.html`, filtre Liquid `where: "type", "guide"`).
 titre n'est codé en dur dans `index.html`. Les liens externes (`url` contenant `://`) sont
 détectés automatiquement et reçoivent `target="_blank"` + `rel="noopener noreferrer"`.
 
+### Raccourcis outils sur l'accueil
+
+Sous les réalisations mises en avant, la section `#outils` de `index.html` affiche un bloc
+« Accès direct » (classe `.tools-shortcuts`) qui pointe vers quelques outils précis. La
+sélection se fait par une liste de chemins en tête du bloc :
+
+```liquid
+{% assign raccourcis = "outils/geocodage_adresse_ban.html,outils/geocodage_inverse_ban.html" | split: "," %}
+```
+
+Chaque chemin doit correspondre exactement à un champ `lien` de `_data/outils.yml` : le nom,
+l'emoji et la description sont repris de là (aucun texte dupliqué dans `index.html`). Un outil
+passé en `actif: false` disparaît automatiquement du bloc.
+
 ### `competences.yml`
 
 ```yaml
