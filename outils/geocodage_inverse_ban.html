@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="msvalidate.01" content="3144B81AE42A4C5BF0823F793B3392FB" />
-    <title>Géocodage Inversé - BAN</title>
+    <title>Géocodage inverse via la BAN</title>
 <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
     <!-- SEO injected -->
-    <meta name="description" content="Retrouver une adresse à partir de coordonnées GPS via la Base Adresse Nationale (BAN). Outil web simple, sans installation.">
+    <meta name="description" content="Retrouver l'adresse correspondant à des coordonnées GPS avec la Base Adresse Nationale (BAN) : un point isolé ou un fichier entier, sans installation.">
     <meta name="author" content="Yves Marti">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.fr/outils/geocodage_inverse_ban.html">
+    <meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Géocodage inverse BAN - Yves Marti">
-    <meta property="og:description" content="Retrouver une adresse à partir de coordonnées GPS via la Base Adresse Nationale (BAN). Outil web simple, sans installation.">
+    <meta property="og:title" content="Géocodage inverse via la BAN - Yves Marti">
+    <meta property="og:description" content="Retrouver l'adresse correspondant à des coordonnées GPS avec la Base Adresse Nationale (BAN) : un point isolé ou un fichier entier, sans installation.">
     <meta property="og:url" content="https://yvesmarti.fr/outils/geocodage_inverse_ban.html">
     <meta property="og:locale" content="fr_FR">
     <meta property="og:site_name" content="Yves Marti - Chargé de mission déchets & SIG">
@@ -24,445 +26,2326 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Géocodage inverse BAN - Yves Marti">
-    <meta name="twitter:description" content="Retrouver une adresse à partir de coordonnées GPS via la Base Adresse Nationale (BAN). Outil web simple, sans installation.">
+    <meta name="twitter:title" content="Géocodage inverse via la BAN - Yves Marti">
+    <meta name="twitter:description" content="Retrouver l'adresse correspondant à des coordonnées GPS avec la Base Adresse Nationale (BAN) : un point isolé ou un fichier entier, sans installation.">
     <meta name="twitter:image" content="https://yvesmarti.fr/assets/images/og-image.png">
     <meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
     <meta name="twitter:creator" content="@yvesmarti">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <style>
-        /* Style pour rendre l'interface agréable */
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #0053b3;
-            text-align: center;
-        }
-        .upload-section {
-            margin: 30px 0;
-            padding: 20px;
-            border: 2px dashed #0053b3;
-            border-radius: 5px;
-            text-align: center;
-        }
-        input[type="file"] {
-            margin: 10px 0;
-        }
-        button {
-            background-color: #0053b3;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px 5px;
-        }
-        button:hover {
-            background-color: #003d82;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .info-box {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-left: 4px solid #0053b3;
-            margin: 20px 0;
-        }
-        .progress {
-            margin: 20px 0;
-            display: none;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background-color: #0053b3;
-            width: 0%;
-            transition: width 0.3s;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #0053b3;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .results-section {
-            margin-top: 30px;
-            display: none;
-        }
-        .error {
-            color: #d32f2f;
-            font-weight: bold;
-        }
-        .success {
-            color: #388e3c;
-            font-weight: bold;
-        }
 
-        /* ── BACK LINK ─────────────────────────────────────────── */
-        .back-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin: 1.2rem 0 0.5rem;
-          font-size: .85rem;
-          font-weight: 600;
-          color: #6b7c75;
-          text-decoration: none;
-          transition: color .15s;
-        }
-        .back-link:hover { color: #3d8b6e; }
-    </style>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication",
+     "name":"Géocodage inverse via la BAN",
+     "url":"https://yvesmarti.fr/outils/geocodage_inverse_ban.html",
+     "applicationCategory":"BusinessApplication","operatingSystem":"Web",
+     "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
+     "author":{"@type":"Person","name":"Yves Marti","url":"https://yvesmarti.fr"}}
+    </script>
+
+    <!-- ============================================================
+         BIBLIOTHÈQUES EXTERNES (CDN imposés : ne pas changer d'hébergeur)
+         Leaflet : carte de saisie et carte des résultats
+         PapaParse : lecture et écriture des CSV
+         SheetJS : lecture des .xlsx et export Excel. Distribution officielle
+           depuis le retrait de npm ; les versions 0.18.x portent la
+           CVE-2023-30533, déclenchée par la lecture de fichiers non fiables,
+           ce que fait précisément cet outil.
+         Font Awesome : icônes des boutons
+         Polices : DM Serif Display (titres) + Source Sans 3 (corps), les deux
+         familles du portfolio. La pile système prend le relais si elles sont
+         bloquées.
+         ============================================================ -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.5.2/papaparse.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Thème : lecture anticipée pour éviter le flash (FOUC).
+         La clé « theme » est partagée avec le reste du site : arriver depuis
+         /outils.html en mode nuit ouvre l'outil déjà en mode nuit. -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
+
+<style>
+/* ============================================================
+   FEUILLE DE STYLE : couleurs et espacements faciles à retoucher
+
+   Deux couches de variables :
+   1. les tokens de la charte du site (--color-*, --font-*), copiés
+      à l'identique de assets/css/style.css ;
+   2. les rôles propres à l'outil (--fond-panneau, --accent-douce…),
+      définis à partir des premiers.
+   Le mode sombre plus bas ne fait que redéfinir ces variables : aucune
+   couleur ne doit être écrite en dur ailleurs dans cette feuille.
+   ============================================================ */
+:root {
+  /* ---- Tokens de la charte (assets/css/style.css) ---- */
+  --color-primary:      #1a3a32;
+  --color-accent:       #3d8b6e;
+  --color-accent-light: #9ed4b8;
+  --color-light:        #f7f9f8;
+  --color-warm:         #e8ded4;
+  --color-text:         #2c2c2c;
+  --color-muted:        #6b7c75;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* ---- Surfaces ---- */
+  --fond-page: #e7ece9;                 /* plan de travail derrière la carte de contenu */
+  --fond-panneau: #ffffff;              /* carte principale, panneaux, tableau */
+  --fond-controle: #ffffff;             /* champs de saisie et boutons secondaires */
+  --fond-doux: var(--color-light);      /* en-têtes de tableau, zones d'aide */
+  --bordure: #dde3e0;                   /* bordures fines */
+
+  /* ---- Accent ---- */
+  --accent: var(--color-accent);            /* boutons principaux, focus */
+  --accent-fort: var(--color-primary);      /* survol du bouton principal */
+  --accent-douce: #e8f4f0;                  /* vert très pâle (survol, aide, info) */
+  --accent-texte: #1a5c4a;                  /* accent posé SUR --accent-douce */
+  --accent-contraste: #ffffff;              /* texte posé SUR --accent */
+
+  /* ---- Texte ---- */
+  --texte: var(--color-text);
+  --texte-doux: var(--color-muted);
+
+  /* ---- États ---- */
+  --succes: #15803d;
+  --succes-fond: #eefaf2;
+  --erreur: #b91c1c;
+  --erreur-fond: #fef2f2;
+  --alerte: #b45309;
+  --alerte-fond: #fffbeb;
+
+  /* ---- Sur-couches (bandeau de message flottant) ---- */
+  --surcouche: rgba(26, 58, 50, 0.94);
+  --surcouche-texte: #f0f6f3;
+
+  /* ---- Niveaux de confiance du géocodage ----
+     Utilisés pour les pastilles de l'interface : ils suivent le thème. */
+  --qualite-bon: var(--succes);
+  --qualite-moyen: var(--alerte);
+  --qualite-faible: var(--erreur);
+
+  /* ---- Couleurs des marqueurs de carte ----
+     Elles ne suivent JAMAIS le thème : les tuiles restent claires en mode
+     nuit (c'est de la donnée, pas du châssis), donc les points doivent
+     rester lisibles sur un fond clair. Même parti pris que le diagramme de
+     sankey-builder.html, qui ne s'assombrit pas non plus. */
+  --carte-bon: #15803d;
+  --carte-moyen: #d97706;
+  --carte-faible: #b91c1c;
+  --carte-contour: #ffffff;
+  /* Le point interrogé isolément est dessiné en anneau, pas en pastille
+     pleine : il se distingue de l'échelle de qualité par la forme autant
+     que par la couleur. */
+  --carte-point: #1a3a32;
+
+  /* ---- Rayons ---- */
+  --r-xs: 4px;
+  --r-s:  6px;
+  --r-m:  10px;
+  --r-l:  14px;
+
+  /* ---- Ombres ---- */
+  --ombre-xs: 0 1px 8px   rgba(26, 58, 50, 0.10);
+  --ombre-s:  0 2px 10px  rgba(26, 58, 50, 0.12);
+  --ombre-m:  0 8px 24px  rgba(26, 58, 50, 0.15);
+  --ombre-l:  0 14px 36px rgba(26, 58, 50, 0.16);
+
+  color-scheme: light dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--texte);
+  background: var(--fond-page);
+}
+
+h1, h2, h3 {
+  /* DM Serif Display n'existe qu'en 400 : on fixe la graisse pour éviter
+     que le navigateur ne synthétise un faux gras. */
+  font-family: var(--font-display);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--fond-panneau);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-m);
+  overflow: hidden;
+}
+
+/* ---------- En-tête ---------- */
+.entete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  background: var(--fond-panneau);
+  border-bottom: 1px solid var(--bordure);
+}
+.entete__titres { margin-right: auto; }
+.entete h1 { font-size: 1.6rem; color: var(--color-primary); }
+.entete h1 i { color: var(--accent); margin-right: 8px; }
+.entete__baseline {
+  margin: 2px 0 0;
+  font-size: .92rem;
+  color: var(--texte-doux);
+}
+
+/* ---------- Lien de retour vers la liste des outils ---------- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  /* Les valeurs littérales de repli gardent un rendu clair strictement
+     identique aux autres outils, tout en suivant le thème ici. */
+  color: var(--texte-doux, #6b7c75);
+  text-decoration: none;
+  transition: color .15s;
+  flex-basis: 100%;
+}
+.back-link:hover { color: var(--accent, #3d8b6e); }
+
+/* ---------- Boutons ---------- */
+.bouton {
+  font-family: inherit;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--texte);
+  background: var(--fond-controle);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-s);
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.bouton:hover { background: var(--accent-douce); border-color: var(--accent); color: var(--accent-texte); }
+.bouton i { margin-right: 6px; }
+.bouton.principal { background: var(--accent); color: var(--accent-contraste); border-color: var(--accent); }
+.bouton.principal:hover { background: var(--accent-fort); border-color: var(--accent-fort); color: var(--accent-contraste); }
+.bouton.grand { font-size: 1rem; padding: 12px 26px; }
+.bouton:disabled,
+.bouton.principal:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  background: var(--fond-controle);
+  color: var(--texte-doux);
+  border-color: var(--bordure);
+}
+
+/* Bouton de bascule clair / sombre */
+#theme-toggle { padding: 8px 11px; line-height: 1; }
+#theme-toggle i { margin-right: 0; }
+.theme-icon--sun { display: none; }
+.theme-icon--moon { display: inline-block; }
+[data-theme="dark"] .theme-icon--sun { display: inline-block; }
+[data-theme="dark"] .theme-icon--moon { display: none; }
+
+/* Focus visible sur tous les contrôles interactifs */
+.bouton:focus-visible,
+.back-link:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Zone principale ---------- */
+.main-content { padding: 24px; }
+
+section { margin-bottom: 26px; }
+section:last-child { margin-bottom: 0; }
+
+/* ---------- Messages ---------- */
+#messages:empty { display: none; }
+#messages { margin-bottom: 20px; }
+.message {
+  padding: 11px 14px;
+  border-radius: var(--r-m);
+  margin-bottom: 8px;
+  font-size: .95rem;
+}
+.message i { margin-right: 8px; }
+.message.succes { background: var(--succes-fond); color: var(--succes); }
+.message.erreur { background: var(--erreur-fond); color: var(--erreur); }
+.message.alerte { background: var(--alerte-fond); color: var(--alerte); }
+.message.info   { background: var(--accent-douce); color: var(--accent-texte); }
+
+/* ---------- Carte d'aide repliable ---------- */
+details.aide {
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  background: var(--accent-douce);
+  margin-bottom: 24px;
+  font-size: .92rem;
+}
+details.aide summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--accent-texte);
+}
+details.aide summary i { margin-right: 8px; }
+details.aide .aide-corps { padding: 0 14px 14px; line-height: 1.6; }
+details.aide .aide-corps ul { margin: 8px 0 0; padding-left: 20px; }
+details.aide .aide-corps li { margin-bottom: 4px; }
+details.aide code {
+  background: var(--fond-controle);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-xs);
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: .85em;
+}
+
+/* ---------- Section de chargement du fichier ---------- */
+.upload-section {
+  background: var(--fond-doux);
+  border: 2px dashed var(--bordure);
+  border-radius: var(--r-m);
+  padding: 32px 20px;
+  text-align: center;
+  transition: border-color .2s ease, background .2s ease;
+}
+.upload-section:hover,
+.upload-section.survol { border-color: var(--accent); background: var(--accent-douce); }
+.upload-section .icone-fichier { font-size: 2.6rem; color: var(--accent); margin-bottom: 12px; }
+.upload-section h2 { font-size: 1.25rem; color: var(--color-primary); margin-bottom: 8px; }
+.upload-section .indication { color: var(--texte-doux); margin: 0 0 18px; font-size: .92rem; }
+.upload-section input[type="file"] {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+.upload-label {
+  display: inline-block;
+  padding: 12px 26px;
+  background: var(--accent);
+  color: var(--accent-contraste);
+  border-radius: var(--r-m);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background .2s ease, transform .2s ease;
+}
+.upload-label:hover { background: var(--accent-fort); transform: scale(1.03); }
+.upload-section input[type="file"]:focus-visible + .upload-label {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Panneaux (point isolé, carte, mapping, prévisualisation) ---------- */
+.panneau {
+  display: none;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  overflow: hidden;
+}
+/* Les panneaux toujours présents (point isolé, carte) portent cette classe :
+   les autres restent masqués jusqu'à ce que le parcours les fasse apparaître. */
+.panneau.ouvert { display: block; }
+.panneau__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--fond-doux);
+  border-bottom: 1px solid var(--bordure);
+}
+.panneau__entete h3 { font-size: 1.15rem; color: var(--color-primary); }
+.panneau__entete h3 i { color: var(--accent); margin-right: 8px; }
+.panneau__corps { padding: 18px 16px; background: var(--fond-panneau); }
+.panneau__indication { color: var(--texte-doux); margin: 0 0 18px; font-size: .92rem; }
+
+/* ---------- Point isolé ---------- */
+.rangee-point {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.rangee-point input[type="text"] {
+  flex: 1 1 260px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: .95rem;
+  padding: 9px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-s);
+  background: var(--fond-controle);
+  color: var(--texte);
+}
+.rangee-point input[type="text"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+.fiche-point {
+  margin-top: 18px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  background: var(--fond-doux);
+  padding: 16px 18px;
+}
+.fiche-point[hidden] { display: none; }
+.fiche-point__adresse {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+}
+.fiche-point dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 16px;
+  margin: 12px 0 0;
+  font-size: .9rem;
+}
+.fiche-point dt { font-weight: 700; color: var(--texte-doux); }
+.fiche-point dd { margin: 0; word-break: break-word; }
+.fiche-point dd.mono { font-family: var(--font-mono); font-size: .88em; }
+.fiche-point .rangee-actions { margin-top: 16px; justify-content: flex-start; }
+
+/* ---------- Grille de configuration des colonnes ---------- */
+.grille-mapping {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.champ-mapping {
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  padding: 14px;
+}
+.champ-mapping label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: .92rem;
+  color: var(--color-primary);
+}
+.champ-mapping label i { color: var(--accent); margin-right: 6px; }
+.champ-mapping small { display: block; margin-top: 6px; color: var(--texte-doux); font-size: .82rem; }
+
+select {
+  width: 100%;
+  font-family: inherit;
+  font-size: .95rem;
+  padding: 8px 10px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-s);
+  background: var(--fond-controle);
+  color: var(--texte);
+  cursor: pointer;
+}
+select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+select.compact { width: auto; min-width: 180px; }
+
+.rangee-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---------- Tableau ---------- */
+.table-container {
+  max-height: 420px;
+  overflow: auto;
+  background: var(--fond-panneau);
+}
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th {
+  background: var(--fond-doux);
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--bordure);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+td { padding: 8px 12px; border-bottom: 1px solid var(--bordure); }
+tbody tr:hover { background: var(--fond-doux); }
+.checkbox-cell { text-align: center; width: 48px; }
+input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.cellule-num { color: var(--texte-doux); font-family: var(--font-mono); font-size: .82rem; }
+.cellule-mono { font-family: var(--font-mono); font-size: .82rem; white-space: nowrap; }
+.note-troncature {
+  padding: 10px 16px;
+  background: var(--alerte-fond);
+  color: var(--alerte);
+  font-size: .88rem;
+  border-top: 1px solid var(--bordure);
+}
+.note-troncature:empty { display: none; }
+
+/* ---------- Pastilles de qualité ---------- */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: .82rem;
+  font-weight: 600;
+}
+.pastille::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pastille.bon    { color: var(--qualite-bon); }
+.pastille.moyen  { color: var(--qualite-moyen); }
+.pastille.faible { color: var(--qualite-faible); }
+.pastille.echec  { color: var(--texte-doux); }
+
+/* ---------- Actions et progression ---------- */
+.actions-section { display: none; text-align: center; }
+.actions-section .compteur { color: var(--texte-doux); margin: 10px 0 0; font-size: .92rem; }
+
+.progress-section { display: none; }
+.progress-section h3 { font-size: 1.1rem; color: var(--color-primary); margin-bottom: 10px; }
+.progress-bar {
+  width: 100%;
+  height: 26px;
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  color: var(--accent-contraste);
+  font-size: .82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width .25s ease;
+}
+.progress-section .detail {
+  margin: 8px 0 0;
+  font-size: .88rem;
+  color: var(--texte-doux);
+  text-align: center;
+}
+.progress-section .rangee-actions { margin-top: 12px; }
+
+/* ---------- Statistiques ---------- */
+.stats { display: none; }
+.stats h3 { font-size: 1.15rem; color: var(--color-primary); margin-bottom: 14px; }
+.stats h3 i { color: var(--accent); margin-right: 8px; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.stat-card {
+  background: var(--fond-doux);
+  border: 1px solid var(--bordure);
+  border-radius: var(--r-m);
+  padding: 16px 12px;
+  text-align: center;
+}
+.stat-number { font-size: 1.9rem; font-weight: 700; color: var(--color-primary); line-height: 1.15; }
+.stat-number.bon    { color: var(--qualite-bon); }
+.stat-number.moyen  { color: var(--qualite-moyen); }
+.stat-number.faible { color: var(--qualite-faible); }
+.stat-label { color: var(--texte-doux); margin-top: 4px; font-size: .85rem; }
+
+/* ---------- Export ---------- */
+.export-section { display: none; text-align: center; }
+.export-section h3 { font-size: 1.15rem; color: var(--color-primary); margin-bottom: 12px; }
+.export-section h3 i { color: var(--accent); margin-right: 8px; }
+
+/* ---------- Carte ---------- */
+#map {
+  height: 460px;
+  background: var(--fond-doux);
+  cursor: crosshair;
+}
+.legende-carte {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--fond-doux);
+  border-top: 1px solid var(--bordure);
+  font-size: .85rem;
+}
+.legende-carte .repere {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--texte-doux);
+}
+.legende-carte .repere::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--carte-point);
+  flex: none;
+}
+
+/* Habillage Leaflet : seuls les contrôles et les infobulles suivent le
+   thème. Les tuiles restent telles quelles, c'est de la donnée. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--fond-panneau);
+  color: var(--texte);
+  box-shadow: var(--ombre-m);
+}
+.leaflet-popup-content { font-family: var(--font-body); font-size: .88rem; }
+.leaflet-popup-content dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+.leaflet-popup-content dt { font-weight: 700; color: var(--texte-doux); }
+.leaflet-popup-content dd { margin: 0; word-break: break-word; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--texte-doux); }
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--fond-panneau);
+  color: var(--texte);
+  border-bottom-color: var(--bordure);
+}
+.leaflet-control-attribution {
+  background: var(--fond-panneau);
+  color: var(--texte-doux);
+}
+.leaflet-control-attribution a { color: var(--accent-texte); }
+
+/* ---------- Adoucit la bascule d'un thème à l'autre ---------- */
+body, .container, .entete, .panneau, .panneau__entete, .panneau__corps,
+.upload-section, .champ-mapping, .stat-card, .table-container, th, td,
+.bouton, select, .progress-bar, .legende-carte, .message, .fiche-point,
+.rangee-point input[type="text"] {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease;
+}
+
+/* ---------- Animations réduites ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  .upload-label:hover { transform: none; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  #map { height: 400px; }
+}
+
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .main-content { padding: 18px 14px; }
+  .entete { padding: 14px 16px; }
+  .entete h1 { font-size: 1.35rem; }
+  .grille-mapping { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  #map { height: 340px; }
+  .panneau__entete { flex-direction: column; align-items: flex-start; }
+  select.compact { width: 100%; }
+  .rangee-actions .bouton { flex: 1 1 auto; }
+  .rangee-point .bouton { flex: 1 1 auto; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .bouton.grand { width: 100%; }
+  #map { height: 280px; }
+  .fiche-point dl { grid-template-columns: 1fr; }
+  .fiche-point dt { margin-top: 6px; }
+}
+
+/* ============================================================
+   MODE SOMBRE
+
+   Enfermé dans @media screen : une impression reste toujours claire,
+   comme sur la page CV du site.
+
+   Les tuiles de carte ne suivent JAMAIS le thème, et les marqueurs non
+   plus : un fond cartographique clair sous des points assombris serait
+   illisible. Le mode sombre habille le châssis, pas la donnée.
+   ============================================================ */
+@media screen {
+  [data-theme="dark"] {
+    /* --color-primary est inversé : ici il ne sert qu'à colorer des titres,
+       jamais un fond de section comme sur le site. */
+    --color-primary: #b8d8c8;
+    --color-accent:  #5aad8a;
+    --color-light:   #131e17;
+    --color-warm:    #1c2a20;
+    --color-text:    #d4e8dc;
+    --color-muted:   #8aaa9a;
+
+    --fond-page:     #131e17;
+    --fond-panneau:  #1a2e24;
+    --fond-controle: #22382c;
+    --fond-doux:     #16241c;
+    --bordure:       #2a3d30;
+
+    --accent-fort:      #6ecba0;
+    --accent-douce:     #1a3028;
+    --accent-texte:     #6ecba0;
+    --accent-contraste: #10231a;
+
+    --succes:      #6ecba0;
+    --succes-fond: #14301f;
+    --erreur:      #ff9c94;
+    --erreur-fond: #3a1e1c;
+    --alerte:      #e6b25c;
+    --alerte-fond: #33280f;
+
+    --surcouche:       rgba(10, 26, 16, 0.94);
+    --surcouche-texte: #d4e8dc;
+
+    --ombre-xs: 0 1px 10px  rgba(0, 0, 0, 0.40);
+    --ombre-s:  0 2px 12px  rgba(0, 0, 0, 0.40);
+    --ombre-m:  0 8px 24px  rgba(0, 0, 0, 0.45);
+    --ombre-l:  0 14px 36px rgba(0, 0, 0, 0.50);
+
+    color-scheme: dark;
+  }
+}
+</style>
 </head>
 <body>
-    <a href="/outils/" class="back-link">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Retour aux outils
-    </a>
     <div class="container">
-        <h1>🗺️ Géocodage Inversé avec la BAN</h1>
-        
-        <div class="info-box">
-            <strong>Comment utiliser cet outil :</strong>
-            <ol>
-                <li>Préparez un fichier CSV avec des colonnes <strong>latitude</strong> et <strong>longitude</strong></li>
-                <li>Cliquez sur "Choisir un fichier" et sélectionnez votre CSV</li>
-                <li>Cliquez sur "Lancer le géocodage"</li>
-                <li>Attendez que l'outil récupère toutes les adresses</li>
-                <li>Téléchargez le résultat avec le bouton en bas</li>
-            </ol>
-        </div>
 
-        <!-- Section pour charger le fichier -->
-        <div class="upload-section">
-            <h2>📁 Charger votre fichier CSV</h2>
-            <input type="file" id="fileInput" accept=".csv">
-            <br>
-            <button id="processBtn" onclick="lancerGeoccodage()" disabled>Lancer le géocodage</button>
-            <p id="fileStatus"></p>
-        </div>
-
-        <!-- Aperçu du fichier chargé -->
-        <div class="results-section" id="previewSection">
-            <h2>👁️ Aperçu de votre fichier</h2>
-            <div id="previewContainer"></div>
-        </div>
-
-        <!-- Barre de progression -->
-        <div class="progress" id="progressContainer">
-            <h3>⏳ Traitement en cours...</h3>
-            <p id="statusText" style="font-weight: bold; color: #0053b3;">Initialisation...</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill">0%</div>
+        <header class="entete">
+            <a href="/outils.html" class="back-link" title="Retour à la liste des outils">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour aux outils
+            </a>
+            <div class="entete__titres">
+                <h1><i class="fa-solid fa-map-location-dot"></i> Géocodage inverse</h1>
+                <p class="entete__baseline">Retrouvez l'adresse correspondant à des coordonnées GPS avec la Base Adresse Nationale</p>
             </div>
-            <p id="progressText">0 / 0 adresses traitées</p>
-            <p id="speedText" style="font-size: 0.9em; color: #666;"></p>
-        </div>
+            <!-- Bascule clair / sombre : partage la clé « theme » avec le reste du site -->
+            <button class="bouton" id="theme-toggle" aria-label="Basculer le thème clair ou sombre" title="Basculer le thème clair ou sombre">
+              <i class="fa-solid fa-sun theme-icon theme-icon--sun"></i>
+              <i class="fa-solid fa-moon theme-icon theme-icon--moon"></i>
+            </button>
+        </header>
 
-        <!-- Section des résultats -->
-        <div class="results-section" id="resultsSection">
-            <h2>📊 Résultats du géocodage</h2>
-            <button onclick="telechargerResultats()">💾 Télécharger les résultats (CSV)</button>
-            <div id="tableContainer"></div>
-        </div>
+        <main class="main-content">
+
+            <!-- Messages -->
+            <div id="messages" aria-live="polite"></div>
+
+            <!-- Aide -->
+            <details class="aide">
+                <summary><i class="fa-solid fa-circle-question"></i> Comment ça marche, et que deviennent mes données</summary>
+                <div class="aide-corps">
+                    <p>Deux usages possibles : interroger un point isolé (coordonnées collées, clic sur la carte ou position du téléphone), ou traiter un fichier entier de coordonnées. Les résultats sont exportables en CSV, Excel ou GeoJSON.</p>
+                    <ul>
+                        <li><strong>Vos fichiers ne quittent pas votre navigateur.</strong> Seules les coordonnées des lignes sélectionnées sont envoyées à l'API publique de la Base Adresse Nationale, hébergée par l'État. Les autres colonnes ne sortent jamais de votre poste.</li>
+                        <li><strong>Format des coordonnées :</strong> latitude puis longitude, en degrés décimaux WGS84 (<code>49.1829, -0.3707</code>). La virgule décimale des exports français est acceptée (<code>49,1829 -0,3707</code>). Si la latitude et la longitude sont visiblement inversées, l'outil les remet dans l'ordre et le signale.</li>
+                        <li><strong>Niveaux de confiance :</strong> <span class="pastille bon">Adresse précise</span> un numéro de voie a été trouvé à moins de 50 m, <span class="pastille moyen">À vérifier</span> seule la voie est connue, ou le numéro est loin du point, <span class="pastille faible">Commune seule</span> le point ne tombe sur aucune voie connue, la réponse est le centre de la commune.</li>
+                        <li>La colonne <code>ban_distance</code> donne l'écart en mètres entre votre point et l'adresse trouvée. C'est le meilleur indicateur de qualité en géocodage inverse : au delà de quelques dizaines de mètres, la réponse est à contrôler.</li>
+                        <li>Le traitement se fait par lots parallèles. Vous pouvez l'interrompre à tout moment : les lignes déjà traitées restent exportables.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Point isolé -->
+            <section class="panneau ouvert" id="pointSection">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-crosshairs"></i> Un point isolé</h3>
+                </div>
+                <div class="panneau__corps">
+                    <p class="panneau__indication">
+                        Collez des coordonnées, cliquez directement sur la carte ci-dessous, ou utilisez la position de votre appareil.
+                    </p>
+                    <div class="rangee-point">
+                        <input type="text" id="champPoint" placeholder="49.1829, -0.3707" autocomplete="off"
+                               aria-label="Coordonnées : latitude puis longitude">
+                        <button class="bouton principal" id="btnPoint">
+                            <i class="fa-solid fa-magnifying-glass"></i> Trouver l'adresse
+                        </button>
+                        <button class="bouton" id="btnPosition" title="Utiliser la position de cet appareil">
+                            <i class="fa-solid fa-location-crosshairs"></i> Ma position
+                        </button>
+                    </div>
+                    <div class="fiche-point" id="fichePoint" hidden aria-live="polite"></div>
+                </div>
+            </section>
+
+            <!-- Carte : saisie par clic et affichage des résultats -->
+            <section id="mapSection" class="panneau ouvert">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-map"></i> Carte</h3>
+                    <select class="compact" id="basemapSelector" aria-label="Choisir le fond de carte">
+                        <option value="osm">OpenStreetMap</option>
+                        <option value="satellite">Vue satellite + labels</option>
+                    </select>
+                </div>
+                <div id="map" aria-label="Carte : cliquez pour obtenir l'adresse d'un point" role="application"></div>
+                <div class="legende-carte">
+                    <span class="repere">Point interrogé</span>
+                    <span class="pastille bon">Adresse précise</span>
+                    <span class="pastille moyen">À vérifier</span>
+                    <span class="pastille faible">Commune seule</span>
+                </div>
+            </section>
+
+            <!-- Section chargement du fichier -->
+            <section class="upload-section" id="dropZone">
+                <div class="icone-fichier"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <h2>Traiter un fichier de coordonnées</h2>
+                <p class="indication">
+                    Formats acceptés : .csv, .xlsx et .xls<br>
+                    Glissez votre fichier ici, ou utilisez le bouton. Vous choisirez ensuite les colonnes de latitude et de longitude.
+                </p>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+                <label for="fileInput" class="upload-label">
+                    <i class="fa-solid fa-upload"></i> Choisir un fichier
+                </label>
+            </section>
+
+            <!-- Section configuration des colonnes -->
+            <section id="mappingSection" class="panneau">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-table-columns"></i> Configuration des colonnes</h3>
+                </div>
+                <div class="panneau__corps">
+                    <p class="panneau__indication">
+                        Indiquez quelles colonnes de votre fichier contiennent les coordonnées, en degrés décimaux WGS84.
+                    </p>
+
+                    <div class="grille-mapping">
+                        <div class="champ-mapping">
+                            <label for="colLatitude"><i class="fa-solid fa-arrows-up-down"></i> Latitude</label>
+                            <select id="colLatitude">
+                                <option value="">-- Sélectionner une colonne --</option>
+                            </select>
+                            <small>Ex : « 49.1829 ». Aussi appelée Y dans certains exports SIG.</small>
+                        </div>
+
+                        <div class="champ-mapping">
+                            <label for="colLongitude"><i class="fa-solid fa-arrows-left-right"></i> Longitude</label>
+                            <select id="colLongitude">
+                                <option value="">-- Sélectionner une colonne --</option>
+                            </select>
+                            <small>Ex : « -0.3707 ». Aussi appelée X dans certains exports SIG.</small>
+                        </div>
+                    </div>
+
+                    <div class="rangee-actions">
+                        <button class="bouton principal grand" id="btnValiderMapping">
+                            <i class="fa-solid fa-check"></i> Valider et continuer
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section prévisualisation -->
+            <section id="previewSection" class="panneau">
+                <div class="panneau__entete">
+                    <h3><i class="fa-solid fa-table"></i> Données</h3>
+                    <div class="rangee-actions">
+                        <select id="filtreQualite" class="compact" aria-label="Filtrer les lignes affichées" hidden>
+                            <option value="tous">Toutes les lignes</option>
+                            <option value="bon">Adresses précises</option>
+                            <option value="moyen">À vérifier</option>
+                            <option value="faible">Commune seule</option>
+                            <option value="echec">Échecs</option>
+                        </select>
+                        <button class="bouton" id="btnToutSelectionner">
+                            <i class="fa-solid fa-square-check"></i> Tout sélectionner
+                        </button>
+                        <button class="bouton" id="btnToutDeselectionner">
+                            <i class="fa-regular fa-square"></i> Tout désélectionner
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="previewTable">
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <p class="note-troncature" id="noteTroncature"></p>
+            </section>
+
+            <!-- Section actions -->
+            <section id="actionsSection" class="actions-section">
+                <button class="bouton principal grand" id="btnGeocoder">
+                    <i class="fa-solid fa-location-arrow"></i> Géocoder les lignes sélectionnées
+                </button>
+                <p class="compteur" id="selectedCount"></p>
+            </section>
+
+            <!-- Barre de progression -->
+            <section id="progressSection" class="progress-section">
+                <h3>Géocodage inverse en cours</h3>
+                <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progression du géocodage">
+                    <div id="progressFill" class="progress-fill">0 %</div>
+                </div>
+                <p class="detail" id="progressDetail" aria-live="polite"></p>
+                <div class="rangee-actions">
+                    <button class="bouton" id="btnAnnuler"><i class="fa-solid fa-xmark"></i> Annuler</button>
+                </div>
+            </section>
+
+            <!-- Statistiques -->
+            <section id="statsSection" class="stats">
+                <h3><i class="fa-solid fa-chart-simple"></i> Résultats du géocodage</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statTotal">0</div>
+                        <div class="stat-label">Points traités</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number bon" id="statBon">0</div>
+                        <div class="stat-label">Adresses précises</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number moyen" id="statMoyen">0</div>
+                        <div class="stat-label">À vérifier</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number faible" id="statFailed">0</div>
+                        <div class="stat-label">Échecs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statRate">0 %</div>
+                        <div class="stat-label">Taux de réussite</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section export -->
+            <section id="exportSection" class="export-section">
+                <h3><i class="fa-solid fa-download"></i> Exporter les résultats</h3>
+                <div class="rangee-actions">
+                    <button class="bouton principal" id="btnExportCSV">
+                        <i class="fa-solid fa-file-csv"></i> CSV
+                    </button>
+                    <button class="bouton" id="btnExportXLSX">
+                        <i class="fa-solid fa-file-excel"></i> Excel (.xlsx)
+                    </button>
+                    <button class="bouton" id="btnExportGeoJSON">
+                        <i class="fa-solid fa-earth-europe"></i> GeoJSON (QGIS)
+                    </button>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <script>
-        // Variable globale pour stocker les données
-        let donneesCSV = [];
-        let resultatsGeocodes = [];
+<script>
+(function () {
+  'use strict';
 
-        // Quand l'utilisateur sélectionne un fichier
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fichier = e.target.files[0];
-            if (fichier) {
-                document.getElementById('fileStatus').innerHTML = '<em>⏳ Chargement du fichier...</em>';
-                
-                // Parse le fichier CSV avec PapaParse
-                Papa.parse(fichier, {
-                    header: true,  // La première ligne contient les noms de colonnes
-                    dynamicTyping: true,  // Convertit automatiquement les nombres
-                    skipEmptyLines: true,  // Ignore les lignes vides
-                    complete: function(results) {
-                        donneesCSV = results.data;
-                        console.log('Fichier chargé :', donneesCSV.length, 'lignes');
-                        
-                        // Affiche un message de succès
-                        document.getElementById('fileStatus').innerHTML = 
-                            `<span class="success">✅ Fichier chargé avec succès : ${donneesCSV.length} lignes trouvées</span>`;
-                        
-                        // Affiche l'aperçu du fichier
-                        afficherApercu();
-                        
-                        // Active le bouton de traitement
-                        document.getElementById('processBtn').disabled = false;
-                    },
-                    error: function(error) {
-                        document.getElementById('fileStatus').innerHTML = 
-                            `<span class="error">❌ Erreur : ${error.message}</span>`;
-                    }
-                });
-            }
+  /* ============================================================
+     CONSTANTES
+     ============================================================ */
+
+  var API_BAN = 'https://api-adresse.data.gouv.fr/reverse/';
+
+  // Le quota public de la BAN est de 50 requêtes par seconde. 8 requêtes
+  // simultanées restent très en deçà tout en divisant la durée par environ
+  // dix par rapport à une boucle séquentielle.
+  var CONCURRENCE = 8;
+  var DELAI_REQUETE_MS = 10000;   // abandon d'une requête qui ne répond pas
+  var TENTATIVES_MAX = 3;         // par ligne, sur 429 et 5xx
+  var LIGNES_APERCU_MAX = 200;    // lignes réellement rendues dans le tableau
+
+  // Au delà de ce seuil, un numéro de voie renvoyé par la BAN est trop loin
+  // du point interrogé pour être pris pour argent comptant.
+  var DISTANCE_PRECISE_M = 50;
+
+  var COLONNES_RESULTAT = [
+    'adresse_ban', 'ban_numero', 'ban_voie', 'ban_code_postal', 'ban_commune',
+    'ban_code_insee', 'ban_contexte', 'ban_type', 'ban_score', 'ban_distance',
+    'ban_latitude', 'ban_longitude', 'geocodage_qualite', 'geocodage_statut'
+  ];
+
+  var LIBELLE_QUALITE = {
+    bon: 'Adresse précise',
+    moyen: 'À vérifier',
+    faible: 'Commune seule',
+    echec: 'Non localisée'
+  };
+
+  /* ============================================================
+     ÉTAT
+     ============================================================ */
+
+  var donnees = [];          // toutes les lignes du fichier, plus les points ajoutés à la main
+  var colonnes = [];         // en-têtes du fichier, dans l'ordre
+  var resultats = [];        // même longueur et même indexation que donnees
+  var lignesFiltrees = [];   // indices retenus par le filtre de qualité
+  var lignesAffichees = [];  // indices réellement rendus dans le tableau
+  var geocodageFait = false;
+
+  /* La sélection est tenue ici et non dans les cases à cocher du tableau.
+     Celui-ci ne rend que les premières lignes d'un gros fichier : si la
+     sélection vivait dans le DOM, les lignes non rendues ne pourraient
+     jamais être géocodées. */
+  var selection = new Set();
+
+  var mapping = { latitude: '', longitude: '' };
+
+  var carte = null;
+  var coucheMarqueurs = null;   // résultats du fichier
+  var couchePoint = null;       // point isolé en cours d'interrogation
+  var fondsCarte = {};
+
+  var annulation = null;        // AbortController du lot en cours
+  var attenteJusqua = 0;        // horodatage de fin de temporisation après un 429
+
+  var dernierPoint = null;      // { lat, lon, resultat } du dernier point isolé
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ============================================================
+     MESSAGES
+     ============================================================ */
+
+  function afficherMessage(type, texte) {
+    var zone = $('messages');
+    var div = document.createElement('div');
+    div.className = 'message ' + type;
+
+    var icone = document.createElement('i');
+    icone.className = 'fa-solid ' + (
+      type === 'succes' ? 'fa-circle-check' :
+      type === 'erreur' ? 'fa-circle-exclamation' :
+      type === 'alerte' ? 'fa-triangle-exclamation' : 'fa-circle-info'
+    );
+    div.appendChild(icone);
+    div.appendChild(document.createTextNode(texte));
+
+    zone.replaceChildren(div);
+
+    if (type === 'succes' || type === 'info') {
+      window.setTimeout(function () {
+        if (div.parentNode === zone) { div.remove(); }
+      }, 6000);
+    }
+  }
+
+  /* ============================================================
+     COORDONNÉES
+
+     Un export français écrit volontiers « 49,1829 » : la version
+     précédente interpolait cette chaîne telle quelle dans l'URL et
+     ressortait « adresse non trouvée » sans explication. Un zéro était
+     par ailleurs traité comme une coordonnée manquante, parce que le test
+     portait sur la véracité de la valeur et non sur son existence.
+     ============================================================ */
+
+  function nombreCoordonnee(brut) {
+    if (brut === undefined || brut === null) { return NaN; }
+    var texte = String(brut).trim();
+    if (!texte) { return NaN; }
+    // Espaces de séparation des milliers, puis virgule décimale.
+    texte = texte.replace(/\s/g, '').replace(',', '.');
+    if (!/^[+-]?\d+(\.\d+)?$/.test(texte)) { return NaN; }
+    return parseFloat(texte);
+  }
+
+  function latitudeValide(v) { return !isNaN(v) && v >= -90 && v <= 90; }
+  function longitudeValide(v) { return !isNaN(v) && v >= -180 && v <= 180; }
+
+  /* France métropolitaine, Corse comprise. Sert uniquement à repérer une
+     paire collée à l'envers : en métropole la longitude tient dans les
+     bornes d'une latitude (2.35 est un nombre valide des deux côtés), donc
+     le seul contrôle des bornes ne détecte jamais l'inversion. Les
+     territoires d'outre-mer ne sont volontairement pas dans cette boîte :
+     leurs coordonnées inversées sortent des bornes et sont déjà traitées
+     par le contrôle précédent. */
+  function dansMetropole(lat, lon) {
+    return lat >= 41 && lat <= 51.6 && lon >= -5.6 && lon <= 9.8;
+  }
+
+  /* Analyse une paire collée par l'utilisateur. Les séparateurs possibles
+     entrent en conflit avec la virgule décimale française : on essaie donc
+     du séparateur le moins ambigu au plus ambigu. */
+  function analyserPaire(texte) {
+    var t = String(texte || '').trim().replace(/[()\[\]]/g, '');
+    if (!t) { return null; }
+
+    var essais = [];
+
+    // « 49,1829 ; -0,3707 » : le point-virgule tranche sans ambiguïté.
+    if (t.indexOf(';') !== -1) { essais.push(t.split(';')); }
+
+    // « 49,1829 -0,3707 » : l'espace tranche aussi, la virgule reste décimale.
+    if (/\s/.test(t)) { essais.push(t.split(/\s+/)); }
+
+    // « 49.1829, -0.3707 » : forme la plus courante, copiée depuis une carte.
+    if (t.indexOf(',') !== -1) {
+      var parts = t.split(',');
+      if (parts.length === 2) { essais.push(parts); }
+      // « 49,1829, -0,3707 » : quatre morceaux, on recompose les décimales.
+      if (parts.length === 4) { essais.push([parts[0] + '.' + parts[1], parts[2] + '.' + parts[3]]); }
+    }
+
+    for (var i = 0; i < essais.length; i++) {
+      var morceaux = essais[i].map(function (m) { return m.trim(); }).filter(Boolean);
+      if (morceaux.length !== 2) { continue; }
+      var a = nombreCoordonnee(morceaux[0]);
+      var b = nombreCoordonnee(morceaux[1]);
+      if (isNaN(a) || isNaN(b)) { continue; }
+
+      if (latitudeValide(a) && longitudeValide(b)) {
+        // Les deux lectures tiennent dans les bornes, mais une seule tombe
+        // en France : c'est le cas courant d'une paire collée à l'envers
+        // depuis un outil qui écrit la longitude en premier.
+        if (!dansMetropole(a, b) && latitudeValide(b) && dansMetropole(b, a)) {
+          return { lat: b, lon: a, inverse: true };
+        }
+        return { lat: a, lon: b, inverse: false };
+      }
+      // Latitude hors bornes mais longitude plausible : l'ordre a été inversé.
+      if (latitudeValide(b) && longitudeValide(a)) { return { lat: b, lon: a, inverse: true }; }
+    }
+
+    return null;
+  }
+
+  /* Arrondi d'affichage seulement : six décimales valent une dizaine de
+     centimètres, c'est déjà plus fin que la BAN. Les exports conservent la
+     valeur exacte. */
+  function coordonneeLisible(valeurBrute) {
+    var nombre = parseFloat(valeurBrute);
+    return isNaN(nombre) ? '' : nombre.toFixed(6);
+  }
+
+  function distanceLisible(metres) {
+    if (metres === undefined || metres === null || metres === '') { return ''; }
+    var n = parseFloat(metres);
+    if (isNaN(n)) { return ''; }
+    return n < 1000 ? Math.round(n) + ' m' : (n / 1000).toFixed(1) + ' km';
+  }
+
+  function valeur(ligne, colonne) {
+    if (!colonne) { return ''; }
+    var v = ligne[colonne];
+    return (v === undefined || v === null) ? '' : String(v).trim();
+  }
+
+  /* ============================================================
+     CHARGEMENT DU FICHIER
+     ============================================================ */
+
+  function chargerFichier(fichier) {
+    if (!fichier) { return; }
+
+    var nom = fichier.name.toLowerCase();
+    var estCSV = /\.csv$/.test(nom);
+    var estExcel = /\.xlsx?$/.test(nom);
+
+    if (!estCSV && !estExcel) {
+      afficherMessage('erreur', 'Format non supporté. Utilisez un fichier .csv, .xlsx ou .xls.');
+      return;
+    }
+
+    if (estCSV) {
+      if (!window.Papa) {
+        afficherMessage('erreur', 'La bibliothèque de lecture CSV n\'a pas pu être chargée. Vérifiez votre connexion puis rechargez la page.');
+        return;
+      }
+      window.Papa.parse(fichier, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (resultat) {
+          accepterDonnees(resultat.data, resultat.meta.fields, 'CSV');
+        },
+        error: function (erreur) {
+          afficherMessage('erreur', 'Erreur lors de la lecture du CSV : ' + erreur.message);
+        }
+      });
+      return;
+    }
+
+    if (!window.XLSX) {
+      afficherMessage('erreur', 'La bibliothèque de lecture Excel n\'a pas pu être chargée. Convertissez votre fichier en CSV, ou rechargez la page.');
+      return;
+    }
+
+    var lecteur = new FileReader();
+    lecteur.onload = function (e) {
+      try {
+        var classeur = window.XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        var feuille = classeur.Sheets[classeur.SheetNames[0]];
+        var lignes = window.XLSX.utils.sheet_to_json(feuille, { defval: '' });
+        if (!lignes.length) {
+          afficherMessage('erreur', 'Le fichier Excel est vide ou mal formaté.');
+          return;
+        }
+        accepterDonnees(lignes, Object.keys(lignes[0]), 'Excel');
+      } catch (erreur) {
+        afficherMessage('erreur', 'Erreur lors de la lecture du fichier Excel : ' + erreur.message);
+      }
+    };
+    lecteur.onerror = function () {
+      afficherMessage('erreur', 'Erreur lors de la lecture du fichier.');
+    };
+    lecteur.readAsArrayBuffer(fichier);
+  }
+
+  function accepterDonnees(lignes, champs, origine) {
+    if (!lignes || !lignes.length) {
+      afficherMessage('erreur', 'Le fichier ne contient aucune ligne exploitable.');
+      return;
+    }
+
+    // Les colonnes du nouveau fichier remplacent les précédentes : les points
+    // ajoutés à la main ne peuvent pas être conservés. On prévient plutôt que
+    // de les faire disparaître en silence.
+    var pointsAjoutes = donnees.length;
+    if (pointsAjoutes) {
+      afficherMessage('alerte', 'Le contenu précédent (' + pointsAjoutes + ' ligne(s)) a été remplacé par le nouveau fichier. Exportez avant de charger un fichier si vous voulez conserver des résultats.');
+    }
+
+    donnees = lignes;
+    colonnes = (champs || Object.keys(lignes[0])).filter(function (c) { return c !== ''; });
+    resultats = donnees.map(function () { return null; });
+    selection = new Set();
+    lignesFiltrees = [];
+    lignesAffichees = [];
+    geocodageFait = false;
+    // Le mapping du fichier précédent ne veut plus rien dire ici.
+    mapping = { latitude: '', longitude: '' };
+
+    // Un nouveau fichier remet tout le parcours à zéro.
+    $('previewSection').style.display = 'none';
+    $('actionsSection').style.display = 'none';
+    $('progressSection').style.display = 'none';
+    $('statsSection').style.display = 'none';
+    $('exportSection').style.display = 'none';
+    $('filtreQualite').hidden = true;
+    $('filtreQualite').value = 'tous';
+    if (coucheMarqueurs) { coucheMarqueurs.clearLayers(); }
+
+    afficherMapping(colonnes);
+    afficherMessage('succes', lignes.length + ' ligne(s) chargée(s) depuis le fichier ' + origine + '.');
+  }
+
+  /* ============================================================
+     CONFIGURATION DES COLONNES
+     ============================================================ */
+
+  function afficherMapping(listeColonnes) {
+    ['colLatitude', 'colLongitude'].forEach(function (id) {
+      var select = $(id);
+      var placeholder = select.options[0].cloneNode(true);
+      select.replaceChildren(placeholder);
+      listeColonnes.forEach(function (col) {
+        var option = document.createElement('option');
+        option.value = col;
+        option.textContent = col;
+        select.appendChild(option);
+      });
+      select.value = '';
+    });
+
+    detecterColonnes(listeColonnes);
+    $('mappingSection').style.display = 'block';
+  }
+
+  /* Détection automatique par score : chaque colonne reçoit une note par
+     rôle, chaque rôle retient sa meilleure candidate, et une colonne déjà
+     attribuée n'est plus disponible pour l'autre rôle. La comparaison se
+     fait sur un nom normalisé (minuscules, sans accents, séparateurs
+     ramenés à l'espace), donc « Coord_Y » ou « LATITUDE » sont reconnus. */
+  function detecterColonnes(listeColonnes) {
+    var REGLES = {
+      latitude: [
+        { motif: /^lat$/, score: 100 },
+        { motif: /^latitude$/, score: 100 },
+        { motif: /^lat(itude)? (wgs ?84|dd|deg)$/, score: 95 },
+        { motif: /^y$/, score: 85 },
+        { motif: /^(coord )?y( coord)?$/, score: 80 },
+        { motif: /\blat(itude)?\b/, score: 60 }
+      ],
+      longitude: [
+        { motif: /^(lon|lng|long)$/, score: 100 },
+        { motif: /^longitude$/, score: 100 },
+        { motif: /^(lon|lng|long|longitude) (wgs ?84|dd|deg)$/, score: 95 },
+        { motif: /^x$/, score: 85 },
+        { motif: /^(coord )?x( coord)?$/, score: 80 },
+        { motif: /\b(lon|lng|long|longitude)\b/, score: 60 }
+      ]
+    };
+
+    var normaliser = function (texte) {
+      return String(texte).toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[_\-.]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    var candidats = { latitude: [], longitude: [] };
+
+    listeColonnes.forEach(function (col) {
+      var nom = normaliser(col);
+      Object.keys(REGLES).forEach(function (role) {
+        var meilleur = 0;
+        REGLES[role].forEach(function (regle) {
+          if (regle.motif.test(nom) && regle.score > meilleur) { meilleur = regle.score; }
         });
+        if (meilleur > 0) { candidats[role].push({ colonne: col, score: meilleur }); }
+      });
+    });
 
-        // Fonction pour afficher un aperçu du fichier chargé
-        function afficherApercu() {
-            if (donneesCSV.length === 0) return;
-            
-            document.getElementById('previewSection').style.display = 'block';
-            
-            // Affiche les 5 premières lignes
-            let tableHTML = '<p><strong>Premières lignes de votre fichier :</strong></p><table><thead><tr>';
-            
-            const colonnes = Object.keys(donneesCSV[0]);
-            colonnes.forEach(col => {
-                tableHTML += `<th>${col}</th>`;
-            });
-            tableHTML += '</tr></thead><tbody>';
+    var prises = {};
+    ['latitude', 'longitude'].forEach(function (role) {
+      var liste = candidats[role]
+        .filter(function (c) { return !prises[c.colonne]; })
+        .sort(function (a, b) { return b.score - a.score; });
+      if (!liste.length) { return; }
+      var choisi = liste[0].colonne;
+      prises[choisi] = true;
+      $(role === 'latitude' ? 'colLatitude' : 'colLongitude').value = choisi;
+    });
+  }
 
-            const lignesAafficher = Math.min(donneesCSV.length, 5);
-            for (let i = 0; i < lignesAafficher; i++) {
-                tableHTML += '<tr>';
-                colonnes.forEach(col => {
-                    const valeur = donneesCSV[i][col] || '';
-                    tableHTML += `<td>${valeur}</td>`;
-                });
-                tableHTML += '</tr>';
-            }
+  function validerMapping() {
+    mapping.latitude = $('colLatitude').value;
+    mapping.longitude = $('colLongitude').value;
 
-            tableHTML += '</tbody></table>';
-            
-            if (donneesCSV.length > 5) {
-                tableHTML += `<p><em>... et ${donneesCSV.length - 5} autres lignes</em></p>`;
-            }
+    if (!mapping.latitude || !mapping.longitude) {
+      afficherMessage('erreur', 'Sélectionnez la colonne de latitude et la colonne de longitude.');
+      return;
+    }
+    if (mapping.latitude === mapping.longitude) {
+      afficherMessage('erreur', 'La latitude et la longitude ne peuvent pas venir de la même colonne.');
+      return;
+    }
 
-            document.getElementById('previewContainer').innerHTML = tableHTML;
+    // Contrôle sur l'ensemble du fichier, pas seulement sur la première
+    // ligne : un en-tête correct ne garantit pas un contenu exploitable.
+    var lisibles = donnees.filter(function (ligne) {
+      return latitudeValide(nombreCoordonnee(ligne[mapping.latitude])) &&
+             longitudeValide(nombreCoordonnee(ligne[mapping.longitude]));
+    }).length;
+
+    if (!lisibles) {
+      afficherMessage('erreur', 'Aucune coordonnée exploitable dans ces colonnes. Attendu : des degrés décimaux WGS84, par exemple 49.1829 et -0.3707.');
+      return;
+    }
+
+    $('mappingSection').style.display = 'none';
+    // Tout est coché par défaut, y compris les lignes hors de l'aperçu.
+    selection = new Set(donnees.map(function (_, index) { return index; }));
+    afficherTableau();
+    $('actionsSection').style.display = 'block';
+
+    if (lisibles < donnees.length) {
+      afficherMessage('alerte', (donnees.length - lisibles) + ' ligne(s) sur ' + donnees.length +
+        ' n\'ont pas de coordonnées exploitables. Elles seront signalées dans les résultats, sans bloquer le traitement.');
+    }
+  }
+
+  /* ============================================================
+     GÉOCODAGE INVERSE
+     ============================================================ */
+
+  function patienter(ms) {
+    return new Promise(function (resoudre) { window.setTimeout(resoudre, ms); });
+  }
+
+  /* En géocodage inverse, la distance entre le point interrogé et l'adresse
+     renvoyée est l'indicateur de qualité le plus parlant : un numéro de voie
+     trouvé à 400 m ne décrit pas le point, il décrit son voisinage. */
+  function niveauQualite(props) {
+    var type = props.type;
+    var distance = typeof props.distance === 'number' ? props.distance : null;
+    if (type === 'housenumber' && (distance === null || distance <= DISTANCE_PRECISE_M)) { return 'bon'; }
+    if (type === 'housenumber' || type === 'street') { return 'moyen'; }
+    return 'faible';
+  }
+
+  function resultatEchec(lat, lon, statut) {
+    return {
+      statut: statut, qualite: 'echec',
+      latitude: isNaN(lat) ? '' : lat,
+      longitude: isNaN(lon) ? '' : lon,
+      banLatitude: '', banLongitude: '',
+      props: null
+    };
+  }
+
+  /* Une requête BAN, avec délai maximal et reprise sur quota ou erreur
+     serveur. URLSearchParams se charge de l'encodage, que la version
+     précédente ne faisait pas. */
+  function interrogerBAN(lat, lon, signal) {
+    var url = new URL(API_BAN);
+    url.searchParams.set('lat', String(lat));
+    url.searchParams.set('lon', String(lon));
+    url.searchParams.set('limit', '1');
+
+    var controleur = new AbortController();
+    var minuterie = window.setTimeout(function () { controleur.abort(); }, DELAI_REQUETE_MS);
+
+    var relayerAnnulation = function () { controleur.abort(); };
+    if (signal) { signal.addEventListener('abort', relayerAnnulation); }
+
+    return fetch(url.toString(), { signal: controleur.signal })
+      .then(function (reponse) {
+        if (reponse.status === 429) {
+          var erreur429 = new Error('quota');
+          erreur429.nom = 'quota';
+          throw erreur429;
         }
-
-        // Fonction principale pour lancer le géocodage
-        async function lancerGeoccodage() {
-            // Vérifie qu'il y a des données
-            if (donneesCSV.length === 0) {
-                alert('Aucune donnée à traiter !');
-                return;
-            }
-
-            // Vérifie que les colonnes latitude et longitude existent
-            const premiereLigne = donneesCSV[0];
-            if (!('latitude' in premiereLigne) && !('lat' in premiereLigne)) {
-                alert('❌ Colonne "latitude" (ou "lat") non trouvée dans le CSV !\n\nColonnes trouvées : ' + Object.keys(premiereLigne).join(', '));
-                return;
-            }
-            if (!('longitude' in premiereLigne) && !('lon' in premiereLigne) && !('lng' in premiereLigne)) {
-                alert('❌ Colonne "longitude" (ou "lon" ou "lng") non trouvée dans le CSV !\n\nColonnes trouvées : ' + Object.keys(premiereLigne).join(', '));
-                return;
-            }
-
-            // Désactive le bouton pendant le traitement
-            document.getElementById('processBtn').disabled = true;
-            document.getElementById('processBtn').textContent = '⏳ Traitement en cours...';
-            document.getElementById('progressContainer').style.display = 'block';
-            
-            // Réinitialise les résultats
-            resultatsGeocodes = [];
-            
-            // Variable pour calculer la vitesse
-            const heureDebut = Date.now();
-
-            // Boucle sur chaque ligne du CSV
-            for (let i = 0; i < donneesCSV.length; i++) {
-                const ligne = donneesCSV[i];
-                
-                // Récupère latitude et longitude (gère différents noms de colonnes)
-                const lat = ligne.latitude || ligne.lat;
-                const lon = ligne.longitude || ligne.lon || ligne.lng;
-
-                // Met à jour la barre de progression
-                const pourcentage = Math.round(((i + 1) / donneesCSV.length) * 100);
-                document.getElementById('progressFill').style.width = pourcentage + '%';
-                document.getElementById('progressFill').textContent = pourcentage + '%';
-                document.getElementById('progressText').textContent = `${i + 1} / ${donneesCSV.length} adresses traitées`;
-                
-                // Calcule et affiche la vitesse
-                const tempsEcoule = (Date.now() - heureDebut) / 1000; // en secondes
-                const vitesse = (i + 1) / tempsEcoule;
-                const tempsRestant = (donneesCSV.length - i - 1) / vitesse;
-                document.getElementById('speedText').textContent = 
-                    `Vitesse : ${vitesse.toFixed(1)} adresses/seconde | Temps restant : ${Math.round(tempsRestant)}s`;
-
-                // Met à jour le statut avec l'adresse en cours
-                document.getElementById('statusText').textContent = 
-                    `🔍 Recherche de l'adresse pour : ${lat}, ${lon}`;
-
-                // Si les coordonnées sont présentes, appelle l'API
-                if (lat && lon) {
-                    try {
-                        // Appel de l'API de géocodage inversé de la BAN
-                        const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`;
-                        const reponse = await fetch(url);
-                        const data = await reponse.json();
-
-                        // Extrait les informations de l'adresse
-                        if (data.features && data.features.length > 0) {
-                            const feature = data.features[0];
-                            const props = feature.properties;
-                            
-                            // Crée un objet avec toutes les informations
-                            resultatsGeocodes.push({
-                                ...ligne,  // Garde toutes les colonnes d'origine
-                                adresse: props.label || '',
-                                numero: props.housenumber || '',
-                                rue: props.street || '',
-                                code_postal: props.postcode || '',
-                                ville: props.city || '',
-                                score: props.score || 0
-                            });
-                            
-                            // Affiche l'adresse trouvée
-                            document.getElementById('statusText').textContent = 
-                                `✅ Adresse trouvée : ${props.label || 'Inconnue'}`;
-                        } else {
-                            // Aucune adresse trouvée
-                            resultatsGeocodes.push({
-                                ...ligne,
-                                adresse: 'Adresse non trouvée',
-                                numero: '',
-                                rue: '',
-                                code_postal: '',
-                                ville: '',
-                                score: 0
-                            });
-                            document.getElementById('statusText').textContent = 
-                                `⚠️ Aucune adresse trouvée pour ces coordonnées`;
-                        }
-                    } catch (erreur) {
-                        console.error('Erreur pour la ligne', i, ':', erreur);
-                        resultatsGeocodes.push({
-                            ...ligne,
-                            adresse: 'Erreur lors de la recherche',
-                            numero: '',
-                            rue: '',
-                            code_postal: '',
-                            ville: '',
-                            score: 0
-                        });
-                        document.getElementById('statusText').textContent = 
-                            `❌ Erreur lors de la recherche`;
-                    }
-
-                    // Petite pause pour ne pas surcharger l'API (50ms entre chaque requête)
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                } else {
-                    // Coordonnées manquantes
-                    resultatsGeocodes.push({
-                        ...ligne,
-                        adresse: 'Coordonnées manquantes',
-                        numero: '',
-                        rue: '',
-                        code_postal: '',
-                        ville: '',
-                        score: 0
-                    });
-                    document.getElementById('statusText').textContent = 
-                        `⚠️ Coordonnées manquantes`;
-                }
-            }
-
-            // Affiche un message de fin
-            document.getElementById('statusText').textContent = 
-                `🎉 Traitement terminé avec succès !`;
-            document.getElementById('statusText').style.color = '#388e3c';
-
-            // Affiche les résultats
-            afficherResultats();
-            document.getElementById('processBtn').disabled = false;
-            document.getElementById('processBtn').textContent = 'Lancer le géocodage';
+        // La version précédente appelait json() sans vérifier le statut :
+        // une page d'erreur HTML faisait échouer la ligne sans explication.
+        if (!reponse.ok) {
+          var erreurHttp = new Error('http ' + reponse.status);
+          erreurHttp.nom = reponse.status >= 500 ? 'serveur' : 'http';
+          throw erreurHttp;
         }
+        return reponse.json();
+      })
+      .finally(function () {
+        window.clearTimeout(minuterie);
+        if (signal) { signal.removeEventListener('abort', relayerAnnulation); }
+      });
+  }
 
-        // Fonction pour afficher les résultats dans un tableau
-        function afficherResultats() {
-            document.getElementById('resultsSection').style.display = 'block';
-            
-            // Crée le tableau HTML
-            let tableHTML = '<table><thead><tr>';
-            
-            // En-têtes du tableau (toutes les colonnes)
-            const colonnes = Object.keys(resultatsGeocodes[0]);
-            colonnes.forEach(col => {
-                tableHTML += `<th>${col}</th>`;
-            });
-            tableHTML += '</tr></thead><tbody>';
+  function geocoderPoint(lat, lon, signal) {
+    var tenter = function (tentative) {
+      // Temporisation globale : si un 429 a été reçu, toutes les requêtes
+      // attendent, plutôt que de continuer à marteler l'API.
+      var attente = Math.max(0, attenteJusqua - Date.now());
 
-            // Lignes du tableau (limite à 100 pour ne pas surcharger)
-            const lignesAafficher = Math.min(resultatsGeocodes.length, 100);
-            for (let i = 0; i < lignesAafficher; i++) {
-                tableHTML += '<tr>';
-                colonnes.forEach(col => {
-                    const valeur = resultatsGeocodes[i][col] || '';
-                    tableHTML += `<td>${valeur}</td>`;
-                });
-                tableHTML += '</tr>';
+      return patienter(attente)
+        .then(function () {
+          if (signal && signal.aborted) { return null; }
+          return interrogerBAN(lat, lon, signal);
+        })
+        .then(function (donneesBan) {
+          if (donneesBan === null) { return resultatEchec(lat, lon, 'Interrompu'); }
+
+          if (!donneesBan.features || !donneesBan.features.length) {
+            return resultatEchec(lat, lon, 'Aucune adresse à proximité');
+          }
+
+          var entite = donneesBan.features[0];
+          var props = entite.properties || {};
+          var coords = (entite.geometry && entite.geometry.coordinates) || [];   // [lon, lat], ordre GeoJSON
+
+          return {
+            statut: 'Succès',
+            qualite: niveauQualite(props),
+            latitude: lat,
+            longitude: lon,
+            banLongitude: coords.length ? coords[0] : '',
+            banLatitude: coords.length ? coords[1] : '',
+            props: props
+          };
+        })
+        .catch(function (erreur) {
+          if (signal && signal.aborted) { return resultatEchec(lat, lon, 'Interrompu'); }
+
+          if (erreur.nom === 'quota') {
+            // Le compteur d'attente est partagé par toutes les requêtes.
+            attenteJusqua = Math.max(attenteJusqua, Date.now() + 1000 * tentative);
+            if (tentative < TENTATIVES_MAX) { return tenter(tentative + 1); }
+            return resultatEchec(lat, lon, 'Quota API dépassé');
+          }
+          if (erreur.nom === 'serveur') {
+            if (tentative < TENTATIVES_MAX) {
+              return patienter(300 * tentative).then(function () { return tenter(tentative + 1); });
             }
+            return resultatEchec(lat, lon, 'Erreur serveur BAN');
+          }
+          if (erreur.name === 'AbortError') {
+            return resultatEchec(lat, lon, 'Délai dépassé');
+          }
+          if (tentative < TENTATIVES_MAX) {
+            return patienter(300 * tentative).then(function () { return tenter(tentative + 1); });
+          }
+          return resultatEchec(lat, lon, 'Erreur réseau');
+        });
+    };
 
-            tableHTML += '</tbody></table>';
-            
-            if (resultatsGeocodes.length > 100) {
-                tableHTML += `<p><em>Affichage limité à 100 lignes. Le fichier complet (${resultatsGeocodes.length} lignes) sera disponible au téléchargement.</em></p>`;
-            }
+    return tenter(1);
+  }
 
-            document.getElementById('tableContainer').innerHTML = tableHTML;
+  function geocoderLigne(ligne, signal) {
+    // Lecture par nom de colonne, sans repli sur une autre clé : une
+    // latitude de 0 est une coordonnée valide, pas une valeur manquante.
+    var lat = nombreCoordonnee(ligne[mapping.latitude]);
+    var lon = nombreCoordonnee(ligne[mapping.longitude]);
+
+    if (isNaN(lat) || isNaN(lon)) {
+      return Promise.resolve(resultatEchec(lat, lon, 'Coordonnées illisibles'));
+    }
+    if (!latitudeValide(lat) || !longitudeValide(lon)) {
+      return Promise.resolve(resultatEchec(lat, lon, 'Coordonnées hors bornes'));
+    }
+    return geocoderPoint(lat, lon, signal);
+  }
+
+  function lancerGeocodage() {
+    // La sélection vient du modèle, pas du DOM : le tableau ne rend qu'un
+    // aperçu, mais le géocodage porte sur toutes les lignes cochées.
+    var indices = Array.from(selection).sort(function (a, b) { return a - b; });
+
+    if (!indices.length) {
+      afficherMessage('erreur', 'Sélectionnez au moins une ligne à géocoder.');
+      return;
+    }
+
+    annulation = new AbortController();
+    attenteJusqua = 0;
+
+    $('progressSection').style.display = 'block';
+    $('actionsSection').style.display = 'none';
+    $('btnAnnuler').disabled = false;
+    var debut = Date.now();
+    majProgression(0, indices.length, debut);
+
+    var suivant = 0;
+    var termines = 0;
+
+    var travailleur = function () {
+      if (annulation.signal.aborted) { return Promise.resolve(); }
+      var position = suivant++;
+      if (position >= indices.length) { return Promise.resolve(); }
+
+      var index = indices[position];
+      return geocoderLigne(donnees[index], annulation.signal).then(function (resultat) {
+        resultats[index] = resultat;
+        termines++;
+        majProgression(termines, indices.length, debut);
+        return travailleur();
+      });
+    };
+
+    var files = [];
+    for (var i = 0; i < Math.min(CONCURRENCE, indices.length); i++) {
+      files.push(travailleur());
+    }
+
+    Promise.all(files).then(function () {
+      var interrompu = annulation.signal.aborted;
+      annulation = null;
+
+      $('progressSection').style.display = 'none';
+      $('actionsSection').style.display = 'block';
+      geocodageFait = true;
+
+      afficherStatistiques(indices);
+      afficherTableau();
+      $('filtreQualite').hidden = false;
+      $('exportSection').style.display = 'block';
+
+      var reussis = indices.filter(function (i) {
+        return resultats[i] && resultats[i].statut === 'Succès';
+      }).length;
+
+      if (reussis > 0) { afficherResultatsSurCarte(); }
+
+      if (interrompu) {
+        afficherMessage('alerte', 'Géocodage interrompu : ' + termines + ' ligne(s) traitée(s) sur ' + indices.length + '. Les résultats obtenus restent exportables.');
+      } else {
+        afficherMessage('succes', 'Géocodage terminé : ' + reussis + ' adresse(s) trouvée(s) sur ' + indices.length + ' point(s).');
+      }
+    });
+  }
+
+  function majProgression(faits, total, debut) {
+    var pourcentage = total > 0 ? Math.round((faits / total) * 100) : 0;
+    var barre = $('progressFill');
+    barre.style.width = pourcentage + '%';
+    barre.textContent = pourcentage + ' %';
+    barre.parentNode.setAttribute('aria-valuenow', String(pourcentage));
+
+    var detail = faits + ' / ' + total + ' point(s) traité(s)';
+    var ecoule = (Date.now() - debut) / 1000;
+    if (faits > 0 && ecoule > 1) {
+      var vitesse = faits / ecoule;
+      var restant = Math.round((total - faits) / vitesse);
+      detail += ', environ ' + (restant > 60 ? Math.ceil(restant / 60) + ' min' : restant + ' s') + ' restantes';
+    }
+    $('progressDetail').textContent = detail;
+  }
+
+  function annulerGeocodage() {
+    if (annulation) {
+      annulation.abort();
+      $('btnAnnuler').disabled = true;
+    }
+  }
+
+  /* ============================================================
+     POINT ISOLÉ
+
+     C'est l'usage le plus courant du géocodage inverse sur le terrain :
+     une coordonnée relevée au GPS, dont on veut l'adresse tout de suite.
+     ============================================================ */
+
+  function traiterChampPoint() {
+    var paire = analyserPaire($('champPoint').value);
+    if (!paire) {
+      afficherMessage('erreur', 'Coordonnées illisibles. Attendu : latitude puis longitude en degrés décimaux, par exemple 49.1829, -0.3707.');
+      return;
+    }
+    if (paire.inverse) {
+      afficherMessage('alerte', 'La latitude et la longitude semblaient inversées : elles ont été remises dans l\'ordre.');
+    }
+    interrogerPointIsole(paire.lat, paire.lon);
+  }
+
+  function interrogerPointIsole(lat, lon) {
+    $('champPoint').value = lat.toFixed(6) + ', ' + lon.toFixed(6);
+    marquerPointIsole(lat, lon);
+
+    var fiche = $('fichePoint');
+    fiche.hidden = false;
+    fiche.replaceChildren(texteEnAttente('Recherche de l\'adresse en cours…'));
+    $('btnPoint').disabled = true;
+
+    geocoderPoint(lat, lon, null).then(function (resultat) {
+      $('btnPoint').disabled = false;
+      dernierPoint = { lat: lat, lon: lon, resultat: resultat };
+      afficherFichePoint(lat, lon, resultat);
+      marquerPointIsole(lat, lon, resultat);
+    });
+  }
+
+  function texteEnAttente(texte) {
+    var p = document.createElement('p');
+    p.className = 'fiche-point__adresse';
+    p.textContent = texte;
+    return p;
+  }
+
+  function afficherFichePoint(lat, lon, resultat) {
+    var fiche = $('fichePoint');
+    var fragment = document.createDocumentFragment();
+    var props = resultat.props || {};
+
+    var titre = document.createElement('p');
+    titre.className = 'fiche-point__adresse';
+    titre.textContent = resultat.statut === 'Succès'
+      ? (props.label || 'Adresse sans libellé')
+      : resultat.statut;
+    fragment.appendChild(titre);
+
+    var pastille = document.createElement('span');
+    pastille.className = 'pastille ' + resultat.qualite;
+    pastille.textContent = LIBELLE_QUALITE[resultat.qualite] || resultat.qualite;
+    fragment.appendChild(pastille);
+
+    var liste = document.createElement('dl');
+    var ajouter = function (cle, val, mono) {
+      if (val === '' || val === undefined || val === null) { return; }
+      var dt = document.createElement('dt');
+      dt.textContent = cle;
+      var dd = document.createElement('dd');
+      if (mono) { dd.className = 'mono'; }
+      dd.textContent = val;
+      liste.appendChild(dt);
+      liste.appendChild(dd);
+    };
+
+    ajouter('Point interrogé', lat.toFixed(6) + ', ' + lon.toFixed(6), true);
+    if (resultat.statut === 'Succès') {
+      ajouter('Code postal', props.postcode || '');
+      ajouter('Commune', props.city || '');
+      ajouter('Code INSEE', props.citycode || '', true);
+      ajouter('Contexte', props.context || '');
+      ajouter('Distance', distanceLisible(props.distance));
+      ajouter('Type', props.type || '');
+    }
+    fragment.appendChild(liste);
+
+    if (resultat.statut === 'Succès') {
+      var actions = document.createElement('div');
+      actions.className = 'rangee-actions';
+
+      var btnCopier = document.createElement('button');
+      btnCopier.className = 'bouton';
+      btnCopier.textContent = 'Copier l\'adresse';
+      btnCopier.addEventListener('click', function () {
+        var texte = props.label || '';
+        if (!navigator.clipboard) {
+          afficherMessage('alerte', 'Copie non disponible dans ce navigateur : sélectionnez le texte à la main.');
+          return;
         }
+        navigator.clipboard.writeText(texte).then(function () {
+          afficherMessage('succes', 'Adresse copiée dans le presse-papiers.');
+        }, function () {
+          afficherMessage('erreur', 'La copie a échoué.');
+        });
+      });
+      actions.appendChild(btnCopier);
 
-        // Fonction pour télécharger les résultats en CSV
-        function telechargerResultats() {
-            // Convertit les résultats en CSV avec PapaParse
-            const csv = Papa.unparse(resultatsGeocodes);
-            
-            // Crée un fichier téléchargeable
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const lien = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            lien.setAttribute('href', url);
-            lien.setAttribute('download', 'resultats_geocodage.csv');
-            lien.style.visibility = 'hidden';
-            document.body.appendChild(lien);
-            lien.click();
-            document.body.removeChild(lien);
+      var btnAjouter = document.createElement('button');
+      btnAjouter.className = 'bouton principal';
+      btnAjouter.textContent = 'Ajouter au tableau';
+      btnAjouter.addEventListener('click', ajouterPointAuTableau);
+      actions.appendChild(btnAjouter);
+
+      fragment.appendChild(actions);
+    }
+
+    fiche.replaceChildren(fragment);
+  }
+
+  /* Le point isolé rejoint le jeu de résultats : il devient exportable
+     comme n'importe quelle ligne du fichier. */
+  function ajouterPointAuTableau() {
+    if (!dernierPoint) { return; }
+
+    var colLat = mapping.latitude || 'latitude';
+    var colLon = mapping.longitude || 'longitude';
+    mapping.latitude = colLat;
+    mapping.longitude = colLon;
+    [colLat, colLon].forEach(function (c) {
+      if (colonnes.indexOf(c) === -1) { colonnes.push(c); }
+    });
+
+    var ligne = {};
+    colonnes.forEach(function (c) { ligne[c] = ''; });
+    ligne[colLat] = dernierPoint.lat;
+    ligne[colLon] = dernierPoint.lon;
+
+    donnees.push(ligne);
+    resultats.push(dernierPoint.resultat);
+    selection.add(donnees.length - 1);
+    geocodageFait = true;
+
+    afficherTableau();
+    $('filtreQualite').hidden = false;
+    $('exportSection').style.display = 'block';
+    afficherResultatsSurCarte();
+    afficherMessage('succes', 'Point ajouté au tableau des résultats.');
+  }
+
+  function utiliserPositionAppareil() {
+    if (!navigator.geolocation) {
+      afficherMessage('erreur', 'La géolocalisation n\'est pas disponible dans ce navigateur.');
+      return;
+    }
+    afficherMessage('info', 'Recherche de votre position…');
+    navigator.geolocation.getCurrentPosition(function (position) {
+      interrogerPointIsole(position.coords.latitude, position.coords.longitude);
+    }, function () {
+      afficherMessage('erreur', 'Position refusée ou indisponible. Saisissez les coordonnées à la main, ou cliquez sur la carte.');
+    }, { enableHighAccuracy: true, timeout: 15000 });
+  }
+
+  /* ============================================================
+     TABLEAU
+     ============================================================ */
+
+  function afficherTableau() {
+    var entete = $('tableHeader');
+    var corps = $('tableBody');
+    var filtre = $('filtreQualite').value;
+
+    // Lignes retenues par le filtre de qualité.
+    var indices = [];
+    donnees.forEach(function (ligne, index) {
+      if (!geocodageFait || filtre === 'tous') { indices.push(index); return; }
+      var resultat = resultats[index];
+      var qualite = resultat ? resultat.qualite : null;
+      if (filtre === 'echec' && (!resultat || qualite === 'echec')) { indices.push(index); }
+      else if (qualite === filtre) { indices.push(index); }
+    });
+
+    lignesFiltrees = indices;
+    lignesAffichees = indices.slice(0, LIGNES_APERCU_MAX);
+
+    // En-tête
+    var ligneEntete = document.createElement('tr');
+    ligneEntete.appendChild(celluleEntete('', 'checkbox-cell', caseToutSelectionner()));
+    ligneEntete.appendChild(celluleEntete('N°'));
+    if (geocodageFait) {
+      ligneEntete.appendChild(celluleEntete('Qualité'));
+      ligneEntete.appendChild(celluleEntete('Adresse BAN'));
+      ligneEntete.appendChild(celluleEntete('Commune'));
+      ligneEntete.appendChild(celluleEntete('Distance'));
+      ligneEntete.appendChild(celluleEntete('Statut'));
+    }
+    colonnes.forEach(function (col) { ligneEntete.appendChild(celluleEntete(col)); });
+    entete.replaceChildren(ligneEntete);
+
+    // Corps, assemblé hors du document puis inséré en une seule fois.
+    var fragment = document.createDocumentFragment();
+    lignesAffichees.forEach(function (index) {
+      var ligne = donnees[index];
+      var resultat = resultats[index];
+      var tr = document.createElement('tr');
+
+      var tdCase = document.createElement('td');
+      tdCase.className = 'checkbox-cell';
+      var caseLigne = document.createElement('input');
+      caseLigne.type = 'checkbox';
+      caseLigne.className = 'row-checkbox';
+      caseLigne.checked = selection.has(index);
+      caseLigne.setAttribute('aria-label', 'Sélectionner la ligne ' + (index + 1));
+      caseLigne.addEventListener('change', function () {
+        if (caseLigne.checked) { selection.add(index); } else { selection.delete(index); }
+        majCaseGlobale();
+        majCompteur();
+      });
+      tdCase.appendChild(caseLigne);
+      tr.appendChild(tdCase);
+
+      tr.appendChild(cellule(String(index + 1), 'cellule-num'));
+
+      if (geocodageFait) {
+        var props = (resultat && resultat.props) || {};
+        var tdQualite = document.createElement('td');
+        if (resultat) {
+          var pastille = document.createElement('span');
+          pastille.className = 'pastille ' + resultat.qualite;
+          pastille.textContent = LIBELLE_QUALITE[resultat.qualite] || resultat.qualite;
+          tdQualite.appendChild(pastille);
+        } else {
+          tdQualite.textContent = 'Non traitée';
         }
-    </script>
+        tr.appendChild(tdQualite);
+        tr.appendChild(cellule(props.label || ''));
+        tr.appendChild(cellule(props.city || ''));
+        tr.appendChild(cellule(distanceLisible(props.distance), 'cellule-mono'));
+        tr.appendChild(cellule(resultat ? resultat.statut : 'Non traitée'));
+      }
+
+      colonnes.forEach(function (col) { tr.appendChild(cellule(valeur(ligne, col))); });
+      fragment.appendChild(tr);
+    });
+    corps.replaceChildren(fragment);
+
+    var note = $('noteTroncature');
+    if (indices.length > LIGNES_APERCU_MAX) {
+      note.textContent = 'Aperçu limité aux ' + LIGNES_APERCU_MAX + ' premières lignes sur ' +
+        indices.length + '. La sélection et le géocodage portent bien sur la totalité des lignes, pas seulement sur celles affichées.';
+    } else {
+      note.textContent = '';
+    }
+
+    $('previewSection').style.display = 'block';
+    majCaseGlobale();
+    majCompteur();
+  }
+
+  function celluleEntete(texte, classe, noeud) {
+    var th = document.createElement('th');
+    if (classe) { th.className = classe; }
+    if (noeud) { th.appendChild(noeud); } else { th.textContent = texte; }
+    return th;
+  }
+
+  // textContent partout : une valeur du fichier ne doit jamais être
+  // interprétée comme du HTML.
+  function cellule(texte, classe) {
+    var td = document.createElement('td');
+    if (classe) { td.className = classe; }
+    td.textContent = texte;
+    return td;
+  }
+
+  function caseToutSelectionner() {
+    var caseGlobale = document.createElement('input');
+    caseGlobale.type = 'checkbox';
+    caseGlobale.id = 'selectAllCheckbox';
+    caseGlobale.setAttribute('aria-label', 'Tout sélectionner');
+    caseGlobale.addEventListener('change', function () { toutSelectionner(caseGlobale.checked); });
+    return caseGlobale;
+  }
+
+  /* La case d'en-tête porte sur toutes les lignes retenues par le filtre,
+     pas seulement sur celles que l'aperçu a eu la place d'afficher. */
+  function toutSelectionner(etat) {
+    lignesFiltrees.forEach(function (index) {
+      if (etat) { selection.add(index); } else { selection.delete(index); }
+    });
+    document.querySelectorAll('.row-checkbox').forEach(function (cb) { cb.checked = etat; });
+    majCaseGlobale();
+    majCompteur();
+  }
+
+  function majCaseGlobale() {
+    var caseGlobale = $('selectAllCheckbox');
+    if (!caseGlobale) { return; }
+    var cochees = lignesFiltrees.filter(function (index) { return selection.has(index); }).length;
+    caseGlobale.checked = cochees > 0 && cochees === lignesFiltrees.length;
+    caseGlobale.indeterminate = cochees > 0 && cochees < lignesFiltrees.length;
+  }
+
+  function majCompteur() {
+    var nombre = selection.size;
+    $('selectedCount').textContent = nombre > 0
+      ? nombre + ' ligne(s) sélectionnée(s)'
+      : 'Aucune ligne sélectionnée';
+    $('btnGeocoder').disabled = nombre === 0;
+  }
+
+  /* ============================================================
+     STATISTIQUES
+     ============================================================ */
+
+  function afficherStatistiques(indices) {
+    var compte = { bon: 0, moyen: 0, faible: 0, echec: 0 };
+    indices.forEach(function (index) {
+      var resultat = resultats[index];
+      if (!resultat) { return; }
+      compte[resultat.qualite] = (compte[resultat.qualite] || 0) + 1;
+    });
+
+    var traites = indices.length;
+    var reussis = compte.bon + compte.moyen + compte.faible;
+    var taux = traites > 0 ? Math.round((reussis / traites) * 100) : 0;
+
+    $('statTotal').textContent = String(traites);
+    $('statBon').textContent = String(compte.bon);
+    $('statMoyen').textContent = String(compte.moyen + compte.faible);
+    $('statFailed').textContent = String(compte.echec);
+    $('statRate').textContent = taux + ' %';
+    $('statsSection').style.display = 'block';
+  }
+
+  /* ============================================================
+     CARTE
+     ============================================================ */
+
+  function couleurCarte(nom) {
+    return getComputedStyle(document.documentElement).getPropertyValue('--carte-' + nom).trim();
+  }
+
+  function initialiserCarte() {
+    if (!window.L) {
+      $('mapSection').style.display = 'none';
+      $('basemapSelector').disabled = true;
+      afficherMessage('alerte', 'La bibliothèque cartographique n\'a pas pu être chargée : la carte n\'est pas disponible, mais la saisie de coordonnées et les exports fonctionnent.');
+      return;
+    }
+
+    carte = window.L.map('map').setView([46.603354, 1.888334], 6);   // centre de la France
+
+    fondsCarte.osm = window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(carte);
+
+    fondsCarte.satellite = window.L.layerGroup([
+      window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri', maxZoom: 19
+      }),
+      window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri', maxZoom: 19
+      })
+    ]);
+
+    coucheMarqueurs = window.L.layerGroup().addTo(carte);
+    couchePoint = window.L.layerGroup().addTo(carte);
+
+    carte.on('click', function (e) {
+      interrogerPointIsole(e.latlng.lat, e.latlng.lng);
+    });
+
+    // La carte est visible dès le chargement, mais le navigateur peut ne pas
+    // avoir fini la mise en page : sans ce recalcul, Leaflet garde parfois
+    // une taille nulle et n'affiche que des tuiles grises.
+    window.requestAnimationFrame(function () { carte.invalidateSize(); });
+  }
+
+  function marquerPointIsole(lat, lon, resultat) {
+    if (!carte) { return; }
+    couchePoint.clearLayers();
+
+    // Un anneau, pas une pastille pleine : le point interrogé se distingue
+    // ainsi des résultats du fichier, quelle que soit leur qualité.
+    window.L.circleMarker([lat, lon], {
+      radius: 10,
+      color: couleurCarte('point'),
+      weight: 3,
+      fillColor: couleurCarte('point'),
+      fillOpacity: 0.15
+    }).addTo(couchePoint);
+
+    if (resultat && resultat.statut === 'Succès' && resultat.banLatitude !== '') {
+      // Trait entre le point interrogé et l'adresse trouvée : la longueur
+      // du trait dit tout de suite si la réponse est proche ou lointaine.
+      window.L.polyline([[lat, lon], [resultat.banLatitude, resultat.banLongitude]], {
+        color: couleurCarte(resultat.qualite),
+        weight: 2,
+        dashArray: '4 4'
+      }).addTo(couchePoint);
+
+      window.L.circleMarker([resultat.banLatitude, resultat.banLongitude], {
+        radius: 7,
+        color: couleurCarte('contour'),
+        weight: 2,
+        fillColor: couleurCarte(resultat.qualite),
+        fillOpacity: 0.9
+      }).addTo(couchePoint).bindPopup(contenuPopup(null, resultat));
+    }
+
+    if (carte.getZoom() < 14) { carte.setView([lat, lon], 17); }
+    else { carte.panTo([lat, lon]); }
+  }
+
+  function afficherResultatsSurCarte() {
+    if (!carte) { return; }
+    coucheMarqueurs.clearLayers();
+
+    var limites = [];
+    var contour = couleurCarte('contour');
+
+    donnees.forEach(function (ligne, index) {
+      var resultat = resultats[index];
+      if (!resultat || resultat.statut !== 'Succès') { return; }
+
+      var lat = parseFloat(resultat.latitude);
+      var lon = parseFloat(resultat.longitude);
+      if (isNaN(lat) || isNaN(lon)) { return; }
+
+      var marqueur = window.L.circleMarker([lat, lon], {
+        radius: 7,
+        color: contour,
+        weight: 2,
+        fillColor: couleurCarte(resultat.qualite),
+        fillOpacity: 0.9
+      }).addTo(coucheMarqueurs);
+
+      marqueur.bindPopup(contenuPopup(ligne, resultat));
+      limites.push([lat, lon]);
+    });
+
+    window.requestAnimationFrame(function () {
+      carte.invalidateSize();
+      if (limites.length) { carte.fitBounds(limites, { padding: [50, 50] }); }
+    });
+  }
+
+  // Construit un noeud DOM, jamais une chaîne HTML.
+  function contenuPopup(ligne, resultat) {
+    var conteneur = document.createElement('div');
+    var props = resultat.props || {};
+
+    var titre = document.createElement('strong');
+    titre.textContent = props.label || 'Adresse sans libellé';
+    conteneur.appendChild(titre);
+
+    var pastille = document.createElement('div');
+    pastille.className = 'pastille ' + resultat.qualite;
+    pastille.textContent = LIBELLE_QUALITE[resultat.qualite] || resultat.qualite;
+    conteneur.appendChild(pastille);
+
+    var liste = document.createElement('dl');
+    var ajouter = function (cle, val) {
+      if (!val) { return; }
+      var dt = document.createElement('dt');
+      dt.textContent = cle;
+      var dd = document.createElement('dd');
+      dd.textContent = val;
+      liste.appendChild(dt);
+      liste.appendChild(dd);
+    };
+
+    ajouter('Distance', distanceLisible(props.distance));
+    ajouter('Commune', props.city || '');
+    if (ligne) {
+      colonnes.forEach(function (col) { ajouter(col, valeur(ligne, col)); });
+    }
+    conteneur.appendChild(liste);
+
+    return conteneur;
+  }
+
+  function changerFondCarte() {
+    if (!carte) { return; }
+    var choix = $('basemapSelector').value;
+    Object.keys(fondsCarte).forEach(function (cle) { carte.removeLayer(fondsCarte[cle]); });
+    if (fondsCarte[choix]) { fondsCarte[choix].addTo(carte); }
+  }
+
+  /* ============================================================
+     EXPORTS
+
+     Toutes les lignes du fichier sont exportées, y compris celles qui
+     n'étaient pas cochées : l'export ne doit jamais amputer le fichier
+     d'origine. Les lignes non traitées portent simplement le statut
+     correspondant et des colonnes BAN vides.
+     ============================================================ */
+
+  // Si le fichier possède déjà une colonne du même nom, la colonne produite
+  // est suffixée pour ne pas écraser la donnée d'origine.
+  function nomsColonnesResultat() {
+    var noms = {};
+    COLONNES_RESULTAT.forEach(function (nom) {
+      noms[nom] = colonnes.indexOf(nom) === -1 ? nom : nom + '_resultat';
+    });
+    return noms;
+  }
+
+  function lignesExport() {
+    var noms = nomsColonnesResultat();
+    return donnees.map(function (ligne, index) {
+      var resultat = resultats[index];
+      var sortie = {};
+      colonnes.forEach(function (col) { sortie[col] = valeur(ligne, col); });
+
+      var props = (resultat && resultat.props) || {};
+      sortie[noms.adresse_ban] = props.label || '';
+      sortie[noms.ban_numero] = props.housenumber || '';
+      sortie[noms.ban_voie] = props.street || '';
+      sortie[noms.ban_code_postal] = props.postcode || '';
+      sortie[noms.ban_commune] = props.city || '';
+      sortie[noms.ban_code_insee] = props.citycode || '';
+      sortie[noms.ban_contexte] = props.context || '';
+      sortie[noms.ban_type] = props.type || '';
+      sortie[noms.ban_score] = props.score !== undefined ? props.score : '';
+      // Distance en mètres entre le point interrogé et l'adresse trouvée :
+      // c'est l'indicateur de qualité du géocodage inverse.
+      sortie[noms.ban_distance] = props.distance !== undefined ? props.distance : '';
+      sortie[noms.ban_latitude] = resultat ? resultat.banLatitude : '';
+      sortie[noms.ban_longitude] = resultat ? resultat.banLongitude : '';
+      sortie[noms.geocodage_qualite] = resultat ? (LIBELLE_QUALITE[resultat.qualite] || '') : '';
+      sortie[noms.geocodage_statut] = resultat ? resultat.statut : 'Non traitée';
+      return sortie;
+    });
+  }
+
+  function enTetesExport() {
+    var noms = nomsColonnesResultat();
+    return colonnes.concat(COLONNES_RESULTAT.map(function (nom) { return noms[nom]; }));
+  }
+
+  function nomFichier(extension) {
+    return 'geocodage_inverse_' + new Date().toISOString().slice(0, 10) + '.' + extension;
+  }
+
+  function telecharger(blob, nom) {
+    var url = URL.createObjectURL(blob);
+    var lien = document.createElement('a');
+    lien.href = url;
+    lien.download = nom;
+    document.body.appendChild(lien);
+    lien.click();
+    lien.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exporterCSV() {
+    if (!verifierResultats()) { return; }
+    if (!window.Papa) {
+      afficherMessage('erreur', 'La bibliothèque CSV n\'a pas pu être chargée. Utilisez l\'export Excel ou GeoJSON.');
+      return;
+    }
+    var csv = window.Papa.unparse({ fields: enTetesExport(), data: lignesExport() });
+    // Le BOM UTF-8 est indispensable : sans lui, Excel en français ouvre le
+    // fichier en ANSI et casse tous les accents.
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    telecharger(blob, nomFichier('csv'));
+    afficherMessage('succes', 'Fichier CSV téléchargé.');
+  }
+
+  function exporterXLSX() {
+    if (!verifierResultats()) { return; }
+    if (!window.XLSX) {
+      afficherMessage('erreur', 'La bibliothèque Excel n\'a pas pu être chargée. Utilisez l\'export CSV.');
+      return;
+    }
+    var feuille = window.XLSX.utils.json_to_sheet(lignesExport(), { header: enTetesExport() });
+    var classeur = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(classeur, feuille, 'Géocodage inverse');
+    window.XLSX.writeFile(classeur, nomFichier('xlsx'));
+    afficherMessage('succes', 'Fichier Excel téléchargé.');
+  }
+
+  function exporterGeoJSON() {
+    if (!verifierResultats()) { return; }
+
+    var entites = [];
+    donnees.forEach(function (ligne, index) {
+      var resultat = resultats[index];
+      if (!resultat || resultat.statut !== 'Succès') { return; }
+
+      var proprietes = {};
+      colonnes.forEach(function (col) { proprietes[col] = valeur(ligne, col); });
+      var props = resultat.props || {};
+      proprietes.adresse_ban = props.label || '';
+      proprietes.ban_numero = props.housenumber || '';
+      proprietes.ban_voie = props.street || '';
+      proprietes.ban_code_postal = props.postcode || '';
+      proprietes.ban_commune = props.city || '';
+      proprietes.ban_code_insee = props.citycode || '';
+      proprietes.ban_contexte = props.context || '';
+      proprietes.ban_type = props.type || '';
+      proprietes.ban_distance = props.distance !== undefined ? props.distance : '';
+      proprietes.ban_latitude = resultat.banLatitude;
+      proprietes.ban_longitude = resultat.banLongitude;
+      proprietes.geocodage_qualite = LIBELLE_QUALITE[resultat.qualite] || '';
+
+      entites.push({
+        type: 'Feature',
+        // La géométrie est le point interrogé, pas l'adresse trouvée : en
+        // géocodage inverse, ce point est la donnée, l'adresse est
+        // l'enrichissement. Les coordonnées de l'adresse restent
+        // disponibles en attributs.
+        geometry: { type: 'Point', coordinates: [resultat.longitude, resultat.latitude] },
+        properties: proprietes
+      });
+    });
+
+    if (!entites.length) {
+      afficherMessage('erreur', 'Aucun point géocodé à exporter en GeoJSON.');
+      return;
+    }
+
+    var geojson = {
+      type: 'FeatureCollection',
+      // WGS84, système par défaut du GeoJSON : QGIS l'ouvre sans reprojection.
+      crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+      features: entites
+    };
+
+    var blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+    telecharger(blob, nomFichier('geojson'));
+    afficherMessage('succes', entites.length + ' point(s) exporté(s) en GeoJSON.');
+  }
+
+  function verifierResultats() {
+    if (!donnees.length) {
+      afficherMessage('erreur', 'Aucune donnée à exporter.');
+      return false;
+    }
+    return true;
+  }
+
+  /* ============================================================
+     BASCULE CLAIR / SOMBRE
+
+     Même mécanique que le reste du site (assets/js/main.js) : l'attribut
+     data-theme est posé sur <html> et le choix est mémorisé sous la clé
+     « theme », partagée avec le portfolio. Le script anti-FOUC placé dans
+     le <head> se charge de la restaurer avant le premier rendu.
+     ============================================================ */
+  function activerBasculeTheme() {
+    var bouton = $('theme-toggle');
+    if (!bouton) { return; }
+    bouton.addEventListener('click', function () {
+      var actuel = document.documentElement.getAttribute('data-theme');
+      var suivant = actuel === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', suivant);
+      try { localStorage.setItem('theme', suivant); } catch (e) {}
+    });
+  }
+
+  /* ============================================================
+     INITIALISATION
+     ============================================================ */
+
+  function initialiser() {
+    // La bascule de thème ne dépend d'aucune bibliothèque : on l'active
+    // avant tout contrôle, pour qu'elle reste utilisable même si les CDN
+    // sont inaccessibles.
+    activerBasculeTheme();
+
+    $('btnPoint').addEventListener('click', traiterChampPoint);
+    $('champPoint').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); traiterChampPoint(); }
+    });
+    $('btnPosition').addEventListener('click', utiliserPositionAppareil);
+
+    $('fileInput').addEventListener('change', function (e) {
+      chargerFichier(e.target.files[0]);
+      e.target.value = '';   // permet de recharger deux fois le même fichier
+    });
+
+    var zone = $('dropZone');
+    ['dragenter', 'dragover'].forEach(function (evenement) {
+      zone.addEventListener(evenement, function (e) {
+        e.preventDefault();
+        zone.classList.add('survol');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (evenement) {
+      zone.addEventListener(evenement, function (e) {
+        e.preventDefault();
+        zone.classList.remove('survol');
+      });
+    });
+    zone.addEventListener('drop', function (e) {
+      if (e.dataTransfer && e.dataTransfer.files.length) {
+        chargerFichier(e.dataTransfer.files[0]);
+      }
+    });
+
+    $('btnValiderMapping').addEventListener('click', validerMapping);
+    $('btnToutSelectionner').addEventListener('click', function () { toutSelectionner(true); });
+    $('btnToutDeselectionner').addEventListener('click', function () { toutSelectionner(false); });
+    $('btnGeocoder').addEventListener('click', lancerGeocodage);
+    $('btnAnnuler').addEventListener('click', annulerGeocodage);
+    $('filtreQualite').addEventListener('change', afficherTableau);
+    $('basemapSelector').addEventListener('change', changerFondCarte);
+    $('btnExportCSV').addEventListener('click', exporterCSV);
+    $('btnExportXLSX').addEventListener('click', exporterXLSX);
+    $('btnExportGeoJSON').addEventListener('click', exporterGeoJSON);
+
+    initialiserCarte();
+
+    // Les bibliothèques absentes désactivent leur fonction, pas la page.
+    if (!window.Papa) {
+      $('btnExportCSV').disabled = true;
+      $('btnExportCSV').title = 'Bibliothèque CSV indisponible';
+      afficherMessage('alerte', 'La bibliothèque de lecture CSV n\'a pas pu être chargée. Vérifiez votre connexion puis rechargez la page.');
+    }
+    if (!window.XLSX) {
+      $('btnExportXLSX').disabled = true;
+      $('btnExportXLSX').title = 'Bibliothèque Excel indisponible';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initialiser);
+}());
+</script>
 </body>
 </html>
