@@ -94,6 +94,7 @@
     c.width = S.w * S.dpr;
     c.height = S.h * S.dpr;
     S.ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+    S.cell = window.innerWidth < 768 ? Math.ceil(CONFIG.cellSize * 1.6) : CONFIG.cellSize;
     S.gw = Math.ceil(S.w / S.cell) + 1;
     S.gh = Math.ceil(S.h / S.cell) + 1;
     S.field = new Float32Array(S.gw * S.gh);
@@ -327,20 +328,50 @@
       S.reducedMotion = true;
       computeField(0);
       drawTopographic();
-      return;
+    }
+
+    // Live: react to a change of the reduced-motion preference without a reload.
+    if (window.matchMedia) {
+      S.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      S.onMotionChange = (e) => {
+        S.reducedMotion = e.matches;
+        if (e.matches) {
+          updateRunning(); // stop the loop
+          computeField(0);
+          drawTopographic(); // static frame for the new preference
+        } else {
+          updateRunning(); // restart if visible
+        }
+      };
+      if (typeof S.motionQuery.addEventListener === 'function') {
+        S.motionQuery.addEventListener('change', S.onMotionChange);
+      } else {
+        S.motionQuery.addListener(S.onMotionChange);
+      }
     }
 
     updateRunning();
   }
 
   window.HeroBg = {
-    setTheme(isDark) { S.isDark = !!isDark; },
+    setTheme(isDark) {
+      S.isDark = !!isDark;
+      if (S.field) drawTopographic(); // immediate redraw, even when paused
+      updateRunning();
+    },
     destroy() {
       S.running = false;
       cancelAnimationFrame(S.raf);
       window.removeEventListener('resize', resize);
       if (S.io) S.io.disconnect();
       if (S.onVisibilityChange) document.removeEventListener('visibilitychange', S.onVisibilityChange);
+      if (S.motionQuery && S.onMotionChange) {
+        if (typeof S.motionQuery.removeEventListener === 'function') {
+          S.motionQuery.removeEventListener('change', S.onMotionChange);
+        } else {
+          S.motionQuery.removeListener(S.onMotionChange);
+        }
+      }
     },
   };
 

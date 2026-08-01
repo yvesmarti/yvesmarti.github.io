@@ -124,8 +124,9 @@ IIFE vanilla JS (pas de framework), 11 fonctions d'initialisation appelées sur 
 | `initParallax` | Parallaxe du dégradé héros `.hero-parallax-bg` |
 | `initAnimatedTimeline` | Timeline verticale `#exp-timeline` (scroll-driven, `.tl__item → .is-lit`) |
 | `initHorizontalTimeline` | Timeline horizontale `#parcours` / `#htl-track` (scroll converti en translateX) |
-| `initIsolines` | Canvas Perlin noise animé `#isoline-canvas` dans le héros |
 | `initSkillFilters` | Filtres `.filter-btn` sur `.skill-card[data-categorie]` |
+
+`assets/js/hero-background.js` — fond topographique animé du héros (`#isoline-canvas`), chargé en `defer` dans `_layouts/default.html`. Auto-boot au `DOMContentLoaded`, expose `window.HeroBg` (API publique : `setTheme(isDark)`, `destroy`). Respecte `prefers-reduced-motion` (frame statique) et réduit la résolution (`cellSize`) sous 768 px.
 
 `assets/js/realisations.js` — rendu dynamique des cards via `RL_ITEMS` (JSON injecté par Jekyll), filtrage par type.
 
