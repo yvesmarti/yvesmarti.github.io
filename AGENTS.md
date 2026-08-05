@@ -60,8 +60,6 @@ Tout le contenu modifiable est dans des fichiers YAML :
 | `stats.yml` | Compteurs animés — section `section-dark` de `index.html` |
 | `outils.yml` | Catalogue d'outils par catégorie — `outils.html` |
 | `realisations.yml` | Cards du portfolio — injecté en JSON dans `realisations/index.html` via `{{ site.data.realisations | jsonify }}` |
-| `experiences.yml` | Non utilisé directement côté front à ce jour |
-| `formations.yml` | Non utilisé directement côté front à ce jour |
 
 ---
 

@@ -1,0 +1,66 @@
+---
+layout: default
+title: "Page introuvable (404) - Yves Marti"
+description: "Cette page n'existe pas ou a été déplacée."
+permalink: /404.html
+---
+
+<section class="nf-section">
+    <p class="nf-code">404</p>
+    <p class="nf-lead">Cette page n'existe pas ou a été déplacée.</p>
+    <a href="{{ '/' | relative_url }}" class="nf-btn">
+        Retour à l'accueil
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <p class="nf-alt"><a href="{{ '/outils' | relative_url }}">Boîte à outils</a> · <a href="{{ '/realisations' | relative_url }}">Réalisations</a> · <a href="{{ '/cv' | relative_url }}">CV</a></p>
+</section>
+
+<style>
+    .nf-section {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 7rem 1.5rem 5rem;
+        gap: 1.1rem;
+    }
+    .nf-code {
+        font-family: var(--font-display);
+        font-size: clamp(4rem, 14vw, 7rem);
+        line-height: 1;
+        color: var(--color-primary);
+        margin: 0;
+    }
+    [data-theme="dark"] .nf-code { color: var(--color-accent-light, #7fbfa5); }
+    .nf-lead {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        margin: 0;
+    }
+    .nf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-top: 0.5rem;
+        padding: 0.65rem 1.5rem;
+        border: 1px solid var(--color-accent);
+        color: var(--color-accent);
+        text-decoration: none;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 600;
+        border-radius: 2px;
+        transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    }
+    .nf-btn:hover { background: var(--color-accent); color: #fff; transform: translateY(-2px); }
+    .nf-alt {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--color-muted);
+    }
+    .nf-alt a { color: var(--color-accent); text-decoration: none; }
+    .nf-alt a:hover { text-decoration: underline; }
+</style>

@@ -195,12 +195,14 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
 
 <!-- Outils -->
 <section id="outils">
+    {% assign nb_outils = 0 %}
+    {% for categorie in site.data.outils %}{% for outil in categorie.outils %}{% if outil.actif %}{% assign nb_outils = nb_outils | plus: 1 %}{% endif %}{% endfor %}{% endfor %}
     <div class="narrative animate-on-scroll">
         <h2 class="lead">
             Au fil des projets, je développe mes propres outils pratiques.
         </h2>
         <p>
-            Des applications web pour des besoins que rien ne couvrait : calculer des isochrones, géocoder un fichier d'adresses, extraire des données OpenStreetMap, dimensionner une dalle de PAV. Treize outils, gratuits, exécutés entièrement dans le navigateur. Aucune donnée ne quitte le poste de celui qui les utilise.
+            Des applications web pour des besoins que rien ne couvrait : calculer des isochrones, géocoder un fichier d'adresses, extraire des données OpenStreetMap, dimensionner une dalle de PAV. {{ nb_outils }} outils, gratuits, exécutés entièrement dans le navigateur. Aucune donnée ne quitte le poste de celui qui les utilise.
         </p>
 
         {% assign featured = site.data.realisations | where: "featured", true %}
@@ -252,8 +254,6 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
             </div>
         </div>
 
-        {% assign nb_outils = 0 %}
-        {% for categorie in site.data.outils %}{% for outil in categorie.outils %}{% if outil.actif %}{% assign nb_outils = nb_outils | plus: 1 %}{% endif %}{% endfor %}{% endfor %}
         {% assign nb_realisations = site.data.realisations | size %}
 
         <p class="catalog-links">

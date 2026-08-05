@@ -78,7 +78,7 @@ Ce dépôt héberge mon site et une collection d'outils construits pour un usage
 ```
 ~70 collectivités côtoyées
   10 ans d'expérience territoriale
-   9 outils web publiés en accès libre
+  14 outils web publiés en accès libre
 ```
 
 ---

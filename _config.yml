@@ -39,14 +39,10 @@ defaults:
       path: "outils/creation_retroplanning.html"
     values:
       sitemap: false
-  - scope:
-      path: "realisations/realisations-variant-a.html"
-    values:
-      sitemap: false
-
 # Exclure certains fichiers de la compilation
 exclude:
   - README.md
-  - GUIDE.md
+  - AGENTS.md
+  - CLAUDE.md
   - Gemfile
   - Gemfile.lock

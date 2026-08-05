@@ -63,12 +63,10 @@ yvesmarti.github.io/
 ├── robots.txt                # SEO
 │
 ├── _data/                    # Contenu YAML (source de vérité)
-│   ├── competences.yml       # 13 cartes de compétences filtrables
-│   ├── experiences.yml       # 4 expériences pro (non rendu côté front)
-│   ├── formations.yml        # 3 diplômes (non rendu côté front)
-│   ├── outils.yml            # Catalogue d'outils par catégorie (19 entrées)
+│   ├── competences.yml       # 12 cartes de compétences filtrables
+│   ├── outils.yml            # Catalogue d'outils par catégorie (17 entrées)
 │   ├── outils_recommandes.yml # 4 outils tiers recommandés (Recordly, etc.)
-│   ├── realisations.yml      # 8 items du portfolio
+│   ├── realisations.yml      # 12 items du portfolio
 │   ├── stats.yml             # Compteurs animés (70+ collectivités, etc.)
 │   └── timeline.yml          # 7 items parcours chronologique (formation + expé)
 │
@@ -123,8 +121,7 @@ yvesmarti.github.io/
     ├── index.html            # Portfolio (rendu dynamique via realisations.js)
     ├── etude-de-cas-redevance-speciale.html
     ├── presentation-dashboard.html
-    ├── api-utiles.html
-    └── realisations-variant-a.html
+    └── api-utiles.html
 ```
 
 ---
@@ -416,7 +413,6 @@ La page index affiche toutes les entrées YAML sous forme de cards filtrables. F
 | `etude-de-cas-redevance-speciale.html` | Power Query pour la redevance spéciale (42,5 KB) |
 | `presentation-dashboard.html` | Présentation tableau de bord (31,6 KB) |
 | `api-utiles.html` | Guide API open data utiles (35,5 KB) |
-| `realisations-variant-a.html` | Variante / archive |
 
 ---
 
@@ -526,7 +522,8 @@ plugins:
   - jekyll-sitemap
 exclude:
   - README.md
-  - GUIDE.md
+  - AGENTS.md
+  - CLAUDE.md
   - Gemfile
   - Gemfile.lock
 ```

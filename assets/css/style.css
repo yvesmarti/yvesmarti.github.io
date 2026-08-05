@@ -2073,11 +2073,6 @@ body,
     fill: #131e17;
 }
 
-/* fill="#e8ded4"  (fond chaud) → fond chaud sombre */
-[data-theme="dark"] .wave-separator path[fill="#e8ded4"] {
-    fill: #1c2a20;
-}
-
 /* fill="#1a3a32"  (fond primaire) → fond primaire sombre */
 [data-theme="dark"] .wave-separator path[fill="#1a3a32"] {
     fill: #0a1a10;
