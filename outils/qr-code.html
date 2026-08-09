@@ -8,29 +8,28 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <!-- SEO injected -->
-<meta name="description" content="Créez des QR codes (URL, contact vCard, WiFi) directement dans le navigateur, sans serveur ni transfert de données.">
+<meta name="description" content="Créez des QR codes personnalisés (URL, contact vCard, WiFi) : formes, couleurs, logo. Tout se fait dans le navigateur, sans serveur ni transfert de données.">
 <meta name="author" content="Yves Marti">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://yvesmarti.fr/outils/qr-code.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="QR Forge - Yves Marti">
-<meta property="og:description" content="Créez des QR codes (URL, contact vCard, WiFi) directement dans le navigateur, sans serveur ni transfert de données.">
+<meta property="og:description" content="Créez des QR codes personnalisés (URL, contact vCard, WiFi) : formes, couleurs, logo. Tout se fait dans le navigateur, sans serveur ni transfert de données.">
 <meta property="og:url" content="https://yvesmarti.fr/outils/qr-code.html">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:site_name" content="Yves Marti - Chargé de mission déchets & SIG">
+<meta property="og:site_name" content="Yves Marti - Chargé de mission déchets &amp; SIG">
 <meta property="og:image" content="https://yvesmarti.fr/assets/images/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="QR Forge - Yves Marti">
-<meta name="twitter:description" content="Créez des QR codes (URL, contact vCard, WiFi) directement dans le navigateur, sans serveur ni transfert de données.">
+<meta name="twitter:description" content="Créez des QR codes personnalisés (URL, contact vCard, WiFi) : formes, couleurs, logo. Tout se fait dans le navigateur, sans serveur ni transfert de données.">
 <meta name="twitter:image" content="https://yvesmarti.fr/assets/images/og-image.png">
 <meta name="twitter:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
 <meta name="twitter:creator" content="@yvesmarti">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 
 /* ── VARIABLES ─────────────────────────────────────────── */
@@ -52,17 +51,22 @@
   --err-bg:    rgba(200,60,50,.07);
   --err-bd:    rgba(200,60,50,.25);
   --err-tx:    #c83c32;
+  --warn-bg:   rgba(190,130,20,.09);
+  --warn-bd:   rgba(190,130,20,.3);
+  --warn-tx:   #8a6210;
   --r:         12px;
   --r-lg:      18px;
   --font:      'Manrope', system-ui, sans-serif;
   --mono:      'JetBrains Mono', monospace;
   --sh:        0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
   --sh-md:     0 4px 16px rgba(0,0,0,.1);
+  --rail-h:    58px;
 }
 
 /* ── RESET ─────────────────────────────────────────────── */
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { font-size:16px; -webkit-text-size-adjust:100%; }
+button { font-family: inherit; }
 
 /* ── BODY ──────────────────────────────────────────────── */
 body {
@@ -73,564 +77,451 @@ body {
   color: var(--text);
   min-height: 100vh;
   line-height: 1.55;
-  padding-bottom: 3rem;
+  padding-bottom: 2.5rem;
 }
-
-/* ── APP WRAPPER ───────────────────────────────────────── */
-.app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-/* ── PRIVACY BADGE ─────────────────────────────────────── */
-.privacy-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px 0 0;
-}
-.privacy-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 14px 6px 10px;
-  font-size: .75rem;
-  font-weight: 600;
-  color: var(--text-md);
-  box-shadow: var(--sh);
-}
-.privacy-pill svg { flex-shrink: 0; color: var(--green); }
-
-/* ── HERO ──────────────────────────────────────────────── */
-.hero {
-  padding: 22px 0 24px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::after {
-  content: '';
-  position: absolute;
-  top: -30px; right: -30px;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(29,82,52,.07) 0%, transparent 68%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.hero h1 {
-  font-size: clamp(1.7rem, 5vw, 2.4rem);
-  font-weight: 800;
-  letter-spacing: -.03em;
-  line-height: 1.15;
-  margin-bottom: 12px;
-  max-width: 520px;
-}
-.hero h1 span { color: var(--green); }
-.hero p {
-  font-size: .9rem;
-  color: var(--text-md);
-  max-width: 480px;
-  line-height: 1.6;
-}
-
-/* ── DIVIDER ────────────────────────────────────────────── */
-.divider { height: 1px; background: var(--border); margin: 4px 0 20px; }
-
-/* ── MAIN GRID ─────────────────────────────────────────── */
-.main-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  align-items: start;
-}
-/* ── DESKTOP LAYOUT ──────────────────────────────────────── */
-@media (min-width: 820px) {
-  .app { max-width: 1060px; }
-  .main-grid { grid-template-columns: 1fr 1fr; gap: 22px; }
-  .col-left { display: flex; flex-direction: column; gap: 14px; }
-  .col-right { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 16px; }
-  /* Hero plus compact sur desktop */
-  .hero { padding: 16px 0 16px; }
-  .hero h1 { font-size: 2rem; }
-  /* Textarea plus haute sur desktop */
-  #panel-url textarea { min-height: 210px; }
-  /* Zone QR plus grande sur desktop */
-  .qr-zone { min-height: 300px; }
-}
-
-/* ── CARD ──────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh);
-  border: 1px solid rgba(0,0,0,.04);
-  overflow: hidden;
-}
-.card-body { padding: 20px; }
-
-/* ── SECTION HEADER ────────────────────────────────────── */
-.section-hd { margin-bottom: 14px; }
-.section-hd h2 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -.02em;
-}
-.section-hd p {
-  font-size: .8rem;
-  color: var(--text-md);
-  margin-top: 3px;
-}
-
-/* ── MODE SELECTOR (horizontal segmented) ──────────────── */
-.seg {
-  background: var(--soft);
-  border-radius: 14px;
-  padding: 4px;
-  display: flex;
-  gap: 3px;
-  margin-bottom: 20px;
-}
-.seg-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-radius: 10px;
-  padding: 11px 6px;
-  font-family: var(--font);
-  font-size: .8rem;
-  font-weight: 700;
-  color: var(--text-md);
-  cursor: pointer;
-  transition: all .16s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  user-select: none;
-  white-space: nowrap;
-}
-.seg-btn .ico { font-size: .95rem; }
-.seg-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,.55); }
-.seg-btn.active {
-  background: var(--surface);
-  color: var(--green);
-  box-shadow: 0 1px 4px rgba(0,0,0,.12);
-}
-
-/* ── TAB PANELS ────────────────────────────────────────── */
-.tab-panel { display: none; animation: panIn .2s ease; }
-.tab-panel.active { display: block; }
-@keyframes panIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── FIELDS ────────────────────────────────────────────── */
-.field { margin-bottom: 14px; }
-.field:last-child { margin-bottom: 0; }
-.field > label {
-  display: block;
-  font-size: .75rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 6px;
-}
-.field input,
-.field textarea,
-.field select {
-  width: 100%;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: .93rem;
-  padding: 10px 13px;
-  outline: none;
-  transition: border-color .16s, box-shadow .16s;
-  -webkit-appearance: none; appearance: none;
-}
-.field input::placeholder,
-.field textarea::placeholder { color: var(--text-lt); }
-.field input:focus,
-.field textarea:focus,
-.field select:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-lt);
-}
-.field textarea {
-  resize: vertical;
-  min-height: 112px;
-  font-family: var(--mono) !important;
-  font-size: .83rem !important;
-  line-height: 1.55;
-}
-.field select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%231d5234' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-}
-.field-hint { font-size: .73rem; color: var(--text-lt); margin-top: 5px; }
-.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
-.field-full { grid-column: 1 / -1; }
-.field-row { display: flex; gap: 12px; align-items: flex-end; }
-.field-row .field { flex: 1; margin-bottom: 0; }
-
-/* Password toggle */
-.input-with-toggle { position: relative; }
-.input-with-toggle input { padding-right: 42px; font-family: var(--mono) !important; font-size: .86rem !important; }
-.toggle-pwd {
-  position: absolute;
-  right: 10px; top: 50%;
-  transform: translateY(-50%);
-  background: none; border: none;
-  color: var(--text-lt); cursor: pointer;
-  padding: 4px; display: flex;
-  align-items: center;
-  transition: color .15s;
-}
-.toggle-pwd:hover { color: var(--text-md); }
-
-/* Checkbox */
-.chk-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: .87rem;
-  font-weight: 600;
-  color: var(--text);
-  user-select: none;
-  padding-bottom: 2px;
-}
-.chk-label input[type="checkbox"] {
-  width: 17px; height: 17px;
-  accent-color: var(--green);
-  cursor: pointer; flex-shrink: 0;
-}
-
-/* ── COLUMNS ───────────────────────────────────────────── */
-.col-left, .col-right { display: flex; flex-direction: column; gap: 14px; }
-
-/* ── QR PREVIEW CARD ───────────────────────────────────── */
-.preview-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 18px 20px 0;
-}
-.preview-header h2 {
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: -.02em;
-}
-.preview-header p { font-size: .77rem; color: var(--text-md); margin-top: 2px; }
-.live-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  flex-shrink: 0;
-  margin-top: 6px;
-  animation: blink 2.5s ease-in-out infinite;
-}
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
-
-.qr-zone {
-  margin: 14px 20px 20px;
-  border: 2px dashed var(--border);
-  border-radius: var(--r);
-  min-height: 170px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color .25s;
-  overflow: hidden;
-}
-.qr-zone.filled {
-  border-color: rgba(29,82,52,.25);
-  border-style: solid;
-}
-#ph {
-  text-align: center;
-  color: var(--text-lt);
-  padding: 20px;
-}
-.ph-art { width: 72px; height: 72px; margin: 0 auto 12px; opacity: .22; display: block; }
-#ph p { font-size: .8rem; line-height: 1.45; max-width: 160px; margin: 0 auto; }
-#qr-out {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: qrIn .28s cubic-bezier(.34,1.4,.64,1);
-}
-#qr-out.visible { display: flex; }
-@keyframes qrIn {
-  from { opacity: 0; transform: scale(.9); }
-  to   { opacity: 1; transform: scale(1); }
-}
-#qr-out canvas, #qr-out img { display: block; border-radius: 4px; max-width: 100%; height: auto; }
-
-/* ── ENCODED CONTENT ───────────────────────────────────── */
-.encoded-wrap { padding: 0 20px 20px; }
-.encoded-label {
-  font-size: .72rem;
-  font-weight: 700;
-  color: var(--text-md);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 7px;
-}
-.encoded-box {
-  background: var(--soft);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 10px 12px;
-  font-family: var(--mono);
-  font-size: .72rem;
-  color: var(--text-md);
-  white-space: pre-wrap;
-  word-break: break-all;
-  max-height: 76px;
-  overflow-y: auto;
-  line-height: 1.6;
-}
-
-/* ── CONTROLS ──────────────────────────────────────────── */
-.ctrl-hd {
-  font-size: .72rem;
-  font-weight: 700;
-  color: var(--text-md);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 10px;
-}
-
-/* Color swatches */
-.color-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.color-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.color-col label { font-size: .7rem; color: var(--text-md); font-weight: 600; }
-.swatch {
-  width: 100%; height: 36px;
-  border-radius: 10px;
-  border: 2px solid var(--border);
-  cursor: pointer;
-  position: relative; overflow: hidden;
-  transition: border-color .16s, transform .16s;
-}
-.swatch:hover { border-color: var(--green); transform: scale(1.04); }
-.swatch input[type="color"] {
-  position: absolute;
-  inset: -4px;
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
-  opacity: 0; cursor: pointer; border: none; padding: 0;
-}
-.swap-btn {
-  background: var(--soft); border: 1.5px solid var(--border);
-  border-radius: 50%;
-  width: 32px; height: 32px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text-md);
-  font-size: 1rem;
-  transition: all .16s;
-}
-.swap-btn:hover { border-color: var(--green-bd); color: var(--green); transform: rotate(180deg); }
-
-/* Size buttons */
-.sizes-row { display: flex; gap: 8px; }
-.size-btn {
-  flex: 1;
-  background: var(--soft);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  font-family: var(--font);
-  font-size: .88rem;
-  font-weight: 700;
-  color: var(--text-md);
-  padding: 9px 4px 7px;
-  cursor: pointer;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 2px;
-  transition: all .16s;
-  user-select: none;
-}
-.size-btn small { font-size: .62rem; font-weight: 500; opacity: .6; }
-.size-btn:hover { border-color: var(--border); color: var(--text); background: #fff; }
-.size-btn.active { background: var(--green-lt); border-color: var(--green-bd); color: var(--green); }
-
-/* ── ACTION BUTTONS ────────────────────────────────────── */
-.action-btns { display: flex; flex-direction: column; gap: 10px; }
-.btn-dl {
-  width: 100%; background: var(--green); color: #fff;
-  border: none; border-radius: var(--r);
-  font-family: var(--font); font-size: .95rem; font-weight: 700;
-  padding: 15px 20px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all .18s;
-}
-.btn-dl:hover {
-  background: var(--green-h);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 16px rgba(29,82,52,.28);
-}
-.btn-dl:active { transform: none; box-shadow: none; }
-.btn-dl:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
-.btn-cp {
-  width: 100%; background: var(--surface); color: var(--text);
-  border: 1.5px solid var(--border); border-radius: var(--r);
-  font-family: var(--font); font-size: .9rem; font-weight: 600;
-  padding: 13px 20px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all .18s;
-}
-.btn-cp:hover { border-color: var(--green-bd); color: var(--green); background: var(--green-lt); }
-.btn-cp:disabled { opacity: .45; cursor: not-allowed; }
-
-/* ── STATUS ────────────────────────────────────────────── */
-.status {
-  font-size: .8rem; font-weight: 500;
-  padding: 8px 14px;
-  border-radius: var(--r);
-  opacity: 0; max-height: 0;
-  overflow: hidden;
-  transition: opacity .25s, max-height .3s, padding .3s;
-  text-align: center;
-}
-.status.show { opacity: 1; max-height: 60px; }
-.status.ok  { background: var(--ok-bg);  border: 1px solid var(--ok-bd);  color: var(--ok-tx); }
-.status.err { background: var(--err-bg); border: 1px solid var(--err-bd); color: var(--err-tx); }
-
-/* ── HERO BADGES ───────────────────────────────────────── */
-.hero-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-.hbadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--green-lt);
-  border: 1.5px solid var(--green-bd);
-  color: var(--green);
-  border-radius: 999px;
-  padding: 5px 13px;
-  font-size: .77rem;
-  font-weight: 700;
-}
-.hbadge svg { flex-shrink: 0; }
-
-/* ── FOOTER ────────────────────────────────────────────── */
-footer {
-  text-align: center;
-  padding: 28px 0 0;
-  font-size: .72rem;
-  color: var(--text-lt);
-}
-
-/* ── SCROLLBAR ─────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.app { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
 
 /* ── BACK LINK ─────────────────────────────────────────── */
 .back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 1.5rem 0 0.5rem;
-  font-size: .85rem;
-  font-weight: 600;
-  color: #6b7c75;
-  text-decoration: none;
-  transition: color .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 1.4rem 0 .4rem;
+  font-size: .85rem; font-weight: 600;
+  color: #6b7c75; text-decoration: none; transition: color .15s;
 }
 .back-link:hover { color: #3d8b6e; }
 
+/* ── HERO ──────────────────────────────────────────────── */
+.hero { padding: 10px 0 18px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 24px; }
+.hero h1 {
+  font-size: clamp(1.55rem, 4.6vw, 2.1rem);
+  font-weight: 800; letter-spacing: -.03em; line-height: 1.12;
+}
+.hero h1 span { color: var(--green); }
+.hero p { font-size: .84rem; color: var(--text-md); max-width: 400px; line-height: 1.5; }
+.privacy-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 999px; padding: 6px 14px 6px 10px;
+  font-size: .73rem; font-weight: 600; color: var(--text-md); box-shadow: var(--sh);
+}
+.privacy-pill svg { flex-shrink: 0; color: var(--green); }
+
+/* ── STUDIO ────────────────────────────────────────────── */
+.studio {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid rgba(0,0,0,.05);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-md);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  height: calc(100vh - 210px);
+  min-height: 540px;
+}
+
+/* ── CANVAS (aperçu) ───────────────────────────────────── */
+.canvas {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 22px 16px calc(var(--rail-h) + 26px);
+  overflow: auto;
+  background:
+    radial-gradient(circle, rgba(120,110,90,.16) 1px, transparent 1px) 0 0/22px 22px,
+    var(--bg);
+}
+.stage {
+  position: relative;
+  border-radius: var(--r);
+  padding: 10px;
+  background:
+    conic-gradient(#e9e5da 25%, #f6f3ec 0 50%, #e9e5da 0 75%, #f6f3ec 0) 0 0/16px 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.13);
+  max-width: 100%;
+  transition: opacity .2s;
+}
+.stage svg { display: block; width: min(62vw, 290px); height: auto; max-width: 100%; }
+@media (min-width:900px){
+  /* taille pilotée par la hauteur : la barre d'outils reste toujours visible */
+  .stage svg { width: auto; height: clamp(190px, calc(100vh - 440px), 360px); }
+}
+.stage.empty { display: none; }
+#ph { text-align: center; color: var(--text-lt); padding: 40px 20px; }
+.ph-art { width: 76px; height: 76px; margin: 0 auto 12px; opacity: .3; display: block; }
+#ph p { font-size: .82rem; max-width: 200px; margin: 0 auto; }
+
+/* ── TOOLBAR ───────────────────────────────────────────── */
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.tool {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); color: var(--text-md);
+  cursor: pointer; transition: all .16s; box-shadow: var(--sh);
+}
+.tool:hover:not(:disabled) { color: var(--green); border-color: var(--green-bd); transform: translateY(-1px); }
+.tool:disabled { opacity: .4; cursor: not-allowed; }
+.tool.primary { background: var(--green); color: #fff; border-color: var(--green); width: auto; padding: 0 18px; gap: 8px; font-size: .88rem; font-weight: 700; }
+.tool.primary:hover:not(:disabled) { background: var(--green-h); color: #fff; }
+
+/* ── SHEET (panneau latéral / bottom sheet) ────────────── */
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -10px 34px rgba(0,0,0,.16);
+  display: flex; flex-direction: column;
+  height: 66%;
+  transform: translateY(calc(100% - var(--rail-h)));
+  transition: transform .3s cubic-bezier(.32,.72,0,1);
+  z-index: 5;
+}
+.sheet.open { transform: translateY(0); }
+.grabber { display: block; width: 38px; height: 4px; border-radius: 3px; background: var(--border); margin: 7px auto 0; flex-shrink: 0; }
+
+/* Rail */
+.rail {
+  display: flex; align-items: center; justify-content: space-around;
+  height: var(--rail-h); flex-shrink: 0; padding: 0 6px;
+  border-bottom: 1px solid var(--border);
+}
+.rail-btn {
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  color: var(--text-lt); padding: 6px 8px; border-radius: 10px;
+  transition: color .15s, background .15s; flex: 1;
+}
+.rail-btn small { font-size: .6rem; font-weight: 700; letter-spacing: .02em; }
+.rail-btn:hover { color: var(--text-md); }
+.rail-btn.active { color: var(--green); background: var(--green-lt); }
+
+/* Panel */
+.panel { flex: 1; overflow-y: auto; padding: 16px 16px 26px; }
+.pane { display: none; animation: panIn .2s ease; }
+.pane.active { display: block; }
+@keyframes panIn { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+
+.ctrl-hd {
+  font-size: .68rem; font-weight: 700; color: var(--text-md);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin: 18px 0 9px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.pane > .ctrl-hd:first-child { margin-top: 0; }
+.ctrl-hd .val { font-family: var(--mono); font-size: .68rem; color: var(--text-lt); text-transform: none; letter-spacing: 0; }
+
+/* ── SEGMENTED ─────────────────────────────────────────── */
+.seg { background: var(--soft); border-radius: 13px; padding: 4px; display: flex; gap: 3px; margin-bottom: 16px; }
+.seg-btn {
+  flex: 1; background: transparent; border: none; border-radius: 9px;
+  padding: 9px 4px; font-size: .76rem; font-weight: 700; color: var(--text-md);
+  cursor: pointer; transition: all .16s; display: flex; align-items: center;
+  justify-content: center; gap: 5px; user-select: none; white-space: nowrap;
+}
+.seg-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,.55); }
+.seg-btn.active { background: var(--surface); color: var(--green); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: panIn .2s ease; }
+
+/* ── FIELDS ────────────────────────────────────────────── */
+.field { margin-bottom: 13px; }
+.field:last-child { margin-bottom: 0; }
+.field > label { display: block; font-size: .73rem; font-weight: 700; margin-bottom: 5px; }
+.field input, .field textarea, .field select {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); color: var(--text); font-family: var(--font);
+  font-size: .9rem; padding: 9px 12px; outline: none;
+  transition: border-color .16s, box-shadow .16s;
+  -webkit-appearance: none; appearance: none;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--text-lt); }
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--green); box-shadow: 0 0 0 3px var(--green-lt);
+}
+.field textarea { resize: vertical; min-height: 96px; font-family: var(--mono) !important; font-size: .8rem !important; line-height: 1.55; }
+.field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%231d5234' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+}
+.field-hint { font-size: .71rem; color: var(--text-lt); margin-top: 5px; line-height: 1.45; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.field-full { grid-column: 1 / -1; }
+.input-with-toggle { position: relative; }
+.input-with-toggle input { padding-right: 40px; font-family: var(--mono) !important; font-size: .84rem !important; }
+.toggle-pwd {
+  position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-lt); cursor: pointer;
+  padding: 4px; display: flex; transition: color .15s;
+}
+.toggle-pwd:hover { color: var(--text-md); }
+.chk-label {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font-size: .82rem; font-weight: 600; user-select: none; padding: 4px 0;
+}
+.chk-label input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+
+/* ── ENCODED BOX ───────────────────────────────────────── */
+.encoded-box {
+  background: var(--soft); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 9px 11px; font-family: var(--mono); font-size: .69rem; color: var(--text-md);
+  white-space: pre-wrap; word-break: break-all; max-height: 84px; overflow-y: auto; line-height: 1.6;
+}
+
+/* ── PALETTES ──────────────────────────────────────────── */
+.palettes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+.pal {
+  aspect-ratio: 1; border-radius: 9px; border: 2px solid var(--border);
+  cursor: pointer; padding: 0; overflow: hidden; position: relative;
+  transition: transform .14s, border-color .14s; background: none;
+}
+.pal i { position: absolute; inset: 0; display: block; background: var(--a); }
+.pal i::after {
+  content: ''; position: absolute; right: 0; bottom: 0;
+  width: 58%; height: 58%; border-top-left-radius: 10px; background: var(--b);
+}
+.pal:hover { transform: scale(1.09); border-color: var(--green-bd); }
+.pal.active { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-lt); }
+
+/* ── COLOR PICKERS ─────────────────────────────────────── */
+.color-row { display: flex; align-items: flex-end; gap: 10px; }
+.color-col { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.color-col label { font-size: .68rem; color: var(--text-md); font-weight: 700; }
+.swatch {
+  width: 100%; height: 34px; border-radius: 10px; border: 2px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden; transition: border-color .16s;
+}
+.swatch:hover { border-color: var(--green); }
+.swatch input[type="color"] {
+  position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+  opacity: 0; cursor: pointer; border: none; padding: 0;
+}
+.swap-btn {
+  background: var(--soft); border: 1.5px solid var(--border); border-radius: 50%;
+  width: 32px; height: 32px; flex-shrink: 0; margin-bottom: 1px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-md); font-size: 1rem; transition: all .16s;
+}
+.swap-btn:hover { border-color: var(--green-bd); color: var(--green); transform: rotate(180deg); }
+
+/* ── CHIPS (formes) ────────────────────────────────────── */
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.chips.c3 { grid-template-columns: repeat(3, 1fr); }
+.chip {
+  background: var(--soft); border: 1.5px solid transparent; border-radius: 11px;
+  padding: 7px 3px 5px; cursor: pointer; color: var(--text-md);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: all .15s; user-select: none;
+}
+.chip svg { width: 26px; height: 26px; display: block; }
+.chip span { font-size: .61rem; font-weight: 700; letter-spacing: -.01em; }
+.chip:hover { background: #fff; border-color: var(--border); color: var(--text); }
+.chip.active { background: var(--green-lt); border-color: var(--green-bd); color: var(--green); }
+
+/* ── RANGE ─────────────────────────────────────────────── */
+input[type="range"] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  background: transparent; cursor: pointer; height: 20px;
+}
+input[type="range"]::-webkit-slider-runnable-track { height: 5px; border-radius: 3px; background: var(--soft); }
+input[type="range"]::-moz-range-track { height: 5px; border-radius: 3px; background: var(--soft); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--green); border: 2.5px solid #fff; box-shadow: var(--sh); margin-top: -6px;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 17px; height: 17px; border-radius: 50%; border: 2.5px solid #fff;
+  background: var(--green); box-shadow: var(--sh);
+}
+
+/* ── LOGO DROP ─────────────────────────────────────────── */
+.logo-drop {
+  display: block;   /* un <label> est inline par défaut : sans ceci, bordure et padding se cassent */
+  border: 2px dashed var(--border); border-radius: var(--r);
+  padding: 16px; text-align: center; cursor: pointer;
+  transition: border-color .16s, background .16s; color: var(--text-md); font-size: .8rem;
+  line-height: 1.5;
+}
+.logo-drop:hover { border-color: var(--green-bd); background: var(--green-lt); }
+.logo-drop input { display: none; }
+.logo-preview { display: flex; align-items: center; gap: 10px; }
+.logo-preview img { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; background: var(--soft); flex-shrink: 0; }
+.btn-ghost {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 7px 13px; font-size: .78rem; font-weight: 700; color: var(--text-md); cursor: pointer;
+  transition: all .16s;
+}
+.btn-ghost:hover { border-color: var(--err-bd); color: var(--err-tx); }
+
+/* ── ALERTS ────────────────────────────────────────────── */
+.alert {
+  font-size: .76rem; line-height: 1.45; padding: 9px 12px;
+  border-radius: var(--r); margin-top: 12px; display: none;
+}
+.alert.show { display: block; }
+.alert.err  { background: var(--err-bg);  border: 1px solid var(--err-bd);  color: var(--err-tx); }
+.alert.warn { background: var(--warn-bg); border: 1px solid var(--warn-bd); color: var(--warn-tx); }
+
+/* ── TOAST ─────────────────────────────────────────────── */
+.toast {
+  position: absolute; left: 50%; top: 14px; transform: translate(-50%, -20px);
+  background: var(--text); color: #fff; font-size: .78rem; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px; box-shadow: var(--sh-md);
+  opacity: 0; pointer-events: none; transition: all .25s; z-index: 20; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── FOOTER ────────────────────────────────────────────── */
+footer { text-align: center; padding: 22px 0 0; font-size: .72rem; color: var(--text-lt); }
+
+/* ── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── DESKTOP ───────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .studio {
+    display: grid;
+    grid-template-columns: 74px 322px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);   /* une seule rangée : panneau | aperçu */
+    height: min(760px, calc(100vh - 190px));
+    min-height: 620px;
+  }
+  .sheet {
+    grid-column: 1 / 3; grid-row: 1;      /* sans ceci, le panneau tombe sous l'aperçu */
+    position: static; transform: none !important; height: auto;
+    min-height: 0; min-width: 0;
+    display: grid; grid-template-columns: 74px minmax(0, 1fr);
+    border: none; border-right: 1px solid var(--border); border-radius: 0;
+    box-shadow: none; overflow: hidden;
+  }
+  .grabber { display: none; }
+  .rail {
+    grid-column: 1; flex-direction: column; justify-content: flex-start; height: auto;
+    border-bottom: none; border-right: 1px solid var(--border);
+    padding: 12px 8px; gap: 4px; background: #fcfbf8; overflow-y: auto;
+  }
+  .rail-btn { flex: 0 0 auto; width: 100%; padding: 9px 4px; gap: 3px; }
+  .panel { grid-column: 2; min-height: 0; min-width: 0; }
+  .canvas {
+    grid-column: 3; grid-row: 1;
+    min-height: 0; min-width: 0;
+    padding: 26px 22px; justify-content: center;
+  }
+  .toolbar { margin-top: 4px; }
+}
+
+/* ── RÉDUCTION DES ANIMATIONS ──────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
 </style>
 </head>
 <body>
 
 <div class="app">
 
-  <!-- Retour aux outils -->
   <a href="/outils/" class="back-link">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     Retour aux outils
   </a>
 
-  <!-- Privacy badge -->
-  <div class="privacy-badge">
+  <div class="hero">
+    <div>
+      <h1>Générateur de QR codes<br><span>personnalisables, hors ligne</span></h1>
+      <p>Formes, couleurs, logo : tout se calcule dans votre navigateur. Aucune donnée n'est envoyée, les QR codes ne périment jamais.</p>
+    </div>
     <div class="privacy-pill">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      QR code local · aucune donnée envoyée
+      Calcul local · aucune donnée envoyée
     </div>
   </div>
 
-  <!-- Hero -->
-  <div class="hero">
-    <h1>Générateur de QR codes<br><span>simple, beau et immédiat</span></h1>
-    <p>Tout se fait dans votre navigateur. Une fois la page chargée, créez vos QR codes hors ligne - sans serveur, sans cookie, sans transfert de données.</p>
-    <div class="hero-badges">
-      <span class="hbadge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        100&nbsp;% gratuit
-      </span>
-      <span class="hbadge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Sans abonnement
-      </span>
-      <span class="hbadge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        QR codes permanents
-      </span>
+  <!-- ══ STUDIO ══════════════════════════════════════════ -->
+  <div class="studio" id="studio">
+
+    <!-- ── Aperçu ── -->
+    <div class="canvas" id="canvas">
+      <div id="ph">
+        <svg class="ph-art" viewBox="0 0 100 100" fill="none">
+          <rect x="8" y="8" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="18" y="18" width="13" height="13" rx="3" fill="currentColor" opacity=".35"/>
+          <rect x="59" y="8" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="69" y="18" width="13" height="13" rx="3" fill="currentColor" opacity=".35"/>
+          <rect x="8" y="59" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="18" y="69" width="13" height="13" rx="3" fill="currentColor" opacity=".35"/>
+          <circle cx="59" cy="59" r="4.5" fill="currentColor" opacity=".3"/>
+          <circle cx="72" cy="59" r="4.5" fill="currentColor" opacity=".18"/>
+          <circle cx="85" cy="59" r="4.5" fill="currentColor" opacity=".3"/>
+          <circle cx="59" cy="72" r="4.5" fill="currentColor" opacity=".18"/>
+          <circle cx="85" cy="72" r="4.5" fill="currentColor" opacity=".3"/>
+          <circle cx="72" cy="85" r="4.5" fill="currentColor" opacity=".3"/>
+          <circle cx="85" cy="85" r="4.5" fill="currentColor" opacity=".18"/>
+        </svg>
+        <p>Saisissez un contenu pour générer votre QR code.</p>
+      </div>
+
+      <div class="stage empty" id="stage"></div>
+
+      <div class="toolbar">
+        <button class="tool" id="btn-rand" title="Style aléatoire" aria-label="Style aléatoire">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+        </button>
+        <button class="tool primary" id="btn-dl" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="dl-lbl">Télécharger</span>
+        </button>
+        <button class="tool" id="btn-cp" title="Copier l'image" aria-label="Copier l'image" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+        <button class="tool" id="btn-reset" title="Réinitialiser le style" aria-label="Réinitialiser le style">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.36 2.64L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="toast" id="toast"></div>
 
-  <!-- Main grid -->
-  <div class="main-grid">
+    <!-- ── Panneau (sidebar desktop / bottom sheet mobile) ── -->
+    <div class="sheet" id="sheet">
+      <span class="grabber" id="grabber"></span>
 
-    <!-- ── COLONNE GAUCHE : formulaire ── -->
-    <div class="col-left">
-      <div class="card">
-        <div class="card-body">
+      <nav class="rail" id="rail">
+        <button class="rail-btn active" data-pane="content">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 011-1h14a1 1 0 011 1v2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="9" y1="20" x2="15" y2="20"/></svg>
+          <small>Contenu</small>
+        </button>
+        <button class="rail-btn" data-pane="color">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.2"/><circle cx="17.5" cy="10.5" r="1.2"/><circle cx="8.5" cy="7.5" r="1.2"/><circle cx="6.5" cy="12.5" r="1.2"/><path d="M12 2a10 10 0 000 20 2 2 0 002-2 2 2 0 00-.5-1.3 2 2 0 01-.5-1.3 2 2 0 012-2h2.4A4.6 4.6 0 0022 12 10 10 0 0012 2z"/></svg>
+          <small>Couleurs</small>
+        </button>
+        <button class="rail-btn" data-pane="shape">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="6.5" r="3.5"/><path d="M6.5 14l3.5 6.5h-7z"/><rect x="14" y="14" width="7" height="7" rx="3.5"/></svg>
+          <small>Formes</small>
+        </button>
+        <button class="rail-btn" data-pane="frame">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>
+          <small>Cadre</small>
+        </button>
+        <button class="rail-btn" data-pane="export">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <small>Export</small>
+        </button>
+      </nav>
 
-          <div class="section-hd">
-            <h2>Contenu</h2>
-            <p>Choisissez un mode puis saisissez les informations à encoder.</p>
-          </div>
+      <div class="panel" id="panel">
 
-          <!-- Segmented control -->
+        <!-- ══ CONTENU ══ -->
+        <section class="pane active" data-pane="content">
           <div class="seg" role="tablist">
-            <button class="seg-btn active" data-tab="url" role="tab">
-              <span class="ico">🔗</span> URL / texte
-            </button>
-            <button class="seg-btn" data-tab="contact" role="tab">
-              <span class="ico">👤</span> Contact
-            </button>
-            <button class="seg-btn" data-tab="wifi" role="tab">
-              <span class="ico">📶</span> WiFi
-            </button>
+            <button class="seg-btn active" data-tab="url" role="tab">🔗 URL</button>
+            <button class="seg-btn" data-tab="contact" role="tab">👤 Contact</button>
+            <button class="seg-btn" data-tab="wifi" role="tab">📶 WiFi</button>
           </div>
 
-          <!-- Panel URL -->
           <div id="panel-url" class="tab-panel active">
             <div class="field">
               <label for="url-inp">URL ou texte libre</label>
@@ -639,378 +530,977 @@ footer {
             </div>
           </div>
 
-          <!-- Panel Contact -->
           <div id="panel-contact" class="tab-panel">
-            <div class="section-hd">
-              <h2>Carte de contact</h2>
-            </div>
             <div class="field-grid">
-              <div class="field">
-                <label for="c-fn">Prénom</label>
-                <input type="text" id="c-fn" placeholder="Jean">
-              </div>
-              <div class="field">
-                <label for="c-ln">Nom</label>
-                <input type="text" id="c-ln" placeholder="Dupont">
-              </div>
-              <div class="field field-full">
-                <label for="c-org">Entreprise</label>
-                <input type="text" id="c-org" placeholder="Mairie de Cabourg">
-              </div>
-              <div class="field">
-                <label for="c-tel">Téléphone</label>
-                <input type="tel" id="c-tel" placeholder="+33 6 12 34 56 78">
-              </div>
-              <div class="field">
-                <label for="c-email">Email</label>
-                <input type="email" id="c-email" placeholder="jean@exemple.fr">
-              </div>
-              <div class="field field-full">
-                <label for="c-addr">Adresse</label>
-                <input type="text" id="c-addr" placeholder="12 rue des Tilleuls, Caen">
-              </div>
-              <div class="field field-full">
-                <label for="c-url">Site web</label>
-                <input type="url" id="c-url" placeholder="https://www.exemple.fr">
-              </div>
+              <div class="field"><label for="c-fn">Prénom</label><input type="text" id="c-fn" placeholder="Jean"></div>
+              <div class="field"><label for="c-ln">Nom</label><input type="text" id="c-ln" placeholder="Dupont"></div>
+              <div class="field field-full"><label for="c-org">Entreprise</label><input type="text" id="c-org" placeholder="Auto-École Marti"></div>
+              <div class="field"><label for="c-tel">Téléphone</label><input type="tel" id="c-tel" placeholder="+33 6 12 34 56 78"></div>
+              <div class="field"><label for="c-email">Email</label><input type="email" id="c-email" placeholder="jean@exemple.fr"></div>
+              <div class="field field-full"><label for="c-addr">Adresse</label><input type="text" id="c-addr" placeholder="12 rue des Tilleuls, Caen"></div>
+              <div class="field field-full"><label for="c-url">Site web</label><input type="url" id="c-url" placeholder="https://www.exemple.fr"></div>
             </div>
           </div>
 
-          <!-- Panel WiFi -->
           <div id="panel-wifi" class="tab-panel">
-            <div class="section-hd">
-              <h2>Réseau WiFi</h2>
-            </div>
-            <div class="field">
-              <label for="w-ssid">Nom du réseau (SSID)</label>
-              <input type="text" id="w-ssid" placeholder="MonWiFi_Maison">
-            </div>
+            <div class="field"><label for="w-ssid">Nom du réseau (SSID)</label><input type="text" id="w-ssid" placeholder="MonWiFi_Maison"></div>
             <div class="field">
               <label for="w-pwd">Mot de passe</label>
               <div class="input-with-toggle">
                 <input type="password" id="w-pwd" placeholder="••••••••" autocomplete="off">
-                <button type="button" class="toggle-pwd" id="toggle-pwd" aria-label="Afficher/masquer">
-                  <svg id="eye-ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                  </svg>
+                <button type="button" class="toggle-pwd" id="toggle-pwd" aria-label="Afficher ou masquer le mot de passe">
+                  <svg id="eye-ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
-            <div class="field-row">
-              <div class="field" style="flex:2">
-                <label for="w-sec">Sécurité</label>
-                <select id="w-sec">
-                  <option value="WPA">WPA / WPA2 / WPA3</option>
-                  <option value="WEP">WEP (ancien)</option>
-                  <option value="nopass">Aucune sécurité</option>
-                </select>
-              </div>
-              <div class="field" style="flex:1.4; display:flex; align-items:flex-end; padding-bottom:9px; margin-bottom:0">
-                <label class="chk-label">
-                  <input type="checkbox" id="w-hidden">
-                  <span>Réseau masqué</span>
-                </label>
-              </div>
+            <div class="field"><label for="w-sec">Sécurité</label>
+              <select id="w-sec">
+                <option value="WPA">WPA / WPA2 / WPA3</option>
+                <option value="WEP">WEP (ancien)</option>
+                <option value="nopass">Aucune sécurité</option>
+              </select>
             </div>
+            <label class="chk-label"><input type="checkbox" id="w-hidden"><span>Réseau masqué</span></label>
           </div>
 
-        </div>
-      </div>
-    </div>
+          <p class="ctrl-hd">Contenu encodé</p>
+          <div class="encoded-box" id="encoded-box">Aucun contenu pour le moment.</div>
+          <div class="alert err" id="alert-len">Contenu trop long pour un QR code. Raccourcissez le texte ou utilisez un lien court.</div>
+        </section>
 
-      <!-- Couleurs & taille -->
-      <div class="card">
-        <div class="card-body">
-          <p class="ctrl-hd">Couleur du QR</p>
+        <!-- ══ COULEURS ══ -->
+        <section class="pane" data-pane="color">
+          <p class="ctrl-hd">Palettes</p>
+          <div class="palettes" id="palettes"></div>
+
+          <p class="ctrl-hd">Couleurs personnalisées</p>
           <div class="color-row">
             <div class="color-col">
-              <label>QR</label>
-              <div class="swatch" id="sw-dk" style="background:#000000">
-                <input type="color" id="color-dk" value="#000000">
-              </div>
+              <label>Motif</label>
+              <div class="swatch" id="sw-dk" style="background:#17140e"><input type="color" id="color-dk" value="#17140e"></div>
             </div>
-            <button class="swap-btn" id="swap-btn" title="Inverser" aria-label="Inverser les couleurs">⇄</button>
+            <button class="swap-btn" id="swap-btn" title="Inverser les couleurs" aria-label="Inverser les couleurs">⇄</button>
             <div class="color-col">
               <label>Fond</label>
-              <div class="swatch" id="sw-lt" style="background:#ffffff">
-                <input type="color" id="color-lt" value="#ffffff">
-              </div>
+              <div class="swatch" id="sw-lt" style="background:#ffffff"><input type="color" id="color-lt" value="#ffffff"></div>
             </div>
           </div>
+          <div class="alert warn" id="alert-contrast">Contraste faible entre le motif et le fond : le QR code risque de ne pas être lu. Assombrissez le motif ou éclaircissez le fond.</div>
 
-          <p class="ctrl-hd">Taille de l'image</p>
-          <div class="sizes-row">
-            <button class="size-btn" data-size="S">S<small>128 px</small></button>
-            <button class="size-btn active" data-size="M">M<small>256 px</small></button>
-            <button class="size-btn" data-size="L">L<small>400 px</small></button>
+          <p class="ctrl-hd">Dégradé</p>
+          <label class="chk-label"><input type="checkbox" id="grad-on"><span>Appliquer un dégradé au motif</span></label>
+          <div id="grad-opts" style="display:none">
+            <div class="color-row" style="margin-top:10px">
+              <div class="color-col">
+                <label>Départ</label>
+                <div class="swatch" id="sw-g1" style="background:#1d5234"><input type="color" id="color-g1" value="#1d5234"></div>
+              </div>
+              <div class="color-col">
+                <label>Arrivée</label>
+                <div class="swatch" id="sw-g2" style="background:#4a9d6a"><input type="color" id="color-g2" value="#4a9d6a"></div>
+              </div>
+            </div>
+            <p class="ctrl-hd">Orientation <span class="val" id="ang-val">135°</span></p>
+            <input type="range" id="grad-ang" min="0" max="360" step="15" value="135">
           </div>
-        </div>
-      </div>
+        </section>
 
-    <!-- ── COLONNE DROITE : aperçu ── -->
-    <div class="col-right">
+        <!-- ══ FORMES ══ -->
+        <section class="pane" data-pane="shape">
+          <p class="ctrl-hd">Modules</p>
+          <div class="chips" id="chips-pixel"></div>
+          <p class="ctrl-hd">Cadre des yeux</p>
+          <div class="chips" id="chips-eye"></div>
+          <p class="ctrl-hd">Pupille des yeux</p>
+          <div class="chips" id="chips-pupil"></div>
 
-      <!-- Aperçu QR -->
-      <div class="card">
-        <div class="preview-header">
-          <div>
-            <h2>Aperçu en direct</h2>
-            <p>Le QR code se met à jour à chaque frappe.</p>
+          <p class="field-hint" style="margin-top:16px">
+            Toutes ces formes ont été vérifiées avec un décodeur de référence. Les formes
+            détachées (Points, Cœur, Éclat…) et les yeux très arrondis passent sans
+            problème avec l'appareil photo d'un téléphone, mais certains lecteurs anciens ou
+            industriels échouent. Pour de la signalétique ou un imprimé, restez sur
+            Carré, Doux, Fluide ou Liquide, avec des yeux Carré, Doux ou Arrondi.
+          </p>
+        </section>
+
+        <!-- ══ CADRE ══ -->
+        <section class="pane" data-pane="frame">
+          <p class="ctrl-hd">Marge blanche <span class="val" id="mar-val">4 modules</span></p>
+          <input type="range" id="margin" min="0" max="8" step="1" value="4">
+          <p class="field-hint">La norme recommande 4 modules. En dessous, certains lecteurs échouent.</p>
+
+          <p class="ctrl-hd">Coins du fond <span class="val" id="brad-val">0 %</span></p>
+          <input type="range" id="bg-radius" min="0" max="50" step="1" value="0">
+
+          <p class="ctrl-hd">Fond</p>
+          <label class="chk-label"><input type="checkbox" id="bg-transp"><span>Fond transparent (PNG et SVG)</span></label>
+
+          <p class="ctrl-hd">Correction d'erreur</p>
+          <div class="field">
+            <select id="ecc">
+              <option value="L">L — 7 % (QR le plus léger)</option>
+              <option value="M" selected>M — 15 % (recommandé)</option>
+              <option value="Q">Q — 25 %</option>
+              <option value="H">H — 30 % (obligatoire avec logo)</option>
+            </select>
+            <p class="field-hint">Plus la correction est élevée, plus le QR résiste aux salissures — mais plus il est dense.</p>
           </div>
-          <div class="live-dot" title="Mise à jour en temps réel"></div>
-        </div>
-        <div class="qr-zone" id="qr-zone">
-          <div id="ph">
-            <!-- QR skeleton SVG -->
-            <svg class="ph-art" viewBox="0 0 100 100" fill="none">
-              <rect x="8" y="8" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
-              <rect x="14" y="14" width="21" height="21" rx="2" fill="currentColor" opacity=".22"/>
-              <rect x="18" y="18" width="13" height="13" rx="1.5" fill="currentColor" opacity=".12"/>
-              <rect x="59" y="8" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
-              <rect x="65" y="14" width="21" height="21" rx="2" fill="currentColor" opacity=".22"/>
-              <rect x="69" y="18" width="13" height="13" rx="1.5" fill="currentColor" opacity=".12"/>
-              <rect x="8" y="59" width="33" height="33" rx="4" stroke="currentColor" stroke-width="2.5"/>
-              <rect x="14" y="65" width="21" height="21" rx="2" fill="currentColor" opacity=".22"/>
-              <rect x="18" y="69" width="13" height="13" rx="1.5" fill="currentColor" opacity=".12"/>
-              <rect x="55" y="55" width="9" height="9" rx="2" fill="currentColor" opacity=".18"/>
-              <rect x="68" y="55" width="9" height="9" rx="2" fill="currentColor" opacity=".12"/>
-              <rect x="81" y="55" width="11" height="9" rx="2" fill="currentColor" opacity=".1"/>
-              <rect x="55" y="68" width="14" height="9" rx="2" fill="currentColor" opacity=".1"/>
-              <rect x="73" y="68" width="9" height="9" rx="2" fill="currentColor" opacity=".18"/>
-              <rect x="55" y="81" width="9" height="11" rx="2" fill="currentColor" opacity=".12"/>
-              <rect x="68" y="81" width="24" height="11" rx="2" fill="currentColor" opacity=".1"/>
-            </svg>
-            <p>Prêt à générer</p>
+
+          <p class="ctrl-hd">Logo central</p>
+          <label class="logo-drop" id="logo-drop">
+            <input type="file" id="logo-inp" accept="image/*">
+            Cliquez pour choisir une image (PNG, JPG, SVG)
+          </label>
+          <div id="logo-box" style="display:none">
+            <div class="logo-preview" style="margin-top:10px">
+              <img id="logo-img" alt="Aperçu du logo">
+              <button class="btn-ghost" id="logo-del">Retirer</button>
+            </div>
+            <p class="ctrl-hd">Taille du logo <span class="val" id="lsz-val">20 %</span></p>
+            <input type="range" id="logo-size" min="12" max="25" step="1" value="20">
+            <label class="chk-label"><input type="checkbox" id="logo-pad" checked><span>Pastille de fond derrière le logo</span></label>
           </div>
-          <div id="qr-out"></div>
-        </div>
-        <!-- Encoded content -->
-        <div class="encoded-wrap">
-          <p class="encoded-label">Contenu encodé</p>
-          <div class="encoded-box" id="encoded-box">Aucun contenu pour le moment.</div>
-        </div>
+          <div class="alert warn" id="alert-logo"></div>
+        </section>
+
+        <!-- ══ EXPORT ══ -->
+        <section class="pane" data-pane="export">
+          <p class="ctrl-hd">Format</p>
+          <div class="seg" role="tablist">
+            <button class="seg-btn active" data-fmt="png">PNG</button>
+            <button class="seg-btn" data-fmt="svg">SVG</button>
+          </div>
+
+          <div id="png-opts">
+            <p class="ctrl-hd">Taille de l'image</p>
+            <div class="field">
+              <select id="px-size">
+                <option value="256">256 px — web, e-mail</option>
+                <option value="512" selected>512 px — usage courant</option>
+                <option value="1024">1024 px — impression A5/A4</option>
+                <option value="2048">2048 px — grand format, panneau</option>
+              </select>
+            </div>
+          </div>
+          <p class="field-hint" id="svg-hint" style="display:none">Le SVG est vectoriel : il reste net à toutes les tailles, idéal pour l'impression et les fichiers transmis à un imprimeur.</p>
+
+          <p class="ctrl-hd">Nom du fichier</p>
+          <div class="field">
+            <input type="text" id="fname" value="qrcode" placeholder="qrcode">
+          </div>
+
+          <p class="ctrl-hd">Vérification</p>
+          <p class="field-hint">Scannez toujours le QR final avec deux téléphones différents avant impression, surtout après avoir modifié les formes, ajouté un logo ou réduit la marge.</p>
+        </section>
+
       </div>
-
-
-      <!-- Boutons -->
-      <div class="action-btns">
-        <button class="btn-dl" id="btn-dl" disabled>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span id="dl-lbl">Télécharger en PNG</span>
-        </button>
-        <button class="btn-cp" id="btn-cp" disabled>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          <span id="cp-lbl">Copier dans le presse-papier</span>
-        </button>
-      </div>
-
-      <div class="status" id="status" role="status" aria-live="polite"></div>
-
     </div>
   </div>
 
   <footer>QR Forge · Fonctionne hors ligne · Aucune donnée envoyée</footer>
 
 </div>
-
 <script>
-/* ── ÉTAT ─────────────────────────────────────────────── */
-var tab = 'url', size = 'M', ready = false;
-var dTimer = null, sTimer = null;
-var SIZES = { S:128, M:256, L:400 };
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return T(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},T=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode}),function(t){t.stringToBytes=t.stringToBytesFuncs["UTF-8"]}(qrcode);
+</script>
+<script>
+(function () {
+'use strict';
 
-/* ── INIT ─────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function () {
-  // Tabs
-  document.querySelectorAll('.seg-btn').forEach(function (b) {
-    b.addEventListener('click', function () { switchTab(b.dataset.tab); });
-  });
-  // Inputs
-  document.querySelectorAll('input,textarea,select').forEach(function (el) {
-    el.addEventListener('input',  function () { schedule(260); });
-    el.addEventListener('change', function () { schedule(0); });
-  });
-  // Colors
-  document.getElementById('color-dk').addEventListener('input', function () {
-    document.getElementById('sw-dk').style.background = this.value;
-    schedule(0);
-  });
-  document.getElementById('color-lt').addEventListener('input', function () {
-    document.getElementById('sw-lt').style.background = this.value;
-    schedule(0);
-  });
-  document.getElementById('swap-btn').addEventListener('click', function () {
-    var dk = document.getElementById('color-dk');
-    var lt = document.getElementById('color-lt');
-    var t = dk.value; dk.value = lt.value; lt.value = t;
-    document.getElementById('sw-dk').style.background = dk.value;
-    document.getElementById('sw-lt').style.background = lt.value;
-    schedule(0);
-  });
-  // Sizes
-  document.querySelectorAll('.size-btn').forEach(function (b) {
-    b.addEventListener('click', function () {
-      document.querySelectorAll('.size-btn').forEach(function (x) { x.classList.remove('active'); });
-      b.classList.add('active');
-      size = b.dataset.size;
-      schedule(0);
-    });
-  });
-  // Buttons
-  document.getElementById('btn-dl').addEventListener('click', dlQR);
-  document.getElementById('btn-cp').addEventListener('click', cpQR);
-  // Password toggle
-  initPwd();
-});
+/* ═══════════════════════════════════════════════════════════
+   1. OUTILS GÉOMÉTRIQUES
+   Chaque fonction renvoie un attribut "d" de <path> SVG.
+   Le repère est en "modules" : 1 unité = 1 carré du QR code.
+   ═══════════════════════════════════════════════════════════ */
 
-/* ── TABS ─────────────────────────────────────────────── */
-function switchTab(t) {
-  tab = t;
-  document.querySelectorAll('.seg-btn').forEach(function (b) {
-    b.classList.toggle('active', b.dataset.tab === t);
-  });
-  document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-  document.getElementById('panel-' + t).classList.add('active');
-  schedule(0);
+var f = function (v) { return Math.round(v * 1000) / 1000; };
+
+/* Rectangle à rayons indépendants : r = [haut-g, haut-d, bas-d, bas-g] */
+function rrc(x, y, w, h, r) {
+  var m = Math.min(w, h) / 2;
+  var a = Math.min(r[0], m), b = Math.min(r[1], m),
+      c = Math.min(r[2], m), d = Math.min(r[3], m);
+  var p = 'M' + f(x + a) + ' ' + f(y);
+  p += 'H' + f(x + w - b);
+  if (b) p += 'A' + f(b) + ' ' + f(b) + ' 0 0 1 ' + f(x + w) + ' ' + f(y + b);
+  p += 'V' + f(y + h - c);
+  if (c) p += 'A' + f(c) + ' ' + f(c) + ' 0 0 1 ' + f(x + w - c) + ' ' + f(y + h);
+  p += 'H' + f(x + d);
+  if (d) p += 'A' + f(d) + ' ' + f(d) + ' 0 0 1 ' + f(x) + ' ' + f(y + h - d);
+  p += 'V' + f(y + a);
+  if (a) p += 'A' + f(a) + ' ' + f(a) + ' 0 0 1 ' + f(x + a) + ' ' + f(y);
+  return p + 'Z';
+}
+function rr(x, y, w, h, rad) { return rrc(x, y, w, h, [rad, rad, rad, rad]); }
+function circ(cx, cy, rad) {
+  return 'M' + f(cx - rad) + ' ' + f(cy) +
+         'a' + f(rad) + ' ' + f(rad) + ' 0 1 0 ' + f(rad * 2) + ' 0' +
+         'a' + f(rad) + ' ' + f(rad) + ' 0 1 0 ' + f(-rad * 2) + ' 0Z';
+}
+function poly(pts) {
+  return 'M' + pts.map(function (p) { return f(p[0]) + ' ' + f(p[1]); }).join('L') + 'Z';
+}
+/* Polygone régulier : n côtés, rayon rad, rotation rot (degrés) */
+function reg(cx, cy, rad, n, rot) {
+  var pts = [], i, a;
+  for (i = 0; i < n; i++) {
+    a = (rot + i * 360 / n) * Math.PI / 180;
+    pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]);
+  }
+  return poly(pts);
+}
+/* Étoile à n branches */
+function star(cx, cy, ro, ri, n, rot) {
+  var pts = [], i, a, r;
+  for (i = 0; i < n * 2; i++) {
+    a = (rot + i * 180 / n) * Math.PI / 180;
+    r = i % 2 ? ri : ro;
+    pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  }
+  return poly(pts);
+}
+/* Croix / plus : t = demi-épaisseur, rotation possible */
+function crossPath(cx, cy, s, t, rot) {
+  var h = s / 2, pts = [], i, p, a = rot * Math.PI / 180;
+  var base = [[-t,-h],[t,-h],[t,-t],[h,-t],[h,t],[t,t],[t,h],[-t,h],[-t,t],[-h,t],[-h,-t],[-t,-t]];
+  for (i = 0; i < base.length; i++) {
+    p = base[i];
+    pts.push([cx + p[0] * Math.cos(a) - p[1] * Math.sin(a),
+              cy + p[0] * Math.sin(a) + p[1] * Math.cos(a)]);
+  }
+  return poly(pts);
+}
+/* Carré à coins coupés : préserve le rapport 1:1:3:1:1 des yeux */
+function chamfer(x, y, s, k) {
+  return poly([[x + k, y], [x + s - k, y], [x + s, y + k], [x + s, y + s - k],
+               [x + s - k, y + s], [x + k, y + s], [x, y + s - k], [x, y + k]]);
+}
+function heart(x, y, s) {
+  var X = function (k) { return f(x + s * k); }, Y = function (k) { return f(y + s * k); };
+  return 'M' + X(.5) + ' ' + Y(.95) +
+    'C' + X(.02) + ' ' + Y(.62) + ' ' + X(.04) + ' ' + Y(.14) + ' ' + X(.28) + ' ' + Y(.10) +
+    'C' + X(.40) + ' ' + Y(.08) + ' ' + X(.50) + ' ' + Y(.20) + ' ' + X(.5) + ' ' + Y(.30) +
+    'C' + X(.50) + ' ' + Y(.20) + ' ' + X(.60) + ' ' + Y(.08) + ' ' + X(.72) + ' ' + Y(.10) +
+    'C' + X(.96) + ' ' + Y(.14) + ' ' + X(.98) + ' ' + Y(.62) + ' ' + X(.5) + ' ' + Y(.95) + 'Z';
+}
+/* Éclat : étoile à 4 branches à côtés concaves */
+function sparkle(x, y, s) {
+  var cx = x + s / 2, cy = y + s / 2, r = s / 2;
+  return 'M' + f(cx) + ' ' + f(cy - r) +
+    'Q' + f(cx) + ' ' + f(cy) + ' ' + f(cx + r) + ' ' + f(cy) +
+    'Q' + f(cx) + ' ' + f(cy) + ' ' + f(cx) + ' ' + f(cy + r) +
+    'Q' + f(cx) + ' ' + f(cy) + ' ' + f(cx - r) + ' ' + f(cy) +
+    'Q' + f(cx) + ' ' + f(cy) + ' ' + f(cx) + ' ' + f(cy - r) + 'Z';
+}
+/* Pincé : carré aux quatre côtés incurvés vers l'intérieur */
+function pinch(x, y, s) {
+  var k = s * .2, cx = x + s / 2, cy = y + s / 2;
+  return 'M' + f(x) + ' ' + f(y) +
+    'Q' + f(cx) + ' ' + f(y + k) + ' ' + f(x + s) + ' ' + f(y) +
+    'Q' + f(x + s - k) + ' ' + f(cy) + ' ' + f(x + s) + ' ' + f(y + s) +
+    'Q' + f(cx) + ' ' + f(y + s - k) + ' ' + f(x) + ' ' + f(y + s) +
+    'Q' + f(x + k) + ' ' + f(cy) + ' ' + f(x) + ' ' + f(y) + 'Z';
 }
 
-/* ── CONTENU ──────────────────────────────────────────── */
-function getContent() {
-  if (tab === 'url')     return v('url-inp');
-  if (tab === 'contact') return vcard();
-  if (tab === 'wifi')    return wifi();
-  return '';
+/* ═══════════════════════════════════════════════════════════
+   2. FORMES DES MODULES (petits carrés du QR)
+   Chaque fonction dessine UNE cellule de 1x1 en (x, y).
+   ═══════════════════════════════════════════════════════════ */
+var CELL = {
+  carre:    function (x, y) { return rr(x - .01, y - .01, 1.02, 1.02, 0); },
+  colle:    function (x, y) { return rr(x - .02, y - .02, 1.04, 1.04, 0); },
+  doux:     function (x, y) { return rr(x, y, 1, 1, .26); },
+  rond:     function (x, y) { return rr(x + .01, y + .01, .98, .98, .49); },
+  points:   function (x, y) { return circ(x + .5, y + .5, .44); },
+  losange:  function (x, y) { return reg(x + .5, y + .5, .66, 4, -90); },
+  croix:    function (x, y) { return crossPath(x + .5, y + .5, 1.26, .27, 45); },
+  plus:     function (x, y) { return crossPath(x + .5, y + .5, 1.04, .27, 0); },
+  etoile:   function (x, y) { return star(x + .5, y + .5, .62, .30, 5, -90); },
+  triangle: function (x, y) { return poly([[x + .5, y - .12], [x + 1.06, y + 1.02], [x - .06, y + 1.02]]); },
+  hexa:     function (x, y) { return reg(x + .5, y + .5, .55, 6, -90); },
+  circuit:  function (x, y) { return reg(x + .5, y + .5, .55, 8, 22.5); },
+  coeur:    function (x, y) { return heart(x - .06, y - .04, 1.12); },
+  eclat:    function (x, y) { return sparkle(x - .12, y - .12, 1.24); },
+  pince:    function (x, y) { return pinch(x, y, 1.0); }
+};
+
+/* Formes à voisinage : coins arrondis seulement vers le vide */
+function smoothPath(M, n, R, fillet) {
+  var d = '', r, c, up, dn, lf, rt;
+  var g = function (a, b) { return a >= 0 && b >= 0 && a < n && b < n && M[a][b]; };
+  for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
+    if (!M[r][c]) continue;
+    up = g(r - 1, c); dn = g(r + 1, c); lf = g(r, c - 1); rt = g(r, c + 1);
+    d += rrc(c, r, 1, 1, [
+      (!up && !lf) ? R : 0,
+      (!up && !rt) ? R : 0,
+      (!dn && !rt) ? R : 0,
+      (!dn && !lf) ? R : 0
+    ]);
+  }
+  /* Raccords concaves : comble l'angle rentrant entre deux modules voisins */
+  if (fillet) {
+    var K = R;
+    for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
+      if (M[r][c]) continue;
+      var x = c, y = r;
+      if (g(r - 1, c) && g(r, c - 1))
+        d += 'M' + f(x) + ' ' + f(y) + 'L' + f(x + K) + ' ' + f(y) + 'A' + f(K) + ' ' + f(K) + ' 0 0 0 ' + f(x) + ' ' + f(y + K) + 'Z';
+      if (g(r - 1, c) && g(r, c + 1))
+        d += 'M' + f(x + 1) + ' ' + f(y) + 'L' + f(x + 1) + ' ' + f(y + K) + 'A' + f(K) + ' ' + f(K) + ' 0 0 0 ' + f(x + 1 - K) + ' ' + f(y) + 'Z';
+      if (g(r + 1, c) && g(r, c + 1))
+        d += 'M' + f(x + 1) + ' ' + f(y + 1) + 'L' + f(x + 1 - K) + ' ' + f(y + 1) + 'A' + f(K) + ' ' + f(K) + ' 0 0 0 ' + f(x + 1) + ' ' + f(y + 1 - K) + 'Z';
+      if (g(r + 1, c) && g(r, c - 1))
+        d += 'M' + f(x) + ' ' + f(y + 1) + 'L' + f(x) + ' ' + f(y + 1 - K) + 'A' + f(K) + ' ' + f(K) + ' 0 0 0 ' + f(x + K) + ' ' + f(y + 1) + 'Z';
+    }
+  }
+  return d;
 }
-function v(id)  { return (document.getElementById(id).value || '').trim(); }
+
+/* Formes en barres : fusionne les modules alignés */
+function runPath(M, n, dir, mixed) {
+  var d = '', i, j, len;
+  for (i = 0; i < n; i++) {
+    j = 0;
+    while (j < n) {
+      var on = dir === 'h' ? M[i][j] : M[j][i];
+      if (!on) { j++; continue; }
+      len = 0;
+      while (j + len < n && (dir === 'h' ? M[i][j + len] : M[j + len][i])) len++;
+      if (mixed && len === 1) {
+        d += circ((dir === 'h' ? j : i) + .5, (dir === 'h' ? i : j) + .5, .40);
+      } else if (dir === 'h') {
+        d += rr(j + .03, i + .03, len - .06, .94, .47);
+      } else {
+        d += rr(i + .03, j + .03, .94, len - .06, .47);
+      }
+      j += len;
+    }
+  }
+  return d;
+}
+
+function modulesPath(M, n, kind) {
+  if (kind === 'fluide')  return smoothPath(M, n, .5, false);
+  if (kind === 'liquide') return smoothPath(M, n, .5, true);
+  if (kind === 'ligneh')  return runPath(M, n, 'h', false);
+  if (kind === 'lignev')  return runPath(M, n, 'v', false);
+  if (kind === 'mix')     return runPath(M, n, 'h', true);
+  var fn = CELL[kind] || CELL.carre, d = '', r, c;
+  for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (M[r][c]) d += fn(c, r);
+  return d;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. FORMES DES YEUX ET PUPILLES
+   Une même fonction sert au cadre 7x7, au trou 5x5 et à la
+   pupille 3x3 : tout est paramétré par la boîte englobante.
+   ═══════════════════════════════════════════════════════════ */
+var BIG = {
+  carre:    function (x, y, s) { return rr(x, y, s, s, 0); },
+  doux:     function (x, y, s) { return rr(x, y, s, s, s * .17); },
+  arrondi:  function (x, y, s) { return rr(x, y, s, s, s * .30); },
+  cercle:   function (x, y, s) { return rr(x, y, s, s, s * .5); },
+  feuille:  function (x, y, s) { return rrc(x, y, s, s, [s * .40, 0, s * .40, 0]); },
+  bouclier: function (x, y, s) { return rrc(x, y, s, s, [s * .38, s * .38, s * .38, 0]); },
+  hexa:     function (x, y, s) { return chamfer(x, y, s, s * .16); },
+  octo:     function (x, y, s) { return chamfer(x, y, s, s * .30); },
+  hexa6:    function (x, y, s) { return reg(x + s / 2, y + s / 2, s / 2 * 1.05, 6, -90); },
+  losange:  function (x, y, s) { return reg(x + s / 2, y + s / 2, s / 2 * 1.3, 4, -90); },
+  croix:    function (x, y, s) { return crossPath(x + s / 2, y + s / 2, s * 1.3, s * .3, 45); },
+  plus:     function (x, y, s) { return crossPath(x + s / 2, y + s / 2, s * 1.1, s * .32, 0); },
+  etoile:   function (x, y, s) { return star(x + s / 2, y + s / 2, s * .78, s * .44, 5, -90); },
+  coeur:    function (x, y, s) { return heart(x, y, s); },
+  point:    function (x, y, s) { return circ(x + s / 2, y + s / 2, s * .5); }
+};
+
+/* Cadre d'un œil : anneau de 1 module d'épaisseur (règle even-odd) */
+function eyeFrame(kind, x, y) {
+  var fn = BIG[kind] || BIG.carre;
+  return fn(x, y, 7) + fn(x + 1, y + 1, 5);
+}
+function eyePupil(kind, x, y) {
+  var fn = BIG[kind] || BIG.carre;
+  return fn(x + 2, y + 2, 3);
+}
+/* ═══════════════════════════════════════════════════════════
+   4. ÉTAT DE L'OUTIL
+   ═══════════════════════════════════════════════════════════ */
+var S = {
+  tab: 'url',
+  pixel: 'carre', eye: 'arrondi', pupil: 'arrondi',
+  fg: '#17140e', bg: '#ffffff',
+  grad: false, g1: '#1d5234', g2: '#4a9d6a', ang: 135,
+  margin: 4, bgR: 0, transp: false, ecc: 'M',
+  logo: null, logoSize: 20, logoPad: true,
+  fmt: 'png', px: 512
+};
+var STYLE_KEYS = ['pixel','eye','pupil','fg','bg','grad','g1','g2','ang','margin','bgR','transp','logo','logoSize','logoPad'];
+var DEFAULTS = {};
+STYLE_KEYS.forEach(function (k) { DEFAULTS[k] = S[k]; });
+
+var QR = null;              /* { M: matrice, n: taille } */
+var timer = null;
+var $ = function (id) { return document.getElementById(id); };
+
+var PALETTES = [
+  ['#17140e','#ffffff'], ['#1d5234','#ffffff'], ['#1d5234','#f0ece3'], ['#0f3d5c','#ffffff'],
+  ['#1e3a8a','#eef2ff'], ['#312e81','#ffffff'], ['#5b21b6','#f5f3ff'], ['#86198f','#fdf4ff'],
+  ['#9d174d','#fff1f5'], ['#b91c1c','#ffffff'], ['#c2410c','#fff7ed'], ['#a16207','#fefce8'],
+  ['#3f6212','#f7fee7'], ['#065f46','#ecfdf5'], ['#0f766e','#f0fdfa'], ['#0e7490','#ecfeff'],
+  ['#075985','#f0f9ff'], ['#334155','#f8fafc'], ['#17140e','#f5d90a'], ['#ffffff','#17140e'],
+  ['#f0ece3','#1d5234'], ['#fef3c7','#78350f'], ['#a7f3d0','#064e3b'], ['#bfdbfe','#1e3a8a']
+];
+
+var PIXELS = [
+  ['carre','Carré'], ['doux','Doux'], ['rond','Rond'], ['points','Points'],
+  ['colle','Collé'], ['fluide','Fluide'], ['liquide','Liquide'], ['losange','Losange'],
+  ['croix','Croix'], ['plus','Plus'], ['etoile','Étoile'], ['triangle','Triangle'],
+  ['hexa','Hexa'], ['circuit','Circuit'], ['coeur','Cœur'], ['eclat','Éclat'],
+  ['pince','Pincé'], ['ligneh','Ligne H'], ['lignev','Ligne V'], ['mix','Mix']
+];
+var EYES = [
+  ['carre','Carré'], ['doux','Doux'], ['arrondi','Arrondi'], ['cercle','Cercle'],
+  ['feuille','Feuille'], ['bouclier','Bouclier'], ['hexa','Coupé'], ['octo','Octo']
+];
+var PUPILS = [
+  ['point','Point'], ['carre','Carré'], ['doux','Doux'], ['arrondi','Arrondi'],
+  ['losange','Losange'], ['croix','Croix'], ['plus','Plus'], ['hexa6','Hexa'],
+  ['octo','Octo'], ['etoile','Étoile'], ['coeur','Cœur'], ['feuille','Feuille']
+];
+
+/* ═══════════════════════════════════════════════════════════
+   5. CONTENU À ENCODER
+   ═══════════════════════════════════════════════════════════ */
+function v(id) { return ($(id).value || '').trim(); }
+function esc(s) { return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/"/g, '\\"'); }
+
 function vcard() {
   var fn = v('c-fn'), ln = v('c-ln'), org = v('c-org');
   var tel = v('c-tel'), em = v('c-email'), addr = v('c-addr'), url = v('c-url');
   if (!fn && !ln && !tel && !em) return '';
-  var L = ['BEGIN:VCARD','VERSION:3.0'];
+  var L = ['BEGIN:VCARD', 'VERSION:3.0'];
   L.push('N:' + ln + ';' + fn + ';;;');
-  L.push('FN:' + [fn,ln].filter(Boolean).join(' '));
+  L.push('FN:' + [fn, ln].filter(Boolean).join(' '));
   if (org)  L.push('ORG:' + org);
   if (tel)  L.push('TEL;TYPE=CELL:' + tel);
   if (em)   L.push('EMAIL:' + em);
-  if (addr) L.push('ADR;TYPE=WORK:;;' + addr.replace(/;/g,'\\;') + ';;;');
+  if (addr) L.push('ADR;TYPE=WORK:;;' + addr.replace(/;/g, '\\;') + ';;;');
   if (url)  L.push('URL:' + url);
   L.push('END:VCARD');
   return L.join('\r\n');
 }
-function ew(s) { return s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/"/g,'\\"'); }
 function wifi() {
-  var ssid = v('w-ssid');
-  var pwd  = document.getElementById('w-pwd').value;
-  var sec  = document.getElementById('w-sec').value;
-  var hid  = document.getElementById('w-hidden').checked;
+  var ssid = v('w-ssid'), pwd = $('w-pwd').value;
+  var sec = $('w-sec').value, hid = $('w-hidden').checked;
   if (!ssid) return '';
-  var s = 'WIFI:T:' + sec + ';S:' + ew(ssid) + ';';
-  if (sec !== 'nopass') s += 'P:' + ew(pwd) + ';';
+  var s = 'WIFI:T:' + sec + ';S:' + esc(ssid) + ';';
+  if (sec !== 'nopass') s += 'P:' + esc(pwd) + ';';
   if (hid) s += 'H:true;';
   return s + ';';
 }
+function getContent() {
+  if (S.tab === 'url')     return v('url-inp');
+  if (S.tab === 'contact') return vcard();
+  return wifi();
+}
 
-/* ── GÉNÉRATION ───────────────────────────────────────── */
-function schedule(d) { clearTimeout(dTimer); dTimer = setTimeout(gen, d == null ? 260 : d); }
+/* ═══════════════════════════════════════════════════════════
+   6. CALCUL DE LA MATRICE
+   ═══════════════════════════════════════════════════════════ */
+function compute() {
+  var text = getContent();
+  $('encoded-box').textContent = text || 'Aucun contenu pour le moment.';
+  $('alert-len').classList.remove('show');
 
-function gen() {
-  var content = getContent();
-  var out  = document.getElementById('qr-out');
-  var ph   = document.getElementById('ph');
-  var zone = document.getElementById('qr-zone');
-  var enc  = document.getElementById('encoded-box');
-  var dl   = document.getElementById('btn-dl');
-  var cp   = document.getElementById('btn-cp');
+  if (!text) { QR = null; paint(); return; }
 
-  enc.textContent = content || 'Aucun contenu pour le moment.';
-
-  if (!content) {
-    out.innerHTML = ''; out.classList.remove('visible');
-    ph.style.display = 'block';
-    zone.classList.remove('filled');
-    dl.disabled = cp.disabled = true;
-    ready = false; return;
+  var q;
+  try {
+    q = qrcode(0, S.ecc);
+    q.addData(text);
+    q.make();
+  } catch (e) {
+    QR = null; paint();
+    $('alert-len').classList.add('show');
+    return;
   }
 
-  out.innerHTML = '';
-  try {
-    new QRCode(out, {
-      text: content,
-      width: SIZES[size], height: SIZES[size],
-      colorDark:  document.getElementById('color-dk').value,
-      colorLight: document.getElementById('color-lt').value,
-      correctLevel: QRCode.CorrectLevel.M
+  var n = q.getModuleCount(), M = [], r, c;
+  for (r = 0; r < n; r++) {
+    M[r] = [];
+    for (c = 0; c < n; c++) {
+      var inEye = (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+      M[r][c] = q.isDark(r, c) && !inEye;
+    }
+  }
+  QR = { M: M, n: n };
+  paint();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   7. ASSEMBLAGE DU SVG
+   ═══════════════════════════════════════════════════════════ */
+function buildSVG(px) {
+  if (!QR) return '';
+  var n = QR.n, m = S.margin, T = n + 2 * m;
+  var M = QR.M, r, c;
+
+  /* Trou pour le logo : on retire les modules qui passeraient dessous */
+  if (S.logo) {
+    var lw = n * S.logoSize / 100, l0 = (n - lw) / 2, l1 = l0 + lw, pad = .7;
+    M = M.map(function (row) { return row.slice(); });
+    for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
+      if (c + 1 > l0 - pad && c < l1 + pad && r + 1 > l0 - pad && r < l1 + pad) M[r][c] = false;
+    }
+  }
+
+  var fill = S.grad ? 'url(#qrg)' : S.fg;
+  var out = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ' + T + ' ' + T + '"';
+  if (px) out += ' width="' + px + '" height="' + px + '"';
+  out += ' shape-rendering="geometricPrecision">';
+
+  /* Dégradé */
+  if (S.grad) {
+    var a = S.ang * Math.PI / 180, R = n / 2, cc = n / 2;
+    out += '<defs><linearGradient id="qrg" gradientUnits="userSpaceOnUse"' +
+      ' x1="' + f(cc - Math.cos(a) * R) + '" y1="' + f(cc - Math.sin(a) * R) + '"' +
+      ' x2="' + f(cc + Math.cos(a) * R) + '" y2="' + f(cc + Math.sin(a) * R) + '">' +
+      '<stop offset="0" stop-color="' + S.g1 + '"/><stop offset="1" stop-color="' + S.g2 + '"/>' +
+      '</linearGradient></defs>';
+  }
+
+  /* Fond */
+  if (!S.transp) {
+    out += '<path d="' + rr(0, 0, T, T, T * S.bgR / 100) + '" fill="' + S.bg + '"/>';
+  }
+
+  /* Motif */
+  out += '<g transform="translate(' + m + ' ' + m + ')" fill="' + fill + '">';
+  out += '<path d="' + modulesPath(M, n, S.pixel) + '"/>';
+  out += '<path fill-rule="evenodd" d="' +
+    eyeFrame(S.eye, 0, 0) + eyeFrame(S.eye, n - 7, 0) + eyeFrame(S.eye, 0, n - 7) + '"/>';
+  out += '<path d="' +
+    eyePupil(S.pupil, 0, 0) + eyePupil(S.pupil, n - 7, 0) + eyePupil(S.pupil, 0, n - 7) + '"/>';
+  out += '</g>';
+
+  /* Logo */
+  if (S.logo) {
+    var lw2 = n * S.logoSize / 100, o = (n - lw2) / 2 + m, p2 = .7;
+    if (S.logoPad) {
+      out += '<path d="' + rr(o - p2, o - p2, lw2 + p2 * 2, lw2 + p2 * 2, (lw2 + p2 * 2) * .16) +
+             '" fill="' + (S.transp ? '#ffffff' : S.bg) + '"/>';
+    }
+    out += '<image x="' + f(o) + '" y="' + f(o) + '" width="' + f(lw2) + '" height="' + f(lw2) +
+           '" preserveAspectRatio="xMidYMid meet" href="' + S.logo + '" xlink:href="' + S.logo + '"/>';
+  }
+
+  return out + '</svg>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   8. AFFICHAGE
+   ═══════════════════════════════════════════════════════════ */
+function paint() {
+  var stage = $('stage'), ok = !!QR;
+  $('ph').style.display = ok ? 'none' : 'block';
+  stage.classList.toggle('empty', !ok);
+  stage.innerHTML = ok ? buildSVG(null) : '';
+  $('btn-dl').disabled = $('btn-cp').disabled = !ok;
+  checkContrast();
+}
+
+/* Luminance relative (WCAG) pour prévenir des contrastes illisibles */
+function lum(hex) {
+  var v = [1, 3, 5].map(function (i) {
+    var c = parseInt(hex.substr(i, 2), 16) / 255;
+    return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
+  });
+  return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+}
+function checkContrast() {
+  var fg = S.grad ? S.g1 : S.fg;
+  var l1 = lum(fg), l2 = lum(S.transp ? '#ffffff' : S.bg);
+  var ratio = (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05);
+  var bad = ratio < 4;
+  $('alert-contrast').classList.toggle('show', bad);
+  /* Un QR clair sur fond sombre déroute certains lecteurs anciens */
+  if (!bad && l1 > l2) {
+    $('alert-contrast').textContent = 'Motif clair sur fond sombre : la plupart des téléphones récents le lisent, mais pas tous les scanners industriels.';
+    $('alert-contrast').classList.add('show');
+  } else {
+    $('alert-contrast').textContent = 'Contraste faible entre le motif et le fond : le QR code risque de ne pas être lu. Assombrissez le motif ou éclaircissez le fond.';
+  }
+}
+
+function schedule(d) { clearTimeout(timer); timer = setTimeout(compute, d == null ? 240 : d); }
+
+function toast(msg) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. EXPORT
+   ═══════════════════════════════════════════════════════════ */
+function svgDataURL(px) {
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(buildSVG(px));
+}
+function toCanvas(cb) {
+  var px = S.px;
+  var img = new Image();
+  img.onload = function () {
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = px;
+    var ctx = cv.getContext('2d');
+    ctx.drawImage(img, 0, 0, px, px);
+    cb(cv);
+  };
+  img.onerror = function () { toast('Rendu de l\'image impossible'); };
+  img.src = svgDataURL(px);
+}
+function fileName(ext) {
+  var b = (v('fname') || 'qrcode').replace(/[^\w\-À-ÿ ]+/g, '').trim() || 'qrcode';
+  return b + '.' + ext;
+}
+function download() {
+  if (!QR) return;
+  if (S.fmt === 'svg') {
+    var blob = new Blob([buildSVG(S.px)], { type: 'image/svg+xml;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = fileName('svg'); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast('SVG téléchargé');
+  } else {
+    toCanvas(function (cv) {
+      var a = document.createElement('a');
+      a.href = cv.toDataURL('image/png');
+      a.download = fileName('png');
+      a.click();
+      toast('PNG ' + S.px + " px téléchargé");
     });
-    ph.style.display = 'none';
-    out.classList.add('visible');
-    zone.classList.add('filled');
-    dl.disabled = cp.disabled = false;
-    ready = true;
-  } catch(e) {
-    out.innerHTML = ''; out.classList.remove('visible');
-    ph.style.display = 'block';
-    zone.classList.remove('filled');
-    dl.disabled = cp.disabled = true;
-    ready = false;
-    showStatus('Le contenu est trop long pour un QR code.', 'err');
   }
 }
+function copyImg() {
+  if (!QR) return;
+  if (!navigator.clipboard || !window.ClipboardItem) { toast('Copie non prise en charge ici'); return; }
+  toCanvas(function (cv) {
+    cv.toBlob(function (blob) {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        .then(function () { toast('Image copiée'); })
+        .catch(function () { toast('Copie refusée par le navigateur'); });
+    }, 'image/png');
+  });
+}
+/* ═══════════════════════════════════════════════════════════
+   10. APERÇUS MINIATURES DES FORMES
+   Les vignettes des boutons sont dessinées avec le même moteur
+   que le QR code : ce qu'on voit est exactement ce qu'on aura.
+   ═══════════════════════════════════════════════════════════ */
+var MINI = [[1,1,0,1,1],[1,0,1,0,1],[0,1,1,1,0],[1,0,1,0,1],[1,1,0,1,1]];
 
-/* ── TÉLÉCHARGEMENT ───────────────────────────────────── */
-function dlQR() {
-  if (!ready) return;
-  var c = document.querySelector('#qr-out canvas');
-  var i = document.querySelector('#qr-out img');
-  var src = c ? c.toDataURL('image/png') : (i ? i.src : null);
-  if (!src) return;
-  var a = document.createElement('a');
-  a.download = 'qrcode.png'; a.href = src; a.click();
-  var lbl = document.getElementById('dl-lbl');
-  lbl.textContent = '✓ Téléchargé !';
-  setTimeout(function () { lbl.textContent = 'Télécharger en PNG'; }, 2200);
+function miniPixel(kind) {
+  return '<svg viewBox="-0.35 -0.35 5.7 5.7" fill="currentColor" aria-hidden="true"><path d="' +
+    modulesPath(MINI, 5, kind) + '"/></svg>';
+}
+function miniEye(kind) {
+  return '<svg viewBox="-0.4 -0.4 7.8 7.8" fill="currentColor" aria-hidden="true">' +
+    '<path fill-rule="evenodd" d="' + eyeFrame(kind, 0, 0) + '"/>' +
+    '<path d="' + eyePupil('arrondi', 0, 0) + '"/></svg>';
+}
+function miniPupil(kind) {
+  return '<svg viewBox="-0.4 -0.4 7.8 7.8" fill="currentColor" aria-hidden="true">' +
+    '<path fill-rule="evenodd" opacity=".25" d="' + eyeFrame('arrondi', 0, 0) + '"/>' +
+    '<path d="' + eyePupil(kind, 0, 0) + '"/></svg>';
 }
 
-/* ── COPIE ────────────────────────────────────────────── */
-async function cpQR() {
-  if (!ready) return;
-  if (!navigator.clipboard || !window.ClipboardItem) {
-    showStatus('Copie non supportée sur ce navigateur.', 'err'); return;
-  }
-  var c = document.querySelector('#qr-out canvas');
-  var i = document.querySelector('#qr-out img');
-  try {
-    var blob;
-    if (c) { blob = await new Promise(function(res){ c.toBlob(res,'image/png'); }); }
-    else if (i) { blob = await (await fetch(i.src)).blob(); }
-    else return;
-    await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
-    var lbl = document.getElementById('cp-lbl');
-    lbl.textContent = '✓ Image copiée !';
-    setTimeout(function () { lbl.textContent = 'Copier dans le presse-papier'; }, 2200);
-  } catch(e) { showStatus('Copie échouée (permission refusée ou non HTTPS).', 'err'); }
+function buildChips(box, list, key, mini) {
+  box.innerHTML = list.map(function (it) {
+    return '<button class="chip' + (S[key] === it[0] ? ' active' : '') + '" data-v="' + it[0] +
+           '" title="' + it[1] + '" aria-pressed="' + (S[key] === it[0]) + '">' +
+           mini(it[0]) + '<span>' + it[1] + '</span></button>';
+  }).join('');
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest('.chip');
+    if (!b) return;
+    S[key] = b.dataset.v;
+    markChips(box, key);
+    compute();
+  });
 }
-
-/* ── PASSWORD TOGGLE ──────────────────────────────────── */
-function initPwd() {
-  var btn = document.getElementById('toggle-pwd');
-  var inp = document.getElementById('w-pwd');
-  btn.addEventListener('click', function () {
-    var show = inp.type === 'password';
-    inp.type = show ? 'text' : 'password';
-    document.getElementById('eye-ic').innerHTML = show
-      ? '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
-      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+function markChips(box, key) {
+  box.querySelectorAll('.chip').forEach(function (b) {
+    var on = b.dataset.v === S[key];
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on);
   });
 }
 
-/* ── STATUS ───────────────────────────────────────────── */
-function showStatus(msg, type) {
-  var el = document.getElementById('status');
-  el.className = 'status ' + type + ' show';
-  el.textContent = msg;
-  clearTimeout(sTimer);
-  sTimer = setTimeout(function () { el.classList.remove('show'); }, 3500);
+function buildPalettes() {
+  var box = $('palettes');
+  box.innerHTML = PALETTES.map(function (p, i) {
+    return '<button class="pal" data-i="' + i + '" style="--a:' + p[1] + ';--b:' + p[0] +
+           '" title="Motif ' + p[0] + ' sur fond ' + p[1] + '" aria-label="Palette ' + (i + 1) + '"><i></i></button>';
+  }).join('');
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest('.pal');
+    if (!b) return;
+    var p = PALETTES[+b.dataset.i];
+    S.fg = p[0]; S.bg = p[1]; S.grad = false;
+    syncColors();
+    markPalette();
+    compute();
+  });
 }
+function markPalette() {
+  $('palettes').querySelectorAll('.pal').forEach(function (b) {
+    var p = PALETTES[+b.dataset.i];
+    b.classList.toggle('active', !S.grad && p[0].toLowerCase() === S.fg.toLowerCase() && p[1].toLowerCase() === S.bg.toLowerCase());
+  });
+}
+function syncColors() {
+  $('color-dk').value = S.fg; $('sw-dk').style.background = S.fg;
+  $('color-lt').value = S.bg; $('sw-lt').style.background = S.bg;
+  $('color-g1').value = S.g1; $('sw-g1').style.background = S.g1;
+  $('color-g2').value = S.g2; $('sw-g2').style.background = S.g2;
+  $('grad-on').checked = S.grad;
+  $('grad-opts').style.display = S.grad ? 'block' : 'none';
+  $('grad-ang').value = S.ang; $('ang-val').textContent = S.ang + '°';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   11. PANNEAU : rail + volet coulissant
+   ═══════════════════════════════════════════════════════════ */
+var isMobile = function () {
+  return window.matchMedia ? window.matchMedia('(max-width: 899px)').matches : window.innerWidth < 900;
+};
+
+function openSheet(v) { $('sheet').classList.toggle('open', v); }
+
+function initRail() {
+  var rail = $('rail');
+  rail.addEventListener('click', function (e) {
+    var b = e.target.closest('.rail-btn');
+    if (!b) return;
+    var pane = b.dataset.pane;
+    var wasActive = b.classList.contains('active');
+    rail.querySelectorAll('.rail-btn').forEach(function (x) { x.classList.toggle('active', x === b); });
+    document.querySelectorAll('.pane').forEach(function (p) {
+      p.classList.toggle('active', p.dataset.pane === pane);
+    });
+    if (isMobile()) openSheet(!(wasActive && $('sheet').classList.contains('open')));
+  });
+  $('grabber').addEventListener('click', function () {
+    openSheet(!$('sheet').classList.contains('open'));
+  });
+  $('canvas').addEventListener('click', function (e) {
+    if (isMobile() && !e.target.closest('.tool')) openSheet(false);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   12. BRANCHEMENTS
+   ═══════════════════════════════════════════════════════════ */
+function initTabs() {
+  document.querySelectorAll('.seg-btn[data-tab]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      S.tab = b.dataset.tab;
+      document.querySelectorAll('.seg-btn[data-tab]').forEach(function (x) {
+        x.classList.toggle('active', x === b);
+      });
+      document.querySelectorAll('.tab-panel').forEach(function (p) {
+        p.classList.toggle('active', p.id === 'panel-' + S.tab);
+      });
+      compute();
+    });
+  });
+  document.querySelectorAll('.seg-btn[data-fmt]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      S.fmt = b.dataset.fmt;
+      document.querySelectorAll('.seg-btn[data-fmt]').forEach(function (x) {
+        x.classList.toggle('active', x === b);
+      });
+      $('png-opts').style.display = S.fmt === 'png' ? 'block' : 'none';
+      $('svg-hint').style.display = S.fmt === 'svg' ? 'block' : 'none';
+      $('dl-lbl').textContent = 'Télécharger le ' + S.fmt.toUpperCase();
+    });
+  });
+}
+
+function initInputs() {
+  ['url-inp','c-fn','c-ln','c-org','c-tel','c-email','c-addr','c-url','w-ssid','w-pwd'].forEach(function (id) {
+    $(id).addEventListener('input', function () { schedule(240); });
+  });
+  ['w-sec','w-hidden'].forEach(function (id) {
+    $(id).addEventListener('change', function () { compute(); });
+  });
+
+  /* Couleurs */
+  $('color-dk').addEventListener('input', function () {
+    S.fg = this.value; $('sw-dk').style.background = S.fg; markPalette(); schedule(60);
+  });
+  $('color-lt').addEventListener('input', function () {
+    S.bg = this.value; $('sw-lt').style.background = S.bg; markPalette(); schedule(60);
+  });
+  $('color-g1').addEventListener('input', function () {
+    S.g1 = this.value; $('sw-g1').style.background = S.g1; schedule(60);
+  });
+  $('color-g2').addEventListener('input', function () {
+    S.g2 = this.value; $('sw-g2').style.background = S.g2; schedule(60);
+  });
+  $('swap-btn').addEventListener('click', function () {
+    var t = S.fg; S.fg = S.bg; S.bg = t;
+    syncColors(); markPalette(); compute();
+  });
+  $('grad-on').addEventListener('change', function () {
+    S.grad = this.checked;
+    $('grad-opts').style.display = S.grad ? 'block' : 'none';
+    markPalette(); compute();
+  });
+  $('grad-ang').addEventListener('input', function () {
+    S.ang = +this.value; $('ang-val').textContent = S.ang + '°'; schedule(60);
+  });
+
+  /* Cadre */
+  $('margin').addEventListener('input', function () {
+    S.margin = +this.value;
+    $('mar-val').textContent = S.margin + ' module' + (S.margin > 1 ? 's' : '');
+    schedule(60);
+  });
+  $('bg-radius').addEventListener('input', function () {
+    S.bgR = +this.value; $('brad-val').textContent = S.bgR + ' %'; schedule(60);
+  });
+  $('bg-transp').addEventListener('change', function () {
+    S.transp = this.checked; compute();
+  });
+  $('ecc').addEventListener('change', function () {
+    S.ecc = this.value; checkLogoAlert(); compute();
+  });
+
+  /* Logo */
+  $('logo-inp').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    if (!file) return;
+    if (file.size > 1.5 * 1024 * 1024) { toast('Image trop lourde (max 1,5 Mo)'); this.value = ''; return; }
+    var fr = new FileReader();
+    fr.onload = function () {
+      S.logo = fr.result;
+      $('logo-img').src = S.logo;
+      $('logo-box').style.display = 'block';
+      $('logo-drop').style.display = 'none';
+      checkLogoAlert();
+      compute();
+      toast('Logo ajouté — testez le QR avant impression');
+    };
+    fr.readAsDataURL(file);
+  });
+  $('logo-del').addEventListener('click', function () {
+    S.logo = null; $('logo-inp').value = '';
+    $('logo-box').style.display = 'none';
+    $('logo-drop').style.display = 'block';
+    checkLogoAlert();
+    compute();
+  });
+  $('logo-size').addEventListener('input', function () {
+    S.logoSize = +this.value; $('lsz-val').textContent = S.logoSize + ' %';
+    checkLogoAlert(); schedule(60);
+  });
+  $('logo-pad').addEventListener('change', function () { S.logoPad = this.checked; compute(); });
+
+  /* Export */
+  $('px-size').addEventListener('change', function () { S.px = +this.value; });
+
+  /* Mot de passe */
+  $('toggle-pwd').addEventListener('click', function () {
+    var inp = $('w-pwd'), show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    $('eye-ic').innerHTML = show
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  });
+
+  /* Barre d'outils */
+  $('btn-dl').addEventListener('click', download);
+  $('btn-cp').addEventListener('click', copyImg);
+  $('btn-rand').addEventListener('click', randomize);
+  $('btn-reset').addEventListener('click', resetStyle);
+}
+
+function checkLogoAlert() {
+  var a = $('alert-logo');
+  if (!S.logo) { a.classList.remove('show'); return; }
+  /* Un logo recouvre des modules : le code reste lisible tant que la correction
+     d'erreur compense, mais certaines combinaisons échouent malgré tout. */
+  var msg = 'Un logo recouvre une partie du code. Certaines combinaisons de contenu, ' +
+            'de taille de logo et de formes rendent le QR illisible sans que cela se voie. ' +
+            'Scannez le résultat avec au moins deux téléphones avant de l\'imprimer ou de le diffuser.';
+  if (S.ecc !== 'H') {
+    msg = 'Correction d\'erreur réglée sur ' + S.ecc + ' : passez-la en H, sans quoi le logo ' +
+          'risque de rendre le code illisible. ' + msg;
+  }
+  a.textContent = msg;
+  a.classList.add('show');
+}
+
+function randomize() {
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  var p = pick(PALETTES);
+  S.fg = p[0]; S.bg = p[1]; S.grad = false;
+  S.pixel = pick(PIXELS)[0];
+  S.eye = pick(EYES)[0];
+  S.pupil = pick(PUPILS)[0];
+  S.bgR = pick([0, 0, 0, 8, 16, 24]);
+  syncAll();
+  compute();
+  toast('Nouveau style');
+}
+
+function resetStyle() {
+  STYLE_KEYS.forEach(function (k) { S[k] = DEFAULTS[k]; });
+  $('logo-inp').value = '';
+  $('logo-box').style.display = 'none';
+  $('logo-drop').style.display = 'block';
+  syncAll();
+  compute();
+  toast('Style réinitialisé');
+}
+
+function syncAll() {
+  syncColors();
+  markPalette();
+  markChips($('chips-pixel'), 'pixel');
+  markChips($('chips-eye'), 'eye');
+  markChips($('chips-pupil'), 'pupil');
+  $('margin').value = S.margin;
+  $('mar-val').textContent = S.margin + ' module' + (S.margin > 1 ? 's' : '');
+  $('bg-radius').value = S.bgR; $('brad-val').textContent = S.bgR + ' %';
+  $('bg-transp').checked = S.transp;
+  $('logo-size').value = S.logoSize; $('lsz-val').textContent = S.logoSize + ' %';
+  $('logo-pad').checked = S.logoPad;
+  checkLogoAlert();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   13. DÉMARRAGE
+   ═══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
+  buildChips($('chips-pixel'), PIXELS, 'pixel', miniPixel);
+  buildChips($('chips-eye'), EYES, 'eye', miniEye);
+  buildChips($('chips-pupil'), PUPILS, 'pupil', miniPupil);
+  buildPalettes();
+  markPalette();
+  initRail();
+  initTabs();
+  initInputs();
+  $('url-inp').value = 'https://yvesmarti.fr';
+  compute();
+});
+
+})();
 </script>
 </body>
 </html>
