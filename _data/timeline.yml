@@ -5,6 +5,11 @@
   titre: Licence Langues Étrangères Appliquées
   organisation: Bordeaux III - Anglais-Espagnol, Relations Internationales
   description: Traductions (thèmes et versions).
+  details:
+    - "Traduction (thème et version) en anglais et en espagnol"
+    - "Anglais et espagnol appliqués au contexte professionnel"
+    - "Économie, droit et institutions internationales"
+    - "Civilisations des aires anglophone et hispanophone"
 
 - periode: "2010 – 2012"
   type: exp
@@ -17,12 +22,24 @@
   titre: Licence de Géographie
   organisation: Parcours Approches Géographiques du Développement et des Territoires
   description: Développement local, SIG (MapInfo), études des risques, techniques de questionnaire.
+  details:
+    - "Analyse spatiale et méthodes quantitatives (statistiques appliquées)"
+    - "Cartographie : sémiologie graphique, représentation de données"
+    - "Géographie du développement et des dynamiques territoriales"
+    - "Études des risques (naturels, technologiques)"
+    - "SIG : premiers traitements sous MapInfo"
 
 - periode: "2014 – 2015"
   type: edu
   titre: Master 2 Gestion Territoriale du Développement Durable
   organisation: Bordeaux III
   description: Gestion de projets, politiques environnementales, enjeux fonciers, SIG (QGIS).
+  details:
+    - "Politiques environnementales et réglementation (déchets, eau, énergie)"
+    - "Montage et conduite de projets territoriaux, concertation avec les acteurs locaux"
+    - "Enjeux fonciers, urbanisme et aménagement du territoire"
+    - "Diagnostic territorial : collecte de données, indicateurs, restitution"
+    - "SIG appliqué à l'aménagement (QGIS)"
 
 - periode: "2015"
   type: exp
@@ -35,9 +52,24 @@
   titre: Chargé de mission Observatoire des déchets
   organisation: Biomasse Normandie - Caen
   description: Suivi et analyse des flux de déchets en région Normandie pour une association spécialisée en valorisation de la biomasse.
+  details:
+    - "Animation de l'Observatoire régional, enquêtes collectivités et exploitants (DMA, ITOM)"
+    - "Production d'indicateurs de suivi, élaboration de rapports annuels"
+    - "Groupes de travail techniciens, présentations coûts aux élus"
+    - "Cartographie thématique QGIS, analyses isochrones, cartes dynamiques"
+    - "Audits déchèteries, dimensionnement, rédaction de cahiers des charges"
+    - "Supervision de collaborateurs, formation outils, référent informatique"
 
 - periode: "2025 – Présent"
   type: exp
   titre: Chargé de mission déploiement des équipements de collecte
   organisation: Cdc Normandie Cabourg Pays d'Auge
   description: Pilotage du déploiement des équipements de collecte sur le territoire intercommunal.
+  details:
+    - "Pilotage du déploiement de Points d'Apport Volontaire (PAV) et points de regroupement sur 38 communes : prospection, concertation avec les élus, planification"
+    - "Rédaction des pièces de marchés publics (CCTP, BPU/DQE) pour les fournitures de matériaux de génie civil"
+    - "Études d'optimisation des tournées de collecte : réduction des coûts et de l'empreinte carbone, recensement des marches arrières (sécurité)"
+    - "Fiabilisation des bases de données usagers pour le suivi de la performance et la facturation (rapprochement automatisé avec la BAN)"
+    - "Relevés terrain géolocalisés (QField / QGIS) pour l'inventaire et le suivi des équipements"
+    - "Conception d'outils internes de pilotage et de tableaux de bord pour les élus et techniciens (cartographie web, import Excel)"
+    - "Présentations pour les élus, coordination intercommunale"

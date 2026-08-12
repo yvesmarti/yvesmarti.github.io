@@ -467,6 +467,130 @@
     }
 
     /* ------------------------------------------
+       LIGHTBOX DÉTAIL DU PARCOURS
+       Ouvre le contenu détaillé d'une étape de
+       la timeline (#parcours) dans une modale.
+    ------------------------------------------ */
+    function initTimelineDetails() {
+        var modal = document.getElementById('htl-modal');
+        var track = document.getElementById('htl-track');
+        if (!modal || !track) return;
+
+        var box       = modal.querySelector('.htl-modal__box');
+        var elPeriod  = document.getElementById('htl-modal-period');
+        var elTitle   = document.getElementById('htl-modal-title');
+        var elOrg     = document.getElementById('htl-modal-org');
+        var elBody    = document.getElementById('htl-modal-body');
+        if (!box || !elPeriod || !elTitle || !elOrg || !elBody) return;
+
+        var lastTrigger = null;
+        var savedPadding = '';
+
+        var FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+        function text(scope, selector) {
+            var el = scope.querySelector(selector);
+            return el ? el.textContent.trim() : '';
+        }
+
+        function open(btn) {
+            var item = btn.closest('.htl-item');
+            var card = btn.closest('.htl-card');
+            var tpl  = card ? card.querySelector('.htl-details-tpl') : null;
+            if (!item || !card || !tpl) return;
+
+            elPeriod.textContent = text(card, '.htl-period');
+            elTitle.textContent  = text(card, '.htl-title');
+            elOrg.textContent    = text(card, '.htl-org');
+
+            elBody.innerHTML = '';
+            elBody.appendChild(tpl.content.cloneNode(true));
+
+            modal.classList.remove('htl-modal--exp', 'htl-modal--edu');
+            modal.classList.add(item.classList.contains('htl-item--edu')
+                ? 'htl-modal--edu'
+                : 'htl-modal--exp');
+
+            lastTrigger = btn;
+
+            // Verrouillage du scroll. On garde `overflow: hidden` plutôt qu'un
+            // `position: fixed` sur le body : ce dernier remettrait window.scrollY
+            // à 0, ce qui ferait sauter la timeline horizontale (update() mappe
+            // scrollY sur le translateX du track). On compense la largeur de
+            // l'ascenseur pour éviter le décalage horizontal de la page.
+            var scrollbar = window.innerWidth - document.documentElement.clientWidth;
+            savedPadding = document.body.style.paddingRight;
+            if (scrollbar > 0) document.body.style.paddingRight = scrollbar + 'px';
+            document.documentElement.style.overflow = 'hidden';
+
+            modal.hidden = false;
+            // Force un reflow pour que la transition d'ouverture se déclenche.
+            void modal.offsetWidth;
+            modal.classList.add('is-open');
+
+            var closeBtn = modal.querySelector('.htl-modal__close');
+            if (closeBtn) closeBtn.focus();
+        }
+
+        function close() {
+            if (modal.hidden) return;
+
+            modal.classList.remove('is-open');
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = savedPadding;
+
+            var finish = function () {
+                modal.hidden = true;
+                elBody.innerHTML = '';
+            };
+
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                finish();
+            } else {
+                setTimeout(finish, 200);
+            }
+
+            if (lastTrigger) {
+                lastTrigger.focus();
+                lastTrigger = null;
+            }
+        }
+
+        function trapFocus(e) {
+            var items = box.querySelectorAll(FOCUSABLE);
+            if (!items.length) return;
+            var first = items[0];
+            var last  = items[items.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+
+        track.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-htl-more]');
+            if (btn) open(btn);
+        });
+
+        modal.addEventListener('click', function (e) {
+            if (e.target.closest('[data-htl-close]')) close();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (modal.hidden) return;
+            if (e.key === 'Escape') {
+                close();
+            } else if (e.key === 'Tab') {
+                trapFocus(e);
+            }
+        });
+    }
+
+    /* ------------------------------------------
        FILTRES COMPÉTENCES
     ------------------------------------------ */
     function initSkillFilters() {
@@ -533,6 +657,7 @@
         initParallax();
         initAnimatedTimeline();
         initHorizontalTimeline();
+        initTimelineDetails();
         initSkillFilters();
         initRecommandedFilters();
     });

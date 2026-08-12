@@ -192,12 +192,22 @@ passé en `actif: false` disparaît automatiquement du bloc.
 ### `timeline.yml`
 
 ```yaml
-- annee: "2020"
+- periode: "2015 – 2025"     # tiret demi-cadratin entouré d'espaces : le split Liquid en dépend
+  type: exp                  # exp | edu — pilote la couleur (orange / vert) et la légende
   titre: "Poste ou diplôme"
-  lieu: "Organisation"
-  type: "experience|formation"
-  description: "Détail optionnel"
+  organisation: "Organisation - Ville"
+  description: "Résumé d'une ligne affiché sur la carte"
+  details:                   # optionnel — liste de puces affichées dans la lightbox
+    - "Première mission"
+    - "Deuxième mission"
 ```
+
+La présence de `details` fait apparaître un bouton « Plus de détails » sur la carte de la
+timeline horizontale, qui ouvre une lightbox (`#htl-modal` dans `index.html`, styles `.htl-modal*`
+dans `style.css`, logique `initTimelineDetails` dans `main.js`). Les items sans `details` n'ont
+pas de bouton. Le contenu détaillé est rendu par Jekyll dans un `<template>` inerte à l'intérieur
+de la carte : ne pas le remplacer par un élément visible, `htl-track.scrollWidth` et
+`item.offsetLeft` pilotent tout le défilement horizontal.
 
 ### `stats.yml`
 
@@ -342,6 +352,7 @@ premier à disposer du mode sombre. Le motif à reproduire :
 | `initParallax` | `.hero-parallax-bg` | Parallaxe fond héros |
 | `initAnimatedTimeline` | `#exp-timeline .tl__item → .is-lit` | Timeline verticale scroll-driven |
 | `initHorizontalTimeline` | `#parcours` / `#htl-track` | Timeline horizontale (scroll → translateX) |
+| `initTimelineDetails` | `[data-htl-more]` / `#htl-modal` | Lightbox de détail des étapes du parcours |
 | `initSkillFilters` | `.filter-btn` / `.skill-card[data-categorie]` | Filtres compétences |
 
 ### `assets/js/hero-background.js`

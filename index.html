@@ -97,6 +97,17 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
                         <div class="htl-duration-bar" aria-hidden="true">
                             <div class="htl-duration-fill"></div>
                         </div>
+                        {% if item.details %}
+                        <button type="button" class="htl-more" data-htl-more>
+                            <span>Plus de détails</span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                        <template class="htl-details-tpl">
+                            <ul class="htl-modal__list">
+                                {% for detail in item.details %}<li>{{ detail }}</li>{% endfor %}
+                            </ul>
+                        </template>
+                        {% endif %}
                     </div>
                     <div class="htl-connector" aria-hidden="true"></div>
                     <div class="htl-dot" aria-hidden="true"></div>
@@ -125,6 +136,25 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
         </div>
     </div>
 </section>
+
+<!-- Lightbox de détail des étapes du parcours (hors #parcours : .htl-viewport est en
+     overflow:hidden et .htl-track porte un transform, qui rogneraient la modale) -->
+<div class="htl-modal" id="htl-modal" hidden>
+    <div class="htl-modal__backdrop" data-htl-close></div>
+    <div class="htl-modal__box" role="dialog" aria-modal="true" aria-labelledby="htl-modal-title">
+        <button type="button" class="htl-modal__close" data-htl-close aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <p class="htl-modal__period" id="htl-modal-period"></p>
+        <h3 class="htl-modal__title" id="htl-modal-title"></h3>
+        <p class="htl-modal__org" id="htl-modal-org"></p>
+        <div class="htl-modal__body" id="htl-modal-body"></div>
+        <a class="htl-modal__cv" href="/cv/">
+            <span>Voir le CV complet</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+</div>
 
 <!-- Vague : parcours (sombre) → compétences (sombre) -->
 <div class="wave-separator" style="background:#1a2e25;" aria-hidden="true">
