@@ -2668,6 +2668,253 @@ body,
     background: linear-gradient(to right, #2a8c72, rgba(42, 140, 114, 0.3));
 }
 
+/* ---- Invite "Plus de détails" dans la carte ---- */
+/* Rester compact : la carte est ancrée à calc(50% + 44px) de l'axe et grandit
+   vers le haut/bas, elle ne doit pas déborder des 100vh de .htl-sticky. */
+.htl-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    padding: 0.34rem 0.68rem;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(247, 249, 248, 0.82);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.htl-more svg {
+    transition: transform 0.25s ease;
+}
+
+.htl-more:hover svg,
+.htl-more:focus-visible svg {
+    transform: translateX(3px);
+}
+
+.htl-item--exp .htl-more:hover,
+.htl-item--exp .htl-more:focus-visible {
+    color: #f7f9f8;
+    background: rgba(217, 85, 33, 0.18);
+    border-color: rgba(217, 85, 33, 0.6);
+}
+
+.htl-item--edu .htl-more:hover,
+.htl-item--edu .htl-more:focus-visible {
+    color: #f7f9f8;
+    background: rgba(42, 140, 114, 0.2);
+    border-color: rgba(42, 140, 114, 0.65);
+}
+
+.htl-more:focus-visible {
+    outline: 2px solid rgba(247, 249, 248, 0.5);
+    outline-offset: 2px;
+}
+
+/* ---- Lightbox de détail ---- */
+.htl-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.htl-modal[hidden] {
+    display: none;
+}
+
+.htl-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 20, 16, 0.72);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.htl-modal.is-open .htl-modal__backdrop {
+    opacity: 1;
+}
+
+.htl-modal__box {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: min(86vh, 760px);
+    overflow-y: auto;
+    padding: 1.9rem 2rem 1.6rem;
+    background: #1a2e25;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgba(217, 85, 33, 0.7);
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.htl-modal--edu .htl-modal__box {
+    border-left-color: rgba(42, 140, 114, 0.75);
+}
+
+.htl-modal.is-open .htl-modal__box {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.htl-modal__close {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    color: rgba(247, 249, 248, 0.7);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.htl-modal__close:hover,
+.htl-modal__close:focus-visible {
+    color: #f7f9f8;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.htl-modal__close:focus-visible,
+.htl-modal__cv:focus-visible {
+    outline: 2px solid rgba(247, 249, 248, 0.55);
+    outline-offset: 2px;
+}
+
+.htl-modal__period {
+    display: inline-block;
+    margin: 0 0 0.6rem;
+    padding: 0.16rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border-radius: 3px;
+}
+
+.htl-modal--exp .htl-modal__period {
+    color: #f0a07c;
+    background: rgba(217, 85, 33, 0.16);
+}
+
+.htl-modal--edu .htl-modal__period {
+    color: #7fd4b8;
+    background: rgba(42, 140, 114, 0.18);
+}
+
+.htl-modal__title {
+    margin: 0 0 0.3rem;
+    padding-right: 2.5rem;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1.25;
+    color: #f7f9f8;
+}
+
+.htl-modal__org {
+    margin: 0 0 1.3rem;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.htl-modal--exp .htl-modal__org { color: rgba(240, 160, 124, 0.9); }
+.htl-modal--edu .htl-modal__org { color: rgba(127, 212, 184, 0.9); }
+
+.htl-modal__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.htl-modal__list li {
+    position: relative;
+    padding-left: 1.2rem;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: rgba(247, 249, 248, 0.82);
+}
+
+.htl-modal__list li::before {
+    content: '';
+    position: absolute;
+    top: 0.62rem;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.htl-modal--exp .htl-modal__list li::before { background: #d95521; }
+.htl-modal--edu .htl-modal__list li::before { background: #2a8c72; }
+
+.htl-modal__cv {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.35rem;
+    padding-top: 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: rgba(247, 249, 248, 0.85);
+    text-decoration: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    transition: color 0.2s ease;
+}
+
+.htl-modal__cv svg {
+    transition: transform 0.2s ease;
+}
+
+.htl-modal__cv:hover svg,
+.htl-modal__cv:focus-visible svg {
+    transform: translateX(3px);
+}
+
+.htl-modal--exp .htl-modal__cv:hover,
+.htl-modal--exp .htl-modal__cv:focus-visible { color: #f0a07c; }
+.htl-modal--edu .htl-modal__cv:hover,
+.htl-modal--edu .htl-modal__cv:focus-visible { color: #7fd4b8; }
+
+@media (prefers-reduced-motion: reduce) {
+    .htl-modal__backdrop,
+    .htl-modal__box,
+    .htl-more svg,
+    .htl-modal__cv svg {
+        transition: none;
+    }
+
+    .htl-modal__box {
+        transform: none;
+    }
+}
+
 /* ---- Mobile: native horizontal touch scroll ---- */
 /* ---- Mobile: vertical timeline ---- */
 @media (max-width: 768px) {
@@ -2782,6 +3029,24 @@ body,
     .htl-duration-fill {
         transition: width 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.55s;
         width: 0%;
+    }
+
+    /* Lightbox de détail : feuille quasi plein écran */
+    .htl-modal {
+        padding: 1rem;
+    }
+
+    .htl-modal__box {
+        max-height: 88vh;
+        padding: 1.6rem 1.3rem 1.3rem;
+    }
+
+    .htl-modal__title {
+        font-size: 1.2rem;
+    }
+
+    .htl-modal__list li {
+        font-size: 0.87rem;
     }
 }
 
