@@ -7,6 +7,19 @@
     'use strict';
 
     /* ------------------------------------------
+       CONFIGURATION EMAILJS
+       Valeurs issues de dashboard.emailjs.com.
+       La clé publique est faite pour être exposée
+       côté client : c'est la restriction de domaine
+       (Account > Security) qui protège le quota.
+       Le template doit exposer les variables
+       {{from_name}}, {{from_email}} et {{message}}.
+    ------------------------------------------ */
+    var EMAILJS_PUBLIC_KEY  = 'zOB8cgDsJRWpfpIUX';
+    var EMAILJS_SERVICE_ID  = 'service_v4drsbl';
+    var EMAILJS_TEMPLATE_ID = 'template_9do6ims';
+
+    /* ------------------------------------------
        MENU MOBILE
     ------------------------------------------ */
     function initMobileMenu() {
@@ -644,6 +657,67 @@
     }
 
     /* ------------------------------------------
+       FORMULAIRE DE CONTACT (EmailJS)
+    ------------------------------------------ */
+    function initContactForm() {
+        var form = document.getElementById('contact-form');
+        if (!form) return;
+
+        var submit   = document.getElementById('cf-submit');
+        var status   = document.getElementById('cf-status');
+        var honeypot = document.getElementById('cf-website');
+        var sending  = false;
+
+        function setStatus(message, state) {
+            status.textContent = message;
+            status.className = 'cf-status' + (state ? ' is-' + state : '');
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (sending) return;
+
+            // Piège anti-spam : un humain ne voit jamais ce champ.
+            // On sort en silence pour ne pas renseigner le robot.
+            if (honeypot && honeypot.value !== '') return;
+
+            if (!form.checkValidity()) {
+                setStatus('Merci de remplir tous les champs correctement.', 'error');
+                form.reportValidity();
+                return;
+            }
+
+            if (typeof emailjs === 'undefined') {
+                setStatus("Le service d'envoi n'a pas pu être chargé. Passez par LinkedIn ci-dessous.", 'error');
+                return;
+            }
+
+            sending = true;
+            submit.disabled = true;
+            setStatus('Envoi en cours...', 'pending');
+
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                from_name:  form.elements['from_name'].value.trim(),
+                from_email: form.elements['from_email'].value.trim(),
+                message:    form.elements['message'].value.trim()
+            }, { publicKey: EMAILJS_PUBLIC_KEY })
+                .then(function () {
+                    form.reset();
+                    setStatus('Message envoyé, merci ! Je vous réponds rapidement.', 'success');
+                })
+                .catch(function (err) {
+                    setStatus("L'envoi a échoué. Réessayez ou passez par LinkedIn ci-dessous.", 'error');
+                    if (window.console) console.error('EmailJS :', err);
+                })
+                .then(function () {
+                    // Joue le rôle d'un finally : le .catch() renvoie une promesse résolue.
+                    sending = false;
+                    submit.disabled = false;
+                });
+        });
+    }
+
+    /* ------------------------------------------
        INITIALISATION
     ------------------------------------------ */
     document.addEventListener('DOMContentLoaded', function () {
@@ -660,6 +734,7 @@
         initTimelineDetails();
         initSkillFilters();
         initRecommandedFilters();
+        initContactForm();
     });
 
 }());

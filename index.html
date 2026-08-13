@@ -339,7 +339,41 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
         <p>
             Projets territoriaux, questions SIG, gestion des déchets ; je suis toujours curieux de découvrir de nouveaux défis.
         </p>
-        <a href="https://www.linkedin.com/in/{{ site.linkedin }}/" class="contact-link" target="_blank">
+
+        <form class="contact-form" id="contact-form" novalidate>
+            <div class="cf-row">
+                <div class="cf-field">
+                    <label for="cf-name">Nom</label>
+                    <input type="text" id="cf-name" name="from_name" required
+                           autocomplete="name" maxlength="100">
+                </div>
+                <div class="cf-field">
+                    <label for="cf-email">Email</label>
+                    <input type="email" id="cf-email" name="from_email" required
+                           autocomplete="email" maxlength="150">
+                </div>
+            </div>
+
+            <div class="cf-field">
+                <label for="cf-message">Message</label>
+                <textarea id="cf-message" name="message" rows="6" required maxlength="2000"></textarea>
+            </div>
+
+            <!-- Piège anti-spam : positionné hors écran, jamais rempli par un humain -->
+            <div class="cf-hp" aria-hidden="true">
+                <label for="cf-website">Ne pas remplir ce champ</label>
+                <input type="text" id="cf-website" name="website" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div class="cf-actions">
+                <button type="submit" class="cf-submit" id="cf-submit">Envoyer le message</button>
+                <p class="cf-status" id="cf-status" role="status" aria-live="polite"></p>
+            </div>
+        </form>
+
+        <p class="cf-alt">ou</p>
+
+        <a href="https://www.linkedin.com/in/{{ site.linkedin }}/" class="contact-link" target="_blank" rel="noopener noreferrer">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
             </svg>

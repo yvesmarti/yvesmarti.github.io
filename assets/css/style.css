@@ -1209,6 +1209,162 @@ body {
     .dispo-banner { padding: 1.25rem 1.25rem; }
 }
 
+/* -------------------------------------------
+   FORMULAIRE DE CONTACT (EmailJS)
+   La section est sombre dans les deux thèmes
+   (--color-primary) : les champs sont habillés
+   en rgba(255,255,255,x) comme le bloc dispo,
+   aucune surcharge mode nuit n'est nécessaire.
+   ------------------------------------------- */
+
+.contact-form {
+    max-width: 640px;
+    margin: 0 auto 2rem;
+    text-align: left;
+
+    /* Equivalent opaque du fond des champs (rgba blanc 0.06 aplati sur
+       --color-primary). Seul l'autofill Chrome en a besoin : il refuse
+       les fonds semi-transparents. C'est la seule valeur de ce bloc qui
+       doit être redéclarée en mode nuit. */
+    --cf-field-solid: #24443d;
+}
+
+[data-theme="dark"] .contact-form { --cf-field-solid: #16241d; }
+
+.cf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cf-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.cf-field label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 0.4rem;
+}
+
+.cf-field input,
+.cf-field textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: white;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+    /* Curseur, ascenseur du textarea et menus natifs accordés au fond sombre */
+    color-scheme: dark;
+}
+
+/* Autofill Chrome : sans cette surcharge, le navigateur impose un fond
+   clair opaque et le texte blanc devient illisible. Le box-shadow interne
+   est le seul moyen de repeindre ce fond. */
+.cf-field input:-webkit-autofill,
+.cf-field input:-webkit-autofill:hover,
+.cf-field input:-webkit-autofill:focus {
+    -webkit-text-fill-color: white;
+    -webkit-box-shadow: 0 0 0 1000px var(--cf-field-solid) inset;
+    caret-color: white;
+}
+
+.cf-field textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.5;
+}
+
+.cf-field input:focus,
+.cf-field textarea:focus {
+    outline: none;
+    border-color: var(--color-accent-light);
+    background: rgba(255,255,255,0.1);
+}
+
+/* Piège anti-spam : hors écran plutôt que display:none,
+   que certains robots savent détecter et ignorer. */
+.cf-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.cf-actions { text-align: center; }
+
+.cf-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: var(--color-accent);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cf-submit:hover:not(:disabled) {
+    background: #4a9f7f;
+    transform: translateY(-2px);
+}
+
+.cf-submit:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 3px;
+}
+
+.cf-submit:disabled {
+    opacity: 0.55;
+    cursor: progress;
+    transform: none;
+}
+
+/* Sélecteurs préfixés par .contact-section : nécessaire pour
+   l'emporter sur la règle .contact-section p (max-width + marges). */
+.contact-section .cf-status {
+    min-height: 1.4em;
+    max-width: none;
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.contact-section .cf-status.is-success { color: var(--color-accent-light); }
+.contact-section .cf-status.is-error   { color: #ff9b8a; }
+
+.contact-section .cf-alt {
+    margin: 0 auto 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+}
+
+@media (max-width: 600px) {
+    .cf-row { grid-template-columns: 1fr; gap: 0; }
+    .cf-submit { width: 100%; }
+}
+
 /* ===========================================
    FOOTER
    =========================================== */
