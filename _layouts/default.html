@@ -175,6 +175,10 @@
 
     {% include footer.html %}
 
+    {% if page.url == '/' %}
+    <!-- SDK EmailJS : accueil uniquement (formulaire de contact) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+    {% endif %}
     <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
     <script src="{{ '/assets/js/hero-background.js' | relative_url }}" defer></script>
     {% if page.extra_js %}

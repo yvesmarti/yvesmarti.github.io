@@ -354,6 +354,18 @@ premier à disposer du mode sombre. Le motif à reproduire :
 | `initHorizontalTimeline` | `#parcours` / `#htl-track` | Timeline horizontale (scroll → translateX) |
 | `initTimelineDetails` | `[data-htl-more]` / `#htl-modal` | Lightbox de détail des étapes du parcours |
 | `initSkillFilters` | `.filter-btn` / `.skill-card[data-categorie]` | Filtres compétences |
+| `initContactForm` | `#contact-form` / `#cf-status` | Envoi du formulaire de contact via EmailJS |
+
+**Config EmailJS** : trois constantes en tête de `main.js`, juste après `'use strict'` :
+`EMAILJS_PUBLIC_KEY`, `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`. C'est le seul bloc de
+configuration globale du fichier. Le template EmailJS consomme `{{from_name}}`, `{{from_email}}`
+et `{{message}}` : si ces noms changent côté dashboard, aligner les attributs `name` du
+formulaire dans `index.html` **et** les clés de l'objet passé à `emailjs.send()`.
+
+Le formulaire porte un champ honeypot (`name="website"`, classe `.cf-hp` positionnée hors écran) :
+s'il est rempli, l'envoi est abandonné en silence. La clé publique EmailJS est faite pour être
+exposée côté client ; la protection du quota passe par la restriction de domaine dans le dashboard
+EmailJS (Account > Security).
 
 ### `assets/js/hero-background.js`
 
@@ -492,6 +504,7 @@ Copyright dynamique via `{{ 'now' | date: '%Y' }}`.
 | SheetJS (xlsx) | Lecture fichiers Excel (photogeomanager) |
 | QRCode.js | Génération QR codes |
 | Font Awesome | Icônes dans les outils autonomes |
+| @emailjs/browser (CDN jsDelivr) | Formulaire de contact ; chargé dans `default.html` sous `{% if page.url == '/' %}`, donc sur l'accueil uniquement |
 
 ### APIs externes
 
@@ -500,6 +513,7 @@ Copyright dynamique via `{{ 'now' | date: '%Y' }}`.
 | BAN (api-adresse.data.gouv.fr) | Géocodage adresse / inverse — gratuite, pas de clé |
 | OpenRouteService (ORS) | Isochrones — clé API requise (saisie utilisateur) |
 | Overpass API (OSM) | Extraction données OpenStreetMap |
+| EmailJS | Envoi du formulaire de contact de l'accueil ; clé publique + service ID + template ID en tête de `main.js` |
 
 ---
 
