@@ -13,6 +13,8 @@
     <meta name="author" content="Yves Marti">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.fr/outils/photomapviewer.html">
+    <meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Visualiseur de photos géolocalisées - Yves Marti">
     <meta property="og:description" content="Déposer un dossier de photos EXIF et visualiser leur emplacement sur une carte Leaflet. Pratique pour les relevés et inventaires terrain.">
@@ -32,14 +34,37 @@
     
     <!-- Leaflet CSS pour la carte -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
+
+    <!-- Polices : DM Serif Display (titres) + Source Sans 3 (corps), les deux
+         familles du portfolio. La pile système prend le relais si elles sont
+         bloquées. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Thème : lecture anticipée pour éviter le flash (FOUC).
+         La clé « theme » est partagée avec le reste du site : arriver depuis
+         /outils.html en mode nuit ouvre l'outil déjà en mode nuit. -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
+
     <!-- ===== STYLES CSS INTÉGRÉS ===== -->
     <style>
         /* ========================================
            RESET ET VARIABLES GLOBALES
+
+           Deux couches de variables :
+           1. les tokens de la charte du site (--color-*, --font-*), copiés
+              à l'identique de assets/css/style.css ;
+           2. les rôles propres à l'outil (--fond-panneau, --accent-douce…),
+              définis à partir des premiers.
+           Le mode sombre plus bas ne fait que redéfinir ces variables :
+           aucune couleur ne doit être écrite en dur ailleurs dans cette
+           feuille (les tuiles et marqueurs Leaflet mis à part, qui restent
+           volontairement clairs dans les deux thèmes : c'est de la donnée,
+           pas du châssis).
            ======================================== */
 
         * {
@@ -49,25 +74,68 @@
         }
 
         :root {
-            /* Palette de couleurs principale */
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --light-bg: #ecf0f1;
-            --white: #ffffff;
-            --text-color: #2c3e50;
-            --text-light: #7f8c8d;
-            --border-color: #bdc3c7;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
-            --shadow-hover: 0 4px 15px rgba(0,0,0,0.2);
+            /* ---- Tokens de la charte (assets/css/style.css) ---- */
+            --color-primary:      #1a3a32;
+            --color-accent:       #3d8b6e;
+            --color-accent-light: #9ed4b8;
+            --color-light:        #f7f9f8;
+            --color-warm:         #e8ded4;
+            --color-text:         #2c2c2c;
+            --color-muted:        #6b7c75;
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+            /* ---- Surfaces ---- */
+            --fond-page: #e7ece9;
+            --fond-panneau: #ffffff;
+            --fond-controle: #ffffff;
+            --fond-doux: var(--color-light);
+            --bordure: #dde3e0;
+
+            /* ---- Accent ---- */
+            --accent: var(--color-accent);
+            --accent-fort: var(--color-primary);
+            --accent-douce: #e8f4f0;
+            --accent-texte: #1a5c4a;
+            --accent-contraste: #ffffff;
+
+            /* ---- Texte ---- */
+            --texte: var(--color-text);
+            --texte-doux: var(--color-muted);
+
+            /* ---- États ---- */
+            --succes: #15803d;
+            --succes-fond: #eefaf2;
+            --erreur: #b91c1c;
+            --erreur-fond: #fef2f2;
+
+            /* ---- Rayons ---- */
+            --r-xs: 4px;
+            --r-s:  6px;
+            --r-m:  10px;
+            --r-l:  14px;
+
+            /* ---- Ombres ---- */
+            --ombre-xs: 0 1px 8px   rgba(26, 58, 50, 0.10);
+            --ombre-s:  0 2px 10px  rgba(26, 58, 50, 0.12);
+            --ombre-m:  0 8px 24px  rgba(26, 58, 50, 0.15);
+            --ombre-l:  0 14px 36px rgba(26, 58, 50, 0.16);
+
+            color-scheme: light dark;
+        }
+
+        h1, h2, h3 {
+            /* DM Serif Display n'existe qu'en 400 : on fixe la graisse pour
+               éviter que le navigateur ne synthétise un faux gras. */
+            font-family: var(--font-display);
+            font-weight: 400;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-color);
-            background-color: var(--light-bg);
+            font-family: var(--font-body);
+            color: var(--texte);
+            background-color: var(--fond-page);
             overflow: hidden;
         }
 
@@ -81,8 +149,9 @@
             top: 0;
             width: 350px;
             height: 100vh;
-            background-color: var(--white);
-            box-shadow: var(--shadow);
+            background-color: var(--fond-panneau);
+            border-right: 1px solid var(--bordure);
+            box-shadow: var(--ombre-s);
             overflow-y: auto;
             padding: 20px;
             z-index: 1000;
@@ -100,27 +169,60 @@
            ======================================== */
 
         .sidebar-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid var(--light-bg);
+            border-bottom: 2px solid var(--fond-doux);
         }
 
         .sidebar-header h1 {
             font-size: 24px;
-            color: var(--primary-color);
+            color: var(--color-primary);
             margin-bottom: 5px;
         }
 
         .sidebar-header i {
-            color: var(--secondary-color);
+            color: var(--accent);
             margin-right: 10px;
         }
 
         .subtitle {
             font-size: 14px;
-            color: var(--text-light);
+            color: var(--texte-doux);
             margin-top: 5px;
         }
+
+        /* ── BASCULE CLAIR / SOMBRE ────────────────────────────── */
+        #theme-toggle {
+            flex: 0 0 auto;
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--bordure);
+            border-radius: var(--r-s);
+            background: var(--fond-controle);
+            color: var(--texte);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .18s ease, border-color .18s ease, color .18s ease;
+        }
+        #theme-toggle:hover {
+            background: var(--accent-douce);
+            border-color: var(--accent);
+            color: var(--accent-texte);
+        }
+        #theme-toggle:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .theme-icon--sun { display: none; }
+        .theme-icon--moon { display: inline-block; }
+        [data-theme="dark"] .theme-icon--sun { display: inline-block; }
+        [data-theme="dark"] .theme-icon--moon { display: none; }
 
         /* ========================================
            SECTIONS DU PANNEAU LATERAL
@@ -129,9 +231,10 @@
         .upload-section,
         .stats-section,
         .controls-section {
-            background-color: var(--light-bg);
+            background-color: var(--fond-doux);
+            border: 1px solid var(--bordure);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: var(--r-m);
             margin-bottom: 20px;
         }
 
@@ -139,7 +242,9 @@
         .stats-section h2,
         .controls-section h2 {
             font-size: 16px;
-            color: var(--primary-color);
+            font-family: var(--font-body);
+            font-weight: 700;
+            color: var(--color-primary);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
@@ -149,7 +254,7 @@
         .stats-section h2 i,
         .controls-section h2 i {
             margin-right: 8px;
-            color: var(--secondary-color);
+            color: var(--accent);
         }
 
         /* ========================================
@@ -157,40 +262,40 @@
            ======================================== */
 
         .dropzone {
-            border: 3px dashed var(--border-color);
-            border-radius: 8px;
+            border: 3px dashed var(--bordure);
+            border-radius: var(--r-m);
             padding: 40px 20px;
             text-align: center;
-            background-color: var(--white);
+            background-color: var(--fond-controle);
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 15px;
         }
 
         .dropzone:hover {
-            border-color: var(--secondary-color);
-            background-color: #f8f9fa;
+            border-color: var(--accent);
+            background-color: var(--accent-douce);
         }
 
         .dropzone.dragover {
-            border-color: var(--success-color);
-            background-color: #e8f8f0;
+            border-color: var(--succes);
+            background-color: var(--succes-fond);
         }
 
         .dropzone i {
-            color: var(--text-light);
+            color: var(--texte-doux);
             margin-bottom: 10px;
         }
 
         .dropzone p {
-            color: var(--text-color);
+            color: var(--texte);
             font-size: 16px;
             margin-bottom: 5px;
         }
 
         .small-text {
             font-size: 12px;
-            color: var(--text-light);
+            color: var(--texte-doux);
         }
 
         /* ========================================
@@ -201,7 +306,8 @@
             width: 100%;
             padding: 12px 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: var(--r-s);
+            font-family: inherit;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -218,34 +324,44 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
+            box-shadow: var(--ombre-m);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
 
         .btn-primary {
-            background-color: var(--secondary-color);
-            color: var(--white);
+            background-color: var(--accent);
+            color: var(--accent-contraste);
         }
 
         .btn-primary:hover {
-            background-color: #2980b9;
+            background-color: var(--accent-fort);
         }
 
+        /* --erreur/--succes s'éclaircissent en mode sombre pour rester
+           lisibles en texte sur un fond sombre (voir --erreur-fond,
+           --succes-fond) : ils ne conviennent pas à un remplissage plein
+           avec texte blanc. Ces deux boutons gardent donc une couleur fixe
+           et ne suivent pas le thème, comme la carte plus haut. */
         .btn-secondary {
-            background-color: var(--danger-color);
-            color: var(--white);
+            background-color: #b91c1c;
+            color: #ffffff;
         }
 
         .btn-secondary:hover {
-            background-color: #c0392b;
+            filter: brightness(0.88);
         }
 
         .btn-success {
-            background-color: var(--success-color);
-            color: var(--white);
+            background-color: #15803d;
+            color: #ffffff;
         }
 
         .btn-success:hover {
-            background-color: #229954;
+            filter: brightness(0.88);
         }
 
         /* ========================================
@@ -257,7 +373,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--bordure);
         }
 
         .stat-item:last-child {
@@ -266,13 +382,13 @@
 
         .stat-label {
             font-size: 14px;
-            color: var(--text-light);
+            color: var(--texte-doux);
         }
 
         .stat-value {
             font-size: 18px;
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--color-primary);
         }
 
         /* ========================================
@@ -297,25 +413,25 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 400;
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: var(--fond-panneau);
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
+            border-radius: var(--r-l);
+            box-shadow: var(--ombre-s);
         }
 
         .map-placeholder i {
-            color: var(--text-light);
+            color: var(--texte-doux);
             margin-bottom: 20px;
         }
 
         .map-placeholder h2 {
             font-size: 24px;
-            color: var(--primary-color);
+            color: var(--color-primary);
             margin-bottom: 10px;
         }
 
         .map-placeholder p {
-            color: var(--text-light);
+            color: var(--texte-doux);
             font-size: 16px;
         }
 
@@ -324,9 +440,9 @@
             top: 20px;
             right: 20px;
             z-index: 1000;
-            background-color: var(--white);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
+            background-color: var(--fond-panneau);
+            border-radius: var(--r-s);
+            box-shadow: var(--ombre-s);
             display: flex;
             overflow: hidden;
         }
@@ -334,8 +450,8 @@
         .map-btn {
             padding: 10px 20px;
             border: none;
-            background-color: var(--white);
-            color: var(--text-color);
+            background-color: var(--fond-panneau);
+            color: var(--texte);
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -345,12 +461,12 @@
         }
 
         .map-btn:hover {
-            background-color: var(--light-bg);
+            background-color: var(--fond-doux);
         }
 
         .map-btn.active {
-            background-color: var(--secondary-color);
-            color: var(--white);
+            background-color: var(--accent);
+            color: var(--accent-contraste);
         }
 
         .map-btn i {
@@ -362,16 +478,19 @@
            ======================================== */
 
         .photos-table-container {
-            background-color: var(--white);
+            background-color: var(--fond-panneau);
+            border-top: 1px solid var(--bordure);
             padding: 20px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--ombre-s);
             max-height: 300px;
             overflow-y: auto;
         }
 
         .photos-table-container h2 {
             font-size: 18px;
-            color: var(--primary-color);
+            font-family: var(--font-body);
+            font-weight: 700;
+            color: var(--color-primary);
             margin-bottom: 15px;
         }
 
@@ -386,8 +505,8 @@
         }
 
         .photos-table thead {
-            background-color: var(--primary-color);
-            color: var(--white);
+            background-color: var(--accent-fort);
+            color: var(--accent-contraste);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -401,11 +520,11 @@
 
         .photos-table td {
             padding: 12px;
-            border-bottom: 1px solid var(--light-bg);
+            border-bottom: 1px solid var(--fond-doux);
         }
 
         .photos-table tbody tr:hover {
-            background-color: var(--light-bg);
+            background-color: var(--fond-doux);
             cursor: pointer;
         }
 
@@ -413,8 +532,8 @@
             width: 60px;
             height: 60px;
             object-fit: cover;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: var(--r-xs);
+            box-shadow: var(--ombre-xs);
         }
 
         .status-badge {
@@ -426,28 +545,28 @@
         }
 
         .status-badge.geolocated {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: var(--succes-fond);
+            color: var(--succes);
         }
 
         .status-badge.no-geo {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: var(--erreur-fond);
+            color: var(--erreur);
         }
 
         .table-action-btn {
             padding: 6px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--r-xs);
             font-size: 12px;
             cursor: pointer;
-            background-color: var(--secondary-color);
-            color: var(--white);
+            background-color: var(--accent);
+            color: var(--accent-contraste);
             transition: all 0.3s ease;
         }
 
         .table-action-btn:hover {
-            background-color: #2980b9;
+            background-color: var(--accent-fort);
         }
 
         /* ========================================
@@ -465,15 +584,21 @@
             margin-bottom: 10px;
         }
 
+        /* Le popup Leaflet reste posé sur la carte, qui ne suit jamais le
+           thème (voir plus haut) : ses couleurs restent donc fixes, pour
+           rester lisibles sur un fond de carte toujours clair, même en
+           mode sombre. */
         .custom-popup h3 {
             font-size: 14px;
-            color: var(--primary-color);
+            font-family: var(--font-body);
+            font-weight: 700;
+            color: #1a3a32;
             margin-bottom: 5px;
         }
 
         .custom-popup p {
             font-size: 12px;
-            color: var(--text-light);
+            color: #6b7c75;
             margin-bottom: 3px;
         }
 
@@ -495,27 +620,27 @@
         }
 
         .loading-content {
-            background-color: var(--white);
+            background-color: var(--fond-panneau);
             padding: 40px;
-            border-radius: 12px;
+            border-radius: var(--r-l);
             text-align: center;
-            box-shadow: var(--shadow);
+            box-shadow: var(--ombre-l);
         }
 
         .loading-content i {
-            color: var(--secondary-color);
+            color: var(--accent);
             margin-bottom: 20px;
         }
 
         .loading-content p {
             font-size: 18px;
-            color: var(--primary-color);
+            color: var(--color-primary);
             margin-bottom: 10px;
         }
 
         .loading-detail {
             font-size: 14px;
-            color: var(--text-light);
+            color: var(--texte-doux);
         }
 
         /* ========================================
@@ -563,18 +688,18 @@
 
         .sidebar::-webkit-scrollbar-track,
         .photos-table-container::-webkit-scrollbar-track {
-            background: var(--light-bg);
+            background: var(--fond-doux);
         }
 
         .sidebar::-webkit-scrollbar-thumb,
         .photos-table-container::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
+            background: var(--bordure);
+            border-radius: var(--r-xs);
         }
 
         .sidebar::-webkit-scrollbar-thumb:hover,
         .photos-table-container::-webkit-scrollbar-thumb:hover {
-            background: var(--text-light);
+            background: var(--texte-doux);
         }
 
 
@@ -586,23 +711,77 @@
           margin: 0 0 0.8rem;
           font-size: .85rem;
           font-weight: 600;
-          color: #6b7c75;
+          color: var(--texte-doux);
           text-decoration: none;
           transition: color .15s;
         }
-        .back-link:hover { color: #3d8b6e; }
+        .back-link:hover { color: var(--accent); }
+        .back-link:focus-visible {
+          outline: 2px solid var(--accent);
+          outline-offset: 2px;
+        }
+
+        /* ============================================================
+           MODE SOMBRE
+
+           Enfermé dans @media screen : une impression reste toujours
+           claire. Les tuiles de carte, les marqueurs numérotés et le
+           popup Leaflet ne suivent JAMAIS le thème (voir plus haut) : le
+           mode sombre habille le châssis (barre latérale, tableau,
+           boutons), pas la carte elle-même.
+           ============================================================ */
+        @media screen {
+            [data-theme="dark"] {
+                --color-primary: #b8d8c8;
+                --color-accent:  #5aad8a;
+                --color-light:   #131e17;
+                --color-warm:    #1c2a20;
+                --color-text:    #d4e8dc;
+                --color-muted:   #8aaa9a;
+
+                --fond-page:     #131e17;
+                --fond-panneau:  #1a2e24;
+                --fond-controle: #22382c;
+                --fond-doux:     #16241c;
+                --bordure:       #2a3d30;
+
+                --accent-fort:      #6ecba0;
+                --accent-douce:     #1a3028;
+                --accent-texte:     #6ecba0;
+                --accent-contraste: #10231a;
+
+                --succes:      #6ecba0;
+                --succes-fond: #14301f;
+                --erreur:      #ff9c94;
+                --erreur-fond: #3a1e1c;
+
+                --ombre-xs: 0 1px 10px  rgba(0, 0, 0, 0.40);
+                --ombre-s:  0 2px 12px  rgba(0, 0, 0, 0.40);
+                --ombre-m:  0 8px 24px  rgba(0, 0, 0, 0.45);
+                --ombre-l:  0 14px 36px rgba(0, 0, 0, 0.50);
+
+                color-scheme: dark;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- ===== PANNEAU LATERAL GAUCHE ===== -->
     <div class="sidebar">
-        <a href="/outils/" class="back-link">
+        <a href="/outils.html" class="back-link" title="Retour à la liste des outils">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           Retour aux outils
         </a>
         <div class="sidebar-header">
-            <h1><i class="fas fa-camera"></i> Photos Géolocalisées</h1>
-            <p class="subtitle">Visualisez vos photos sur une carte interactive</p>
+            <div>
+                <h1><i class="fas fa-camera"></i> Photos Géolocalisées</h1>
+                <p class="subtitle">Visualisez vos photos sur une carte interactive</p>
+            </div>
+            <!-- Bascule clair / sombre : partage la clé « theme » avec le reste du site -->
+            <button type="button" id="theme-toggle" aria-label="Basculer le thème clair ou sombre" title="Basculer le thème clair ou sombre">
+              <i class="fas fa-sun theme-icon theme-icon--sun"></i>
+              <i class="fas fa-moon theme-icon theme-icon--moon"></i>
+            </button>
         </div>
 
         <div class="upload-section">
@@ -721,9 +900,39 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Application chargée !');
-            initMap();
+            // La bascule de thème et les contrôles d'upload restent
+            // fonctionnels même si initMap() échoue (ex. Leaflet bloqué
+            // par le réseau), d'où l'ordre : ils sont indépendants de la
+            // carte et ne doivent pas dépendre de son initialisation.
             setupEventListeners();
+            activerBasculeTheme();
+            initMap();
         });
+
+        // ========================================
+        // BASCULE CLAIR / SOMBRE
+        //
+        // Même mécanique que le reste du site (assets/js/main.js) :
+        // l'attribut data-theme est posé sur <html> et le choix est
+        // mémorisé sous la clé « theme », partagée avec le portfolio.
+        // Le script anti-FOUC placé dans le <head> se charge de la
+        // restaurer avant le premier rendu.
+        // ========================================
+
+        function activerBasculeTheme() {
+            const bouton = document.getElementById('theme-toggle');
+            if (!bouton) {
+                return;
+            }
+            bouton.addEventListener('click', function() {
+                const actuel = document.documentElement.getAttribute('data-theme');
+                const suivant = actuel === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', suivant);
+                try {
+                    localStorage.setItem('theme', suivant);
+                } catch (e) {}
+            });
+        }
 
         // ========================================
         // INITIALISATION DE LA CARTE
@@ -943,7 +1152,7 @@
             geolocatedPhotos.forEach((photo, index) => {
                 const icon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div style="background-color: #e74c3c; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${index + 1}</div>`,
+                    html: `<div style="background-color: #1a3a32; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${index + 1}</div>`,
                     iconSize: [30, 30],
                     iconAnchor: [15, 15]
                 });
