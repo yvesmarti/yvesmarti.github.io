@@ -4,7 +4,7 @@
   type: "site"
   tags: ["HTML", "CSS", "Jekyll"]
   emoji: "🚗"
-  image: "/assets/images/preview-autoecole-marti.webp"
+  image: "/assets/images/realisations/auto-ecole-marti.webp"
   url: "https://autoecolemarti.fr"
 
 - id: 12
@@ -13,6 +13,7 @@
   type: "site"
   tags: ["HTML", "CSS", "JS"]
   emoji: "🌍"
+  image: "/assets/images/realisations/geoquizz.webp"
   url: "https://yvesmarti.fr/geoquizz/"
 
 - id: 2
@@ -62,6 +63,7 @@
   type: "guide"
   tags: ["Excel", "HTML", "CSS", "JS"]
   emoji: "📗"
+  image: "/assets/images/realisations/guide-excel.webp"
   url: "https://yvesmarti.fr/guide-excel/"
 
 - id: 8
@@ -70,6 +72,7 @@
   type: "guide"
   tags: ["Marchés publics", "Commande publique", "HTML"]
   emoji: "📋"
+  image: "/assets/images/realisations/guide-marches-publics.webp"
   url: "https://yvesmarti.fr/guide-marches-publics/"
   featured: true
 
@@ -79,6 +82,7 @@
   type: "guide"
   tags: ["Comptabilité", "FPT", "HTML"]
   emoji: "📒"
+  image: "/assets/images/realisations/guide-compta-fpt.webp"
   url: "https://yvesmarti.fr/guide-compta-fpt/"
 
 - id: 10
