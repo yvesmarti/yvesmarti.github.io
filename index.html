@@ -241,21 +241,21 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
         <div class="skills-wide">
             <div class="tools-teaser-grid tools-teaser-grid--featured">
                 {% for item in featured %}
-                <article class="tools-teaser tools-teaser--featured">
+                {% assign is_externe = false %}
+                {% if item.url contains '://' %}{% assign is_externe = true %}{% endif %}
+                <a href="{% if is_externe %}{{ item.url }}{% else %}{{ item.url | relative_url }}{% endif %}" class="tools-teaser tools-teaser--featured"{% if is_externe %} target="_blank" rel="noopener noreferrer"{% endif %}>
                     {% for pair in type_labels %}{% assign kv = pair | split: ":" %}{% if kv[0] == item.type %}
                     <span class="teaser-badge teaser-badge--{{ item.type }}">{{ kv[1] }}</span>
                     {% endif %}{% endfor %}
                     <h3>{{ item.title }}</h3>
                     <p>{{ item.desc }}</p>
-                    {% assign is_externe = false %}
-                    {% if item.url contains '://' %}{% assign is_externe = true %}{% endif %}
-                    <a href="{% if is_externe %}{{ item.url }}{% else %}{{ item.url | relative_url }}{% endif %}" class="tools-link"{% if is_externe %} target="_blank" rel="noopener noreferrer"{% endif %}>
+                    <span class="tools-link" aria-hidden="true">
                         Voir le projet
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
-                    </a>
-                </article>
+                    </span>
+                </a>
                 {% endfor %}
             </div>
         </div>

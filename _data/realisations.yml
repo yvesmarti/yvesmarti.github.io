@@ -23,6 +23,14 @@
   tags: ["Power Query", "Excel", "APIs"]
   emoji: "📊"
   url: "/realisations/etude-de-cas-redevance-speciale.html"
+
+- id: 14
+  title: "Générateur de QR codes"
+  desc: "Créez des QR codes (URL, WiFi, vCard) directement dans le navigateur, sans serveur ni transfert de données."
+  type: "outil"
+  tags: ["QR code", "JS", "Offline"]
+  emoji: "📱"
+  url: "/outils/qr-code.html"
   featured: true
 
 - id: 3
