@@ -96,7 +96,7 @@ yvesmarti.github.io/
 ├── cv/
 │   └── index.html            # CV autonome (données inline, print-friendly)
 │
-├── outils/                   # 16 applis HTML autonomes
+├── outils/                   # 18 applis HTML autonomes
 │   ├── geocodage_adresse_ban.html
 │   ├── geocodage_inverse_ban.html
 │   ├── isochrones_ORS.html
@@ -110,8 +110,11 @@ yvesmarti.github.io/
 │   ├── qr-code.html
 │   ├── annotateur-carte.html
 │   ├── encart-gps.html
+│   ├── sankey-builder.html
+│   ├── frise-chronologique.html
 │   ├── creation_retroplanning.html
 │   ├── optimisation_tournee.html
+│   ├── suivi-temp.html       # publiée mais absente de _data/outils.yml
 │   └── suivi/
 │       ├── index.html        # PWA suivi terrain
 │       ├── manifest.json     # Installabilité PWA
@@ -412,6 +415,7 @@ Toutes les pages sont des applis HTML autonomes (sans layout Jekyll).
 | Fichier | Titre affiché | Libs clés |
 |---|---|---|
 | `qr-code.html` | Générateur QR code | QRCode.js |
+| `frise-chronologique.html` | Frise chronologique | SVG natif, canvas (export PNG) |
 | `creation_retroplanning.html` | Rétro-planning | — |
 | `optimisation_tournee.html` | Optimisation de tournée | — |
 

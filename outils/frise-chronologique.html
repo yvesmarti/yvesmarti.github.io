@@ -944,7 +944,7 @@ function drawItem(svg, defs, item, pos, barTop, L, st){
   }
 
   var tip = el("title", {});
-  tip.textContent = item.title + (item.desc ? " — " + item.desc : "") + "\n" +
+  tip.textContent = item.title + (item.desc ? " : " + item.desc : "") + "\n" +
     formatFr(item.start) + (item.type === "period" ? " → " + formatFr(item.end) +
     " (" + durationLabel(item.start, item.end) + ")" : "");
   g.appendChild(tip);
@@ -1099,7 +1099,7 @@ function updateStatus(){
     setStatus(item.title + " · " + formatFr(item.start) +
       (item.type === "period" ? " → " + formatFr(item.end) + " · " + durationLabel(item.start, item.end) : ""));
   } else if (!state.items.length){
-    setStatus("Frise vide — ajoutez une période, un jalon, ou chargez l'exemple");
+    setStatus("Frise vide : ajoutez une période, un jalon, ou chargez l'exemple");
   } else {
     setStatus(state.items.length + " élément(s) · " + state.lanes.length + " piste(s) · " +
               formatFr(dom.start) + " → " + formatFr(dom.end));
@@ -1227,7 +1227,7 @@ function renderItemTab(){
 
   /* --- libellé --- */
   var positions = item.type === "period"
-    ? [["in-left","Dans la barre — gauche"],["in-center","Dans la barre — centre"],["in-right","Dans la barre — droite"],
+    ? [["in-left","Dans la barre, gauche"],["in-center","Dans la barre, centre"],["in-right","Dans la barre, droite"],
        ["above","Au-dessus"],["below","En dessous"],["left","À gauche"],["right","À droite"],["none","Masqué"]]
     : [["right","À droite"],["left","À gauche"],["above","Au-dessus"],["below","En dessous"],["none","Masqué"]];
   var lab = [ field("Position", selectEl(item.labelPos, positions, function(v){ upd(function(){ item.labelPos = v; }); })),
@@ -1544,7 +1544,7 @@ function doExport(kind){
     ctx.drawImage(img, 0, 0, c.width, c.height);
     c.toBlob(function(b){ download(b, slug() + ".png"); toast("PNG ×" + s + " téléchargé"); }, "image/png");
   };
-  img.onerror = function(){ toast("Export PNG impossible — utilisez le SVG"); };
+  img.onerror = function(){ toast("Export PNG impossible, utilisez le SVG"); };
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(str);
 }
 
@@ -1577,7 +1577,7 @@ function loadDemo(){
   var base = defaultState();
   state = Object.assign(base, {
     title:"Déploiement des points d'apport volontaire",
-    subtitle:"Calendrier prévisionnel — " + y,
+    subtitle:"Calendrier prévisionnel - " + y,
     lanes:[
       { id:L1, name:"Études & marchés", color:"#1F5F7A", stack:"auto" },
       { id:L2, name:"Travaux", color:"#3E8C7F", stack:"auto" },
@@ -1593,10 +1593,10 @@ function loadDemo(){
       { id:uid(), laneId:L1, type:"milestone", title:"Publication du marché", desc:"", showDesc:false,
         start:y+"-05-06", end:y+"-05-06", color:"#A8402F", opacity:1, labelPos:"right",
         textColor:"auto", shape:"diamond" },
-      { id:uid(), laneId:L2, type:"period", title:"Génie civil — littoral", desc:"18 points",
+      { id:uid(), laneId:L2, type:"period", title:"Génie civil - littoral", desc:"18 points",
         showDesc:true, start:y+"-06-10", end:y+"-09-20", color:"#3E8C7F", pattern:"solid", opacity:1,
         progress:60, labelPos:"in-left", textColor:"auto" },
-      { id:uid(), laneId:L2, type:"period", title:"Génie civil — bocage", desc:"14 points",
+      { id:uid(), laneId:L2, type:"period", title:"Génie civil - bocage", desc:"14 points",
         showDesc:true, start:y+"-09-01", end:y+"-11-15", color:"#4C7A4A", pattern:"solid", opacity:1,
         progress:15, labelPos:"in-left", textColor:"auto" },
       { id:uid(), laneId:L2, type:"milestone", title:"Mise en service", desc:"", showDesc:false,

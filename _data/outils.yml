@@ -114,3 +114,9 @@
       description: Générez un encart de localisation précis pour vos photos, à partir des données GPS EXIF du fichier ou de coordonnées saisies manuellement.
       lien: outils/encart-gps.html
       actif: true
+
+    - nom: Générateur de frise chronologique
+      emoji: "⏳"
+      description: Construisez la frise d'un projet (pistes, périodes, jalons) et exportez-la en PNG ou en SVG, directement dans le navigateur.
+      lien: outils/frise-chronologique.html
+      actif: true
