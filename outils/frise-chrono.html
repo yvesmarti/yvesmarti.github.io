@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frise chronologique</title>
+<link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+<meta name="description" content="Créez une frise chronologique de projet : pistes, périodes, jalons, libellés positionnables, export SVG et PNG. Tout se fait dans le navigateur, sans serveur.">
+<meta name="author" content="Yves Marti">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://yvesmarti.fr/outils/frise-chronologique.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Frise chronologique - Yves Marti">
+<meta property="og:description" content="Créez une frise chronologique de projet : pistes, périodes, jalons, libellés positionnables, export SVG et PNG.">
+<meta property="og:url" content="https://yvesmarti.fr/outils/frise-chronologique.html">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Yves Marti - Chargé de mission déchets &amp; SIG">
+<meta property="og:image" content="https://yvesmarti.fr/assets/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Yves Marti - Chargé de mission déchets &amp; SIG, Normandie">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Frise chronologique - Yves Marti">
+<meta name="twitter:description" content="Créez une frise chronologique de projet : pistes, périodes, jalons, libellés positionnables, export SVG et PNG.">
+<meta name="twitter:image" content="https://yvesmarti.fr/assets/images/og-image.png">
+<meta name="twitter:creator" content="@yvesmarti">
+<meta name="theme-color" content="#0a1a10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ── CHARTE (identique aux autres outils du site) ───────── */
+:root{
+  --bg:       #f0ece3;
+  --surface:  #ffffff;
+  --soft:     #e8e3d8;
+  --border:   #d8d3c8;
+  --green:    #1d5234;
+  --green-h:  #164228;
+  --green-lt: rgba(29,82,52,.08);
+  --green-bd: rgba(29,82,52,.3);
+  --text:     #17140e;
+  --text-md:  #6b6459;
+  --text-lt:  #b0a99a;
+  --err-bd:   rgba(200,60,50,.25);
+  --err-tx:   #c83c32;
+  --warn-bg:  rgba(190,130,20,.09);
+  --warn-tx:  #8a6210;
+  --r:        12px;
+  --font:     'Manrope', system-ui, sans-serif;
+  --mono:     'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --sh:       0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
+  --sh-md:    0 4px 16px rgba(0,0,0,.1);
+}
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+button{ font-family:inherit; }
+
+body{
+  font-family:var(--font); font-size:14px; line-height:1.55;
+  background:var(--bg); color:var(--text);
+  display:flex; flex-direction:column;
+}
+:focus-visible{ outline:2px solid var(--green); outline-offset:1px; }
+
+/* ── BARRE D'OUTILS (haut) ─────────────────────────────── */
+.topbar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:10px 18px; background:var(--surface);
+  border-bottom:1px solid var(--border); box-shadow:var(--sh);
+  position:relative; z-index:10;
+}
+.back-link{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.8rem; font-weight:600; color:#6b7c75; text-decoration:none;
+  transition:color .15s; white-space:nowrap;
+}
+.back-link:hover{ color:var(--green); }
+.brand{ display:flex; align-items:baseline; gap:9px; }
+.brand b{ font-size:.98rem; font-weight:800; letter-spacing:-.02em; }
+.brand span{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--text-lt);
+}
+.tools{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-left:auto; }
+.sep{ width:1px; height:22px; background:var(--border); margin:0 3px; }
+
+button{
+  font-size:.8rem; font-weight:700; cursor:pointer; color:var(--text-md);
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:7px 12px; line-height:1.2;
+  transition:border-color .15s, background .15s, color .15s;
+}
+button:hover:not(:disabled){ border-color:var(--green-bd); color:var(--green); }
+button:disabled{ opacity:.4; cursor:not-allowed; }
+button.primary{ background:var(--green); border-color:var(--green); color:#fff; }
+button.primary:hover:not(:disabled){ background:var(--green-h); color:#fff; }
+button.danger{ border-color:var(--err-bd); color:var(--err-tx); }
+button.danger:hover:not(:disabled){ background:var(--err-tx); border-color:var(--err-tx); color:#fff; }
+button.icon{ padding:7px 10px; font-family:var(--mono); font-weight:500; }
+.zoom-wrap{ display:flex; align-items:center; gap:7px; font-size:.72rem; color:var(--text-md); font-weight:600; }
+.zoom-wrap input{ width:88px; }
+
+.menu{ position:relative; }
+.menu-pop{
+  position:absolute; top:calc(100% + 7px); right:0; z-index:40;
+  background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r);
+  box-shadow:var(--sh-md); min-width:210px; padding:5px;
+}
+.menu-pop[hidden]{ display:none; }
+.menu-pop button{
+  display:block; width:100%; text-align:left; border:0; background:none;
+  padding:9px 11px; border-radius:8px; font-weight:600; color:var(--text);
+}
+.menu-pop button:hover{ background:var(--green-lt); color:var(--green); }
+
+/* ── ZONE PRINCIPALE ───────────────────────────────────── */
+.main{ flex:1; display:flex; min-height:0; }
+.stage{
+  flex:1; min-width:0; overflow:auto; padding:24px;
+  background:
+    radial-gradient(circle, rgba(120,110,90,.18) 1px, transparent 1px) 0 0/26px 26px,
+    var(--bg);
+}
+.canvas-wrap{
+  background:var(--surface); border-radius:var(--r);
+  box-shadow:0 6px 24px rgba(0,0,0,.10);
+  overflow:hidden; height:max-content; width:max-content; max-width:100%;
+}
+svg{ display:block; touch-action:none; }
+
+/* ── INSPECTEUR (droite) ───────────────────────────────── */
+.inspector{
+  width:334px; flex-shrink:0; background:var(--surface);
+  border-left:1px solid var(--border); display:flex; flex-direction:column; min-height:0;
+}
+.tabs{ display:flex; border-bottom:1px solid var(--border); background:#fcfbf8; }
+.tabs button{
+  flex:1; border:0; border-radius:0; background:none; padding:12px 8px;
+  font-family:var(--mono); font-size:.64rem; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--text-lt); border-bottom:2px solid transparent; font-weight:500;
+}
+.tabs button:hover{ color:var(--text-md); background:none; }
+.tabs button[aria-selected="true"]{ color:var(--green); border-bottom-color:var(--green); background:var(--surface); }
+.tab-body{ flex:1; overflow-y:auto; padding:16px 16px 40px; }
+.tab-body[hidden]{ display:none; }
+
+fieldset{ border:0; padding:0; margin:0 0 22px; }
+legend{
+  font-family:var(--mono); font-size:.62rem; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--text-md); padding:0 0 8px; width:100%;
+  border-bottom:1px solid var(--border); margin-bottom:13px; font-weight:500;
+}
+.ctrl-hd{
+  font-size:.68rem; font-weight:700; color:var(--text-md);
+  text-transform:uppercase; letter-spacing:.07em;
+  margin:14px 0 7px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.ctrl-hd .val{ font-family:var(--mono); font-size:.66rem; color:var(--text-lt); text-transform:none; letter-spacing:0; font-weight:500; }
+.field{ margin-bottom:12px; }
+.field > .lb{ display:block; font-size:.73rem; font-weight:700; margin-bottom:5px; }
+.field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; }
+
+input[type=text], input[type=date], input[type=number], select, textarea{
+  width:100%; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; color:var(--text); font-family:var(--font); font-size:.86rem;
+  padding:8px 11px; outline:none; transition:border-color .16s, box-shadow .16s;
+  -webkit-appearance:none; appearance:none;
+}
+input:focus, select:focus, textarea:focus{ border-color:var(--green); box-shadow:0 0 0 3px var(--green-lt); }
+input::placeholder, textarea::placeholder{ color:var(--text-lt); }
+textarea{ resize:vertical; min-height:58px; line-height:1.5; }
+select{
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%231d5234' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 11px center; padding-right:30px;
+}
+.hint{ font-size:.71rem; color:var(--text-lt); line-height:1.45; margin:6px 0 0; }
+
+input[type=range]{
+  width:100%; -webkit-appearance:none; appearance:none;
+  background:transparent; cursor:pointer; height:20px;
+}
+input[type=range]::-webkit-slider-runnable-track{ height:5px; border-radius:3px; background:var(--soft); }
+input[type=range]::-moz-range-track{ height:5px; border-radius:3px; background:var(--soft); }
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:17px; height:17px; border-radius:50%;
+  background:var(--green); border:2.5px solid #fff; box-shadow:var(--sh); margin-top:-6px;
+}
+input[type=range]::-moz-range-thumb{
+  width:17px; height:17px; border-radius:50%; border:2.5px solid #fff;
+  background:var(--green); box-shadow:var(--sh);
+}
+.check{ display:flex; align-items:center; gap:8px; font-size:.81rem; font-weight:600; margin-bottom:7px; cursor:pointer; user-select:none; }
+.check input{ accent-color:var(--green); width:16px; height:16px; flex-shrink:0; }
+
+/* ── SEGMENTS, PASTILLES, COULEURS ─────────────────────── */
+.seg{ background:var(--soft); border-radius:12px; padding:4px; display:flex; gap:3px; }
+.seg button{
+  flex:1; background:transparent; border:0; border-radius:9px; padding:7px 4px;
+  font-size:.73rem; font-weight:700; color:var(--text-md); white-space:nowrap;
+}
+.seg button:hover:not([aria-pressed="true"]){ background:rgba(255,255,255,.6); color:var(--text); border:0; }
+.seg button[aria-pressed="true"]{ background:var(--surface); color:var(--green); box-shadow:0 1px 4px rgba(0,0,0,.12); }
+
+.dots{ display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin-bottom:9px; }
+.dot{
+  aspect-ratio:1; border-radius:50%; border:2px solid var(--border); padding:0;
+  cursor:pointer; transition:transform .14s, box-shadow .14s;
+}
+.dot:hover{ transform:scale(1.12); }
+.dot[aria-pressed="true"]{ border-color:var(--text); box-shadow:0 0 0 3px var(--green-lt); }
+.pal-preview{ display:grid; grid-template-columns:repeat(8,1fr); gap:5px; margin-bottom:10px; }
+.pal-preview i{ aspect-ratio:1; border-radius:4px; display:block; }
+
+.color-row{ display:flex; gap:10px; margin-bottom:12px; }
+.color-col{ flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.color-col label{ font-size:.68rem; color:var(--text-md); font-weight:700; }
+.swatch{
+  width:100%; height:32px; border-radius:10px; border:2px solid var(--border);
+  cursor:pointer; position:relative; overflow:hidden; transition:border-color .16s;
+}
+.swatch:hover{ border-color:var(--green); }
+.swatch input[type=color]{
+  position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px);
+  opacity:0; cursor:pointer; border:0; padding:0;
+}
+
+/* ── LISTES ────────────────────────────────────────────── */
+.list-row{
+  display:flex; align-items:center; gap:8px; padding:7px 9px;
+  border-radius:10px; cursor:pointer; margin-bottom:3px; transition:background .14s;
+}
+.list-row:hover{ background:var(--soft); }
+.list-row.active{ background:var(--green-lt); box-shadow:inset 0 0 0 1.5px var(--green-bd); }
+.list-row .bullet{ width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+.list-row .bullet.ms{ width:9px; height:9px; border-radius:2px; transform:rotate(45deg); }
+.list-row .nm{ flex:1; font-size:.8rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.list-row .mini{ font-family:var(--mono); font-size:.62rem; color:var(--text-lt); flex-shrink:0; }
+.lane-title{
+  font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em;
+  color:var(--text-lt); padding:8px 9px 4px; display:flex; gap:6px; align-items:center;
+}
+.lane-title i{ width:8px; height:8px; border-radius:2px; display:block; flex-shrink:0; }
+.lane-edit{ display:flex; align-items:center; gap:6px; padding:6px 0; border-bottom:1px solid var(--soft); }
+.lane-edit .swatch{ width:30px; height:30px; flex-shrink:0; border-radius:8px; }
+.lane-edit input[type=text]{ flex:1; min-width:0; padding:6px 9px; font-size:.82rem; border-radius:9px; }
+.mini-btn{
+  width:28px; height:28px; flex-shrink:0; padding:0; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; font-size:.75rem;
+}
+.btn-row{ display:flex; gap:8px; }
+.btn-row > *{ flex:1; }
+.full{ width:100%; }
+
+.empty-note{
+  color:var(--text-md); font-size:.78rem; line-height:1.5;
+  background:var(--soft); border-radius:var(--r); padding:13px;
+}
+
+/* ── BARRE D'ÉTAT (bas) ────────────────────────────────── */
+.status{
+  padding:7px 18px; background:var(--surface); border-top:1px solid var(--border);
+  font-family:var(--mono); font-size:.66rem; color:var(--text-md);
+  display:flex; justify-content:space-between; gap:14px;
+}
+.status .warn{ color:var(--warn-tx); background:var(--warn-bg); padding:1px 8px; border-radius:999px; }
+
+/* ── TOAST ─────────────────────────────────────────────── */
+.toast{
+  position:fixed; left:50%; top:74px; transform:translate(-50%,-16px);
+  background:var(--text); color:#fff; font-size:.78rem; font-weight:600;
+  padding:8px 16px; border-radius:999px; box-shadow:var(--sh-md);
+  opacity:0; pointer-events:none; transition:all .25s; z-index:60; white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translate(-50%,0); }
+
+::-webkit-scrollbar{ width:7px; height:7px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+
+@media (max-width: 900px){
+  .main{ flex-direction:column; }
+  .inspector{ width:auto; border-left:0; border-top:1px solid var(--border); max-height:52vh; }
+  .stage{ padding:14px; }
+  .tools{ margin-left:0; }
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/outils/" class="back-link">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Outils
+  </a>
+  <div class="brand"><b>Frise chronologique</b><span>calendrier de projet</span></div>
+
+  <div class="tools">
+    <button id="btnAddPeriod" class="primary">+ Période</button>
+    <button id="btnAddMilestone">+ Jalon</button>
+    <button id="btnAddLane">+ Piste</button>
+    <span class="sep"></span>
+    <button id="btnUndo" class="icon" title="Annuler (Ctrl+Z)" aria-label="Annuler">↶</button>
+    <button id="btnRedo" class="icon" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
+    <span class="sep"></span>
+    <label class="zoom-wrap">Zoom
+      <input type="range" id="zoom" min="100" max="400" step="10" value="100">
+    </label>
+    <span class="sep"></span>
+    <div class="menu">
+      <button id="btnExport">Exporter ▾</button>
+      <div class="menu-pop" id="exportMenu" hidden>
+        <button data-export="png">Image PNG</button>
+        <button data-export="svg">Image vectorielle SVG</button>
+        <button data-export="json">Fichier de travail (.json)</button>
+      </div>
+    </div>
+    <button id="btnImport">Importer</button>
+    <button id="btnDemo">Exemple</button>
+    <input type="file" id="fileInput" accept="application/json" hidden>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stage" id="stage">
+    <div class="canvas-wrap" id="canvasWrap"></div>
+  </div>
+
+  <aside class="inspector">
+    <div class="tabs" role="tablist">
+      <button id="tabItemBtn" role="tab" aria-selected="true">Élément</button>
+      <button id="tabBoardBtn" role="tab" aria-selected="false">Frise</button>
+    </div>
+    <div class="tab-body" id="tabItem"></div>
+    <div class="tab-body" id="tabBoard" hidden></div>
+  </aside>
+</div>
+
+<div class="status">
+  <span id="statusLeft">Prêt</span>
+  <span id="statusRight">Glissez une barre pour la déplacer · ses bords pour l'étirer</span>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════
+   1. DATES
+   Tout est calculé en UTC : sans cela, une frise construite à
+   Paris se décale d'un jour selon l'heure d'été.
+   ═══════════════════════════════════════════════════════════ */
+var DAY = 86400000;
+function toDate(s){ return new Date(s + "T00:00:00Z"); }
+function toStr(d){ return d.toISOString().slice(0, 10); }
+function addDays(s, n){ return toStr(new Date(toDate(s).getTime() + n * DAY)); }
+function diffDays(a, b){ return Math.round((toDate(b) - toDate(a)) / DAY); }
+function clampStr(s, lo, hi){ return s < lo ? lo : s > hi ? hi : s; }
+function uid(){ return Math.random().toString(36).slice(2, 9); }
+
+var MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+var MONTHS_SHORT = ["Janv","Févr","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"];
+
+function formatFr(s){
+  var d = toDate(s), m = d.getUTCMonth();
+  /* le point d'abréviation ne se met que si le mois est réellement abrégé */
+  var mois = MONTHS_SHORT[m].toLowerCase() + (MONTHS_SHORT[m].length < MONTHS[m].length ? "." : "");
+  return d.getUTCDate() + " " + mois + " " + d.getUTCFullYear();
+}
+function durationLabel(a, b){
+  var n = diffDays(a, b) + 1;
+  if (n < 14) return n + " j";
+  if (n < 70) return Math.round(n / 7) + " sem.";
+  return Math.round(n / 30.44) + " mois";
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. PALETTES ET POLICES
+   ═══════════════════════════════════════════════════════════ */
+var PALETTES = {
+  institutionnel: ["#1F5F7A","#3E8C7F","#A8402F","#8A7B3F","#5C5A8E","#357092","#7E6045","#4C7A4A"],
+  bocage:         ["#1d5234","#3E7C4A","#8A6E2F","#2E6E7E","#6B4F3A","#5C7A3E","#A8562F","#3F5E75"],
+  contraste:      ["#0B3C5D","#D9822B","#328CC1","#B02E2E","#1D7874","#7A3E9D","#5E6C1E","#C25B7C"],
+  doux:           ["#7FA1B3","#9FBFA8","#D0A98F","#B7A7C4","#A8B98C","#C9A0A0","#8FB3B8","#BFAF87"]
+};
+var FONTS = {
+  manrope:  "'Manrope', system-ui, sans-serif",
+  systeme:  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  georgia:  "Georgia, 'Times New Roman', Times, serif",
+  mono:     "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+};
+
+/* ═══════════════════════════════════════════════════════════
+   3. ÉTAT
+   ═══════════════════════════════════════════════════════════ */
+function defaultState(){
+  var y = new Date().getFullYear();
+  return {
+    title: "Frise chronologique",
+    subtitle: "",
+    range: { mode:"year", year:y, start:y + "-01-01", end:y + "-12-31" },
+    style: {
+      palette:"institutionnel",
+      font:"manrope",
+      fontSize:12,
+      bg:"#FFFFFF",
+      ink:"#17140E",
+      muted:"#6B6459",
+      grid:"#DDD8CC",
+      todayColor:"#A8402F",
+      todayLabel:"Aujourd'hui",
+      axisPos:"top",
+      laneLabelW:150,
+      laneLabelAlign:"left",
+      laneLabelVAlign:"top",
+      barHeight:24,
+      barRadius:4,
+      rowGap:16,
+      lanePad:12,
+      monthAlign:"left",
+      monthFormat:"court",
+      showYears:true,
+      showTitle:true,
+      showLaneLabels:true,
+      showLaneTicks:true,
+      showMonthGrid:true,
+      showQuarters:false,
+      showQuarterBands:false,
+      showToday:true,
+      todayDate:toStr(new Date()),
+      altLanes:true,
+      laneSeparators:true,
+      autoLabel:true,
+      snap:"day",
+      width:1120
+    },
+    lanes: [{ id:uid(), name:"Piste 1", color:"#1F5F7A", stack:"auto" }],
+    items: []
+  };
+}
+
+var state = defaultState();
+var selectedId = null;
+var zoom = 1;
+var undoStack = [], redoStack = [];
+var exportOpts = { fmt:"png", scale:2, transparent:false, name:"" };
+
+function snapshot(){
+  undoStack.push(JSON.stringify(state));
+  if (undoStack.length > 60) undoStack.shift();
+  redoStack = [];
+  syncHistoryButtons();
+}
+function undo(){
+  if (!undoStack.length) return;
+  redoStack.push(JSON.stringify(state));
+  state = JSON.parse(undoStack.pop());
+  if (!state.items.some(function(i){ return i.id === selectedId; })) selectedId = null;
+  syncHistoryButtons(); renderAll();
+}
+function redo(){
+  if (!redoStack.length) return;
+  undoStack.push(JSON.stringify(state));
+  state = JSON.parse(redoStack.pop());
+  syncHistoryButtons(); renderAll();
+}
+function syncHistoryButtons(){
+  document.getElementById("btnUndo").disabled = undoStack.length === 0;
+  document.getElementById("btnRedo").disabled = redoStack.length === 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. GÉOMÉTRIE
+   ═══════════════════════════════════════════════════════════ */
+function domain(){
+  var r = state.range;
+  var start = r.mode === "year" ? r.year + "-01-01" : r.start;
+  var end   = r.mode === "year" ? r.year + "-12-31" : r.end;
+  if (end < start) end = start;
+  return { start:start, end:end, days: Math.max(diffDays(start, end) + 1, 1) };
+}
+
+var layout = null;
+
+function estTextW(t, size){ return String(t || "").length * size * 0.55; }
+
+function labelLines(pos, item, st){
+  var hasDesc = item.showDesc && item.desc;
+  if (pos === "none") return { above:0, below:0 };
+  if (pos === "above") return { above: hasDesc ? 2 : 1, below:0 };
+  if (pos === "below") return { above:0, below: hasDesc ? 2 : 1 };
+  if (pos === "left" || pos === "right") return { above:0, below:0 };
+  return { above:0, below: hasDesc ? 1 : 0 };
+}
+
+function textWidth(item, st){
+  return Math.max(estTextW(item.title, st.fontSize),
+                  item.showDesc ? estTextW(item.desc, st.fontSize - 1) : 0);
+}
+
+/* Position effective du libellé. Deux corrections automatiques :
+   - un libellé "dans la barre" sort à droite si la barre est trop étroite ;
+   - un libellé latéral bascule de l'autre côté s'il dépasse du cadre. */
+function effLabelPos(item, x, xEnd, st, box){
+  var pos = item.labelPos;
+  if (pos === "none") return pos;
+  var w = textWidth(item, st);
+  var x1, x2;
+  if (item.type === "milestone"){
+    var r = st.barHeight * 0.42;
+    x1 = x(item.start) - r; x2 = x(item.start) + r;
+  } else {
+    x1 = x(item.start); x2 = xEnd(item.end);
+  }
+  if (st.autoLabel && item.type === "period" && pos.indexOf("in") === 0 &&
+      estTextW(item.title, st.fontSize) + 16 > x2 - x1) pos = "right";
+  if (pos === "right" && x2 + 9 + w > box.right){
+    pos = (x1 - 9 - w >= box.left) ? "left" : "below";
+  } else if (pos === "left" && x1 - 9 - w < box.left){
+    pos = (x2 + 9 + w <= box.right) ? "right" : "below";
+  }
+  return pos;
+}
+
+function itemExtent(item, x, xEnd, st, pos){
+  var x1, x2;
+  if (item.type === "milestone"){
+    var cx = x(item.start), r = st.barHeight * 0.42;
+    x1 = cx - r; x2 = cx + r;
+  } else {
+    x1 = x(item.start); x2 = xEnd(item.end);
+  }
+  var w = textWidth(item, st);
+  if (pos === "left")  x1 -= w + 12;
+  if (pos === "right") x2 += w + 12;
+  if (pos === "above" || pos === "below") x2 = Math.max(x2, x1 + w);
+  return { x1:x1, x2:x2 };
+}
+
+function computeLayout(){
+  var st = state.style;
+  var dom = domain();
+  var padL = 24, padR = 28, padT = st.showTitle ? 58 : 18, padB = 18;
+  var labelW = st.showLaneLabels ? st.laneLabelW : 0;
+  var totalW = Math.round(st.width * zoom);
+  var trackX = padL + labelW;
+  var trackW = Math.max(totalW - trackX - padR, 140);
+  var pxPerDay = trackW / dom.days;
+
+  var todayStrip = st.showToday ? 16 : 0;
+  var axisH = 34 + (st.showQuarters ? 20 : 0);
+  var lineH = Math.round(st.fontSize * 1.4);
+
+  function x(d){ return trackX + diffDays(dom.start, d) * pxPerDay; }
+  function xEnd(d){ return trackX + (diffDays(dom.start, d) + 1) * pxPerDay; }
+
+  var lanes = state.lanes.map(function(lane){
+    var items = state.items.filter(function(i){
+      return i.laneId === lane.id && !i.hidden &&
+             (i.type === "milestone" ? i.start : i.end) >= dom.start && i.start <= dom.end;
+    }).sort(function(a,b){ return a.start < b.start ? -1 : 1; });
+
+    var rows = [];
+    var frame = { left:trackX, right:totalW - padR };
+    items.forEach(function(item){
+      var pos = effLabelPos(item, x, xEnd, st, frame);
+      var box = itemExtent(item, x, xEnd, st, pos);
+      var entry = { item:item, box:box, pos:pos };
+      if (lane.stack === "single"){ rows.push([entry]); return; }
+      var placed = false;
+      for (var k = 0; k < rows.length; k++){
+        var free = rows[k].every(function(o){ return box.x2 + 10 < o.box.x1 || box.x1 > o.box.x2 + 10; });
+        if (free){ rows[k].push(entry); placed = true; break; }
+      }
+      if (!placed) rows.push([entry]);
+    });
+
+    var rowsGeo = rows.map(function(row){
+      var above = 0, below = 0;
+      row.forEach(function(e){
+        var l = labelLines(e.pos, e.item, st);
+        above = Math.max(above, l.above);
+        below = Math.max(below, l.below);
+      });
+      return { row:row, above:above, below:below,
+               h: above * lineH + st.barHeight + below * lineH + st.rowGap };
+    });
+
+    var h = Math.max(
+      rowsGeo.reduce(function(s, r){ return s + r.h; }, 0) + st.lanePad * 2 - st.rowGap,
+      st.barHeight + st.lanePad * 2
+    );
+    return { lane:lane, rowsGeo:rowsGeo, h:h };
+  });
+
+  var bodyY = st.axisPos === "top" ? padT + todayStrip + axisH : padT + todayStrip;
+  var y = bodyY;
+  lanes.forEach(function(l){ l.y = y; y += l.h; });
+  var bodyH = y - bodyY;
+  var axisTop = st.axisPos === "top" ? padT + todayStrip : y;
+  var height = (st.axisPos === "top" ? y : axisTop + axisH) + padB;
+
+  layout = { dom:dom, padL:padL, padR:padR, padT:padT, padB:padB, labelW:labelW,
+             trackX:trackX, trackW:trackW, totalW:totalW, pxPerDay:pxPerDay,
+             axisH:axisH, axisTop:axisTop, todayStrip:todayStrip, lineH:lineH,
+             x:x, xEnd:xEnd, lanes:lanes, bodyY:bodyY, bodyH:bodyH, height:height };
+  return layout;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. RENDU SVG
+   Tout est dessiné avec des attributs de présentation (et non
+   des classes CSS) pour que le fichier exporté soit fidèle.
+   ═══════════════════════════════════════════════════════════ */
+var SVGNS = "http://www.w3.org/2000/svg";
+function el(name, attrs){
+  var n = document.createElementNS(SVGNS, name);
+  for (var k in attrs) if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+  return n;
+}
+function txt(s, attrs){ var t = el("text", attrs); t.textContent = s; return t; }
+
+function luminance(hex){
+  var c = hex.replace("#","");
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  return 0.2126 * parseInt(c.substr(0,2),16)/255 +
+         0.7152 * parseInt(c.substr(2,2),16)/255 +
+         0.0722 * parseInt(c.substr(4,2),16)/255;
+}
+function readable(hex){ return luminance(hex) > 0.6 ? "#17140E" : "#FFFFFF"; }
+function darken(hex, k){
+  var c = hex.replace("#",""), out = "#";
+  for (var i = 0; i < 3; i++){
+    var v = Math.round(parseInt(c.substr(i*2,2),16) * (1 - k));
+    out += ("0" + v.toString(16)).slice(-2);
+  }
+  return out;
+}
+
+function monthName(m, fmt){
+  if (fmt === "initiale") return MONTHS[m.m].slice(0,1);
+  return fmt === "long" ? MONTHS[m.m] : MONTHS_SHORT[m.m];
+}
+
+function renderSVG(forExport){
+  var st = state.style, L = computeLayout();
+  var font = FONTS[st.font] || FONTS.manrope;
+  var transparent = forExport && exportOpts.transparent;
+
+  var svg = el("svg", { width:L.totalW, height:L.height,
+                        viewBox:"0 0 " + L.totalW + " " + L.height, "font-family":font });
+  var defs = el("defs", {});
+  svg.appendChild(defs);
+  if (!transparent){
+    svg.appendChild(el("rect", { x:0, y:0, width:L.totalW, height:L.height, fill:st.bg }));
+  }
+
+  if (st.showTitle){
+    svg.appendChild(txt(state.title, { x:L.padL, y:30, "font-size":19, "font-weight":800,
+                                       fill:st.ink, "letter-spacing":"-0.02em" }));
+    if (state.subtitle){
+      svg.appendChild(txt(state.subtitle, { x:L.padL, y:47, "font-size":st.fontSize, fill:st.muted }));
+    }
+  }
+
+  var bandsTop = L.bodyY, bandsBot = L.bodyY + L.bodyH;
+  var axisY = L.axisTop;
+
+  /* --- bandes alternées par trimestre --- */
+  if (st.showQuarterBands){
+    var d = L.dom.start, i = 0;
+    while (d <= L.dom.end){
+      var dt = toDate(d);
+      var nextQ = toStr(new Date(Date.UTC(dt.getUTCFullYear(), Math.floor(dt.getUTCMonth()/3)*3 + 3, 1)));
+      var qEnd = nextQ > L.dom.end ? L.dom.end : addDays(nextQ, -1);
+      if (i % 2 === 1){
+        svg.appendChild(el("rect", { x:L.x(d), y:bandsTop, width:Math.max(L.xEnd(qEnd) - L.x(d), 0),
+                                     height:L.bodyH, fill:st.grid, opacity:0.35 }));
+      }
+      d = nextQ; i++;
+    }
+  }
+
+  /* --- axe : trimestres --- */
+  if (st.showQuarters){
+    var dq = L.dom.start;
+    while (dq <= L.dom.end){
+      var dtq = toDate(dq);
+      var q = Math.floor(dtq.getUTCMonth()/3) + 1;
+      var nq = toStr(new Date(Date.UTC(dtq.getUTCFullYear(), Math.floor(dtq.getUTCMonth()/3)*3 + 3, 1)));
+      var qe = nq > L.dom.end ? L.dom.end : addDays(nq, -1);
+      var qx1 = L.x(dq), qx2 = L.xEnd(qe);
+      svg.appendChild(txt("T" + q + (st.showYears ? " " + dtq.getUTCFullYear() : ""), {
+        x:(qx1 + qx2)/2, y:axisY + 13, "font-size":st.fontSize - 1, "font-weight":700,
+        fill:st.muted, "text-anchor":"middle", "letter-spacing":"0.06em" }));
+      svg.appendChild(el("line", { x1:qx1, y1:axisY, x2:qx1, y2:axisY + 18, stroke:st.grid }));
+      dq = nq;
+    }
+    axisY += 20;
+  }
+
+  /* --- axe : mois --- */
+  var months = [];
+  var s0 = toDate(L.dom.start);
+  var cur = new Date(Date.UTC(s0.getUTCFullYear(), s0.getUTCMonth(), 1));
+  while (toStr(cur) <= L.dom.end){
+    var mStart = toStr(cur) < L.dom.start ? L.dom.start : toStr(cur);
+    var next = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 1));
+    var mEnd = toStr(next) > L.dom.end ? L.dom.end : addDays(toStr(next), -1);
+    months.push({ m:cur.getUTCMonth(), year:cur.getUTCFullYear(), start:mStart, end:mEnd });
+    cur = next;
+  }
+  var multiYear = new Set(months.map(function(m){ return m.year; })).size > 1;
+
+  /* Le format des mois est dégradé d'un cran s'il ne tient pas :
+     mieux vaut « Janv » partout que « Janvier » sur deux mois et une
+     initiale sur les autres. */
+  var fs = st.fontSize - 1;
+  var widths = months.map(function(m){ return L.xEnd(m.end) - L.x(m.start); });
+  var med = widths.slice().sort(function(a,b){ return a - b; })[Math.floor(widths.length/2)] || 0;
+  function widest(fmt){
+    return months.reduce(function(mx, m){ return Math.max(mx, estTextW(monthName(m, fmt), fs)); }, 0) + 10;
+  }
+  var fmt = st.monthFormat;
+  if (fmt === "long" && widest("long") > med) fmt = "court";
+  if (fmt === "court" && widest("court") > med) fmt = "initiale";
+
+  months.forEach(function(m){
+    var mx1 = L.x(m.start), mx2 = L.xEnd(m.end), w = mx2 - mx1;
+    var name = monthName(m, fmt);
+    var label = estTextW(name, fs) + 8 < w ? name : (w > 15 ? MONTHS[m.m].slice(0,1) : "");
+    if (label && st.showYears && multiYear && m.m === 0 &&
+        estTextW(label + " " + m.year, fs) + 10 < w) label += " " + m.year;
+    var centered = st.monthAlign === "center";
+    svg.appendChild(txt(label, {
+      x: centered ? (mx1 + mx2)/2 : mx1 + 5,
+      y: axisY + 15, "font-size":fs, fill:st.muted,
+      "text-anchor": centered ? "middle" : "start", "letter-spacing":"0.05em" }));
+    svg.appendChild(el("line", { x1:mx1, y1:axisY + 2, x2:mx1, y2:axisY + 20, stroke:st.grid }));
+    if (st.showMonthGrid){
+      svg.appendChild(el("line", { x1:mx1, y1:bandsTop, x2:mx1, y2:bandsBot, stroke:st.grid }));
+    }
+  });
+
+  /* --- repères hebdomadaires sur les périodes courtes --- */
+  if (L.dom.days <= 130 && st.showMonthGrid){
+    var dw = L.dom.start;
+    while (toDate(dw).getUTCDay() !== 1) dw = addDays(dw, 1);
+    while (dw <= L.dom.end){
+      var wx = L.x(dw);
+      svg.appendChild(el("line", { x1:wx, y1:bandsTop, x2:wx, y2:bandsBot, stroke:st.grid, opacity:0.5 }));
+      svg.appendChild(el("line", { x1:wx, y1:axisY + 14, x2:wx, y2:axisY + 20, stroke:st.grid }));
+      dw = addDays(dw, 7);
+    }
+  }
+
+  /* Ligne de base de l'axe : côté frise, donc en bas si l'axe est
+     au-dessus, en haut s'il est en dessous. */
+  var baseY = st.axisPos === "top" ? axisY + 22 : L.axisTop;
+  svg.appendChild(el("line", { x1:L.trackX, y1:baseY, x2:L.trackX + L.trackW, y2:baseY,
+                               stroke:st.grid, "stroke-width":1.5 }));
+  if (st.showMonthGrid){
+    svg.appendChild(el("line", { x1:L.trackX + L.trackW, y1:bandsTop, x2:L.trackX + L.trackW,
+                                 y2:bandsBot, stroke:st.grid }));
+  }
+
+  /* --- pistes --- */
+  L.lanes.forEach(function(lg, idx){
+    if (st.altLanes && idx % 2 === 1){
+      svg.appendChild(el("rect", { x:L.padL, y:lg.y, width:L.totalW - L.padL - L.padR,
+                                   height:lg.h, fill:st.grid, opacity:0.3 }));
+    }
+    if (st.laneSeparators && idx > 0){
+      svg.appendChild(el("line", { x1:L.padL, y1:lg.y, x2:L.totalW - L.padR, y2:lg.y, stroke:st.grid }));
+    }
+    if (st.showLaneLabels){
+      var right = st.laneLabelAlign === "right";
+      var mid = st.laneLabelVAlign === "middle";
+      if (st.showLaneTicks){
+        svg.appendChild(el("rect", {
+          x: right ? L.trackX - 7 : L.padL, y:lg.y + st.lanePad - 2, width:3,
+          height:Math.max(lg.h - st.lanePad * 2 + 4, 12), fill:lg.lane.color, rx:1.5 }));
+      }
+      var tx = right ? L.trackX - 14 : L.padL + (st.showLaneTicks ? 10 : 0);
+      var ty = mid ? lg.y + lg.h/2 - st.fontSize * 0.2 : lg.y + st.lanePad + st.fontSize;
+      wrapText(svg, lg.lane.name, tx, ty, st.laneLabelW - 22, st.fontSize + 0.5,
+               st.ink, 700, right ? "end" : "start");
+    }
+
+    var ry = lg.y + st.lanePad;
+    lg.rowsGeo.forEach(function(rg){
+      var barTop = ry + rg.above * L.lineH;
+      rg.row.forEach(function(e){ drawItem(svg, defs, e.item, e.pos, barTop, L, st); });
+      ry += rg.h;
+    });
+  });
+
+  /* --- repère « aujourd'hui » --- */
+  if (st.showToday && st.todayDate >= L.dom.start && st.todayDate <= L.dom.end){
+    var tx2 = L.x(st.todayDate), ty2 = L.padT + 11;
+    svg.appendChild(el("line", { x1:tx2, y1:ty2 + 2, x2:tx2, y2:bandsBot,
+                                 stroke:st.todayColor, "stroke-width":1.5, "stroke-dasharray":"5 4" }));
+    var lab = st.todayLabel || "";
+    if (lab){
+      var fs = st.fontSize - 2, wLab = estTextW(lab, fs) + 14;
+      var flip = tx2 + wLab > L.trackX + L.trackW;
+      svg.appendChild(el("rect", { x: flip ? tx2 - wLab : tx2, y:ty2 - 10, width:wLab, height:14,
+                                   rx:4, fill:st.todayColor }));
+      svg.appendChild(txt(lab, { x: flip ? tx2 - wLab/2 : tx2 + wLab/2, y:ty2, "font-size":fs,
+                                 "font-weight":700, fill:"#FFFFFF", "text-anchor":"middle" }));
+    }
+  }
+
+  return svg;
+}
+
+function wrapText(svg, str, x, y, maxW, size, fill, weight, anchor){
+  var words = String(str).split(" "), lines = [], cur = "";
+  words.forEach(function(w){
+    var test = cur ? cur + " " + w : w;
+    if (estTextW(test, size) > maxW && cur){ lines.push(cur); cur = w; }
+    else cur = test;
+  });
+  if (cur) lines.push(cur);
+  lines = lines.slice(0, 3);
+  var y0 = y - (lines.length - 1) * size * 0.65;
+  lines.forEach(function(l, i){
+    svg.appendChild(txt(l, { x:x, y:y0 + i * (size * 1.3), "font-size":size,
+                             "font-weight":weight || 400, fill:fill, "text-anchor":anchor || "start" }));
+  });
+}
+
+function hatchPattern(defs, color){
+  var id = "h" + color.replace("#","");
+  if (defs.querySelector("#" + id)) return id;
+  var p = el("pattern", { id:id, width:6, height:6, patternUnits:"userSpaceOnUse", patternTransform:"rotate(45)" });
+  p.appendChild(el("rect", { width:6, height:6, fill:"#FFFFFF" }));
+  p.appendChild(el("line", { x1:0, y1:0, x2:0, y2:6, stroke:color, "stroke-width":3.4 }));
+  defs.appendChild(p);
+  return id;
+}
+
+function drawItem(svg, defs, item, pos, barTop, L, st){
+  var g = el("g", { "data-id":item.id, style:"cursor:pointer" });
+  var h = st.barHeight, color = item.color, selected = item.id === selectedId;
+  var opacity = item.opacity === undefined ? 1 : item.opacity;
+  var lo = L.trackX, hi = L.trackX + L.trackW;
+  var x1, x2;
+
+  if (item.type === "milestone"){
+    var cx = L.x(item.start), r = h * 0.42, cy = barTop + h/2;
+    x1 = cx - r; x2 = cx + r;
+    var shape = item.shape || "diamond";
+    var common = { fill:color, opacity:opacity, stroke:selected ? st.ink : "none",
+                   "stroke-width":selected ? 2 : 0 };
+    if (shape === "circle"){
+      g.appendChild(el("circle", Object.assign({ cx:cx, cy:cy, r:r }, common)));
+    } else if (shape === "triangle"){
+      g.appendChild(el("polygon", Object.assign({ points:cx+","+(cy-r)+" "+(cx+r)+","+(cy+r)+" "+(cx-r)+","+(cy+r) }, common)));
+    } else if (shape === "square"){
+      g.appendChild(el("rect", Object.assign({ x:cx-r*0.86, y:cy-r*0.86, width:r*1.72, height:r*1.72, rx:2 }, common)));
+    } else {
+      g.appendChild(el("polygon", Object.assign({ points:cx+","+(cy-r)+" "+(cx+r)+","+cy+" "+cx+","+(cy+r)+" "+(cx-r)+","+cy }, common)));
+    }
+  } else {
+    x1 = Math.min(Math.max(L.x(item.start), lo), hi);
+    x2 = Math.min(Math.max(L.xEnd(item.end), x1 + 3), hi);
+    var w = x2 - x1;
+    var fill = color, stroke = "none", sw = 0;
+    if (item.pattern === "outline"){ fill = st.bg; stroke = color; sw = 2; }
+    else if (item.pattern === "hatch"){ fill = "url(#" + hatchPattern(defs, color) + ")"; stroke = color; sw = 1; }
+    g.appendChild(el("rect", { x:x1, y:barTop, width:w, height:h, rx:st.barRadius, fill:fill,
+                               opacity:opacity, stroke:selected ? st.ink : stroke,
+                               "stroke-width":selected ? 2 : sw, "data-role":"bar" }));
+
+    /* Avancement : portion plus sombre, détourée par la forme de la barre */
+    if (item.progress > 0){
+      var cid = "p" + item.id;
+      var cp = el("clipPath", { id:cid });
+      cp.appendChild(el("rect", { x:x1, y:barTop, width:w, height:h, rx:st.barRadius }));
+      defs.appendChild(cp);
+      g.appendChild(el("rect", { x:x1, y:barTop, width:w * Math.min(item.progress,100)/100, height:h,
+                                 fill:item.pattern === "solid" ? darken(color, 0.3) : color,
+                                 opacity:item.pattern === "solid" ? opacity : 0.45,
+                                 "clip-path":"url(#" + cid + ")" }));
+    }
+
+    if (selected){
+      [x1, x2].forEach(function(hx, i){
+        g.appendChild(el("rect", { x:hx - 3, y:barTop + h/2 - 7, width:6, height:14, rx:2,
+                                   fill:"#FFFFFF", stroke:st.ink, "stroke-width":1.5,
+                                   "data-role": i === 0 ? "resize-start" : "resize-end",
+                                   style:"cursor:ew-resize" }));
+      });
+    }
+  }
+
+  /* --- libellés --- */
+  var fs = st.fontSize;
+  var hasDesc = item.showDesc && item.desc;
+  var outColor = item.textColor === "auto" ? st.ink : item.textColor;
+
+  if (pos !== "none"){
+    if (pos.indexOf("in") === 0){
+      var solid = (item.pattern || "solid") === "solid";
+      var inColor = item.textColor !== "auto" ? item.textColor
+                  : solid ? readable(color)
+                  : item.pattern === "outline" ? color : st.ink;
+      var clipId = "c" + item.id;
+      var clip = el("clipPath", { id:clipId });
+      clip.appendChild(el("rect", { x:x1, y:barTop, width:Math.max(x2 - x1, 0), height:h }));
+      defs.appendChild(clip);
+      var anchor = pos === "in-center" ? "middle" : pos === "in-right" ? "end" : "start";
+      var tx = pos === "in-center" ? (x1 + x2)/2 : pos === "in-right" ? x2 - 8 : x1 + 8;
+      g.appendChild(txt(item.title, { x:tx, y:barTop + h/2 + fs*0.36, "font-size":fs, "font-weight":700,
+                                      fill:inColor, "text-anchor":anchor, "clip-path":"url(#" + clipId + ")" }));
+      if (hasDesc) g.appendChild(txt(item.desc, { x:x1 + 1, y:barTop + h + fs + 2, "font-size":fs - 1, fill:st.muted }));
+    } else if (pos === "above" || pos === "below"){
+      /* on recule le libellé s'il sortirait du cadre à droite */
+      var lx = Math.max(L.padL, Math.min(x1, L.totalW - L.padR - textWidth(item, st)));
+      if (pos === "above"){
+        var base = barTop - 6;
+        g.appendChild(txt(item.title, { x:lx, y: hasDesc ? base - L.lineH : base, "font-size":fs, "font-weight":700, fill:outColor }));
+        if (hasDesc) g.appendChild(txt(item.desc, { x:lx, y:base, "font-size":fs - 1, fill:st.muted }));
+      } else {
+        var b2 = barTop + h + fs + 3;
+        g.appendChild(txt(item.title, { x:lx, y:b2, "font-size":fs, "font-weight":700, fill:outColor }));
+        if (hasDesc) g.appendChild(txt(item.desc, { x:lx, y:b2 + L.lineH, "font-size":fs - 1, fill:st.muted }));
+      }
+    } else {
+      var an = pos === "left" ? "end" : "start";
+      var tx3 = pos === "left" ? x1 - 9 : x2 + 9, cy3 = barTop + h/2;
+      g.appendChild(txt(item.title, { x:tx3, y: hasDesc ? cy3 - 1 : cy3 + fs*0.36, "font-size":fs,
+                                      "font-weight":700, fill:outColor, "text-anchor":an }));
+      if (hasDesc) g.appendChild(txt(item.desc, { x:tx3, y:cy3 + L.lineH - 2, "font-size":fs - 1,
+                                                  fill:st.muted, "text-anchor":an }));
+    }
+  }
+
+  var tip = el("title", {});
+  tip.textContent = item.title + (item.desc ? " — " + item.desc : "") + "\n" +
+    formatFr(item.start) + (item.type === "period" ? " → " + formatFr(item.end) +
+    " (" + durationLabel(item.start, item.end) + ")" : "");
+  g.appendChild(tip);
+  svg.appendChild(g);
+}
+/* ═══════════════════════════════════════════════════════════
+   6. PETITS OUTILS D'INTERFACE
+   ═══════════════════════════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+
+function h(tag, attrs, kids){
+  var n = document.createElement(tag);
+  attrs = attrs || {};
+  for (var k in attrs){
+    if (k === "class") n.className = attrs[k];
+    else if (k.indexOf("on") === 0) n.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== null && attrs[k] !== undefined && attrs[k] !== false) n.setAttribute(k, attrs[k]);
+  }
+  (kids || []).forEach(function(c){
+    if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  });
+  return n;
+}
+function fieldset(title, kids){
+  return h("fieldset", {}, [h("legend", {}, [title])].concat(kids || []));
+}
+function field(label, control, hint){
+  var f = h("div", { class:"field" }, [label ? h("span", { class:"lb" }, [label]) : null, control]);
+  if (hint) f.appendChild(h("p", { class:"hint" }, [hint]));
+  return f;
+}
+function selectEl(value, options, onChange){
+  var s = h("select", { onchange:function(e){ onChange(e.target.value); } });
+  options.forEach(function(o){
+    var opt = h("option", { value:o[0] }, [o[1]]);
+    if (o[0] === value) opt.selected = true;
+    s.appendChild(opt);
+  });
+  return s;
+}
+function seg(value, options, onChange){
+  var box = h("div", { class:"seg" });
+  options.forEach(function(o){
+    box.appendChild(h("button", { type:"button", "aria-pressed":String(o[0] === value),
+      onclick:function(){ onChange(o[0]); } }, [o[1]]));
+  });
+  return box;
+}
+function slider(label, val, min, max, step, unit, onLive, onDone){
+  var out = h("span", { class:"val" }, [val + (unit || "")]);
+  var head = h("p", { class:"ctrl-hd" }, [label, out]);
+  var inp = h("input", { type:"range", min:min, max:max, step:step, value:val,
+    oninput:function(e){ out.textContent = e.target.value + (unit || ""); onLive(parseFloat(e.target.value)); },
+    onchange:function(e){ (onDone || function(){})(parseFloat(e.target.value)); } });
+  return h("div", {}, [head, inp]);
+}
+function check(label, val, onChange){
+  var inp = h("input", { type:"checkbox", onchange:function(e){ onChange(e.target.checked); } });
+  inp.checked = !!val;
+  return h("label", { class:"check" }, [inp, h("span", {}, [label])]);
+}
+function colorCol(label, val, onChange){
+  var inp = h("input", { type:"color", value:val, oninput:function(e){
+    sw.style.background = e.target.value; onChange(e.target.value); } });
+  var sw = h("div", { class:"swatch", style:"background:" + val }, [inp]);
+  return h("div", { class:"color-col" }, [h("label", {}, [label]), sw]);
+}
+function colorRow(cols){ return h("div", { class:"color-row" }, cols); }
+
+function toast(msg){
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+}
+function setStatus(s){ $("statusLeft").textContent = s; }
+
+/* ═══════════════════════════════════════════════════════════
+   7. AFFICHAGE ET GLISSER-DÉPOSER
+   ═══════════════════════════════════════════════════════════ */
+var drag = null;
+
+function mountSVG(){
+  var wrap = $("canvasWrap");
+  wrap.innerHTML = "";
+  var svg = renderSVG(false);
+  wrap.appendChild(svg);
+  bindStage(svg);
+  updateStatus();
+}
+
+function bindStage(svg){
+  svg.addEventListener("pointerdown", function(e){
+    var g = e.target.closest ? e.target.closest("g[data-id]") : null;
+    if (!g){ if (selectedId){ selectedId = null; renderAll(); } return; }
+    var id = g.getAttribute("data-id");
+    var item = state.items.filter(function(i){ return i.id === id; })[0];
+    if (!item) return;
+    var role = e.target.getAttribute && e.target.getAttribute("data-role");
+    selectedId = id;
+    drag = { id:id, mode: role === "resize-start" ? "start" : role === "resize-end" ? "end" : "move",
+             x0:e.clientX, start0:item.start, end0:item.end, moved:false };
+    if (svg.setPointerCapture) svg.setPointerCapture(e.pointerId);
+    showTab("item");
+    renderAll();
+    e.preventDefault();
+  });
+
+  svg.addEventListener("pointermove", function(e){
+    if (!drag) return;
+    var item = state.items.filter(function(i){ return i.id === drag.id; })[0];
+    if (!item) return;
+    var st = state.style;
+    var days = Math.round((e.clientX - drag.x0) / layout.pxPerDay);
+    if (st.snap === "week") days = Math.round(days / 7) * 7;
+    if (st.snap === "month") days = Math.round(days / 30) * 30;
+    if (!days && !drag.moved) return;
+    drag.moved = true;
+    if (drag.mode === "move"){
+      item.start = addDays(drag.start0, days);
+      if (item.type === "period") item.end = addDays(drag.end0, days);
+    } else if (drag.mode === "start"){
+      var ns = addDays(drag.start0, days);
+      item.start = ns <= item.end ? ns : item.end;
+    } else {
+      var ne = addDays(drag.end0, days);
+      item.end = ne >= item.start ? ne : item.start;
+    }
+    mountSVG();
+  });
+
+  function endDrag(){
+    if (drag && drag.moved){
+      var item = state.items.filter(function(i){ return i.id === drag.id; })[0];
+      var cur = { start:item.start, end:item.end };
+      item.start = drag.start0; item.end = drag.end0;   /* on empile l'état d'avant le glissé */
+      snapshot();
+      item.start = cur.start; item.end = cur.end;
+      renderTabs();
+    }
+    drag = null;
+  }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+}
+
+function updateStatus(){
+  var dom = domain();
+  var item = state.items.filter(function(i){ return i.id === selectedId; })[0];
+  if (item){
+    setStatus(item.title + " · " + formatFr(item.start) +
+      (item.type === "period" ? " → " + formatFr(item.end) + " · " + durationLabel(item.start, item.end) : ""));
+  } else if (!state.items.length){
+    setStatus("Frise vide — ajoutez une période, un jalon, ou chargez l'exemple");
+  } else {
+    setStatus(state.items.length + " élément(s) · " + state.lanes.length + " piste(s) · " +
+              formatFr(dom.start) + " → " + formatFr(dom.end));
+  }
+  var out = state.items.filter(function(i){
+    return !i.hidden && ((i.type === "milestone" ? i.start : i.end) < dom.start || i.start > dom.end);
+  }).length;
+  var right = $("statusRight");
+  right.innerHTML = "";
+  right.appendChild(out
+    ? h("span", { class:"warn" }, [out + " élément(s) hors de la période affichée"])
+    : document.createTextNode("Glissez une barre pour la déplacer · ses bords pour l'étirer"));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   8. ONGLET « ÉLÉMENT »
+   ═══════════════════════════════════════════════════════════ */
+function upd(fn){ snapshot(); fn(); renderAll(); }
+function live(fn){ fn(); mountSVG(); }
+
+function renderItemTab(){
+  var box = $("tabItem");
+  box.innerHTML = "";
+
+  /* --- liste des éléments, groupée par piste --- */
+  var list = [];
+  if (!state.items.length){
+    list.push(h("p", { class:"empty-note" }, [
+      "Aucun élément pour l'instant. Utilisez « + Période » ou « + Jalon » dans la barre du haut, ou chargez l'exemple."
+    ]));
+  }
+  state.lanes.forEach(function(lane){
+    var items = state.items.filter(function(i){ return i.laneId === lane.id; })
+                           .sort(function(a,b){ return a.start < b.start ? -1 : 1; });
+    if (!items.length) return;
+    list.push(h("p", { class:"lane-title" }, [h("i", { style:"background:" + lane.color }), lane.name]));
+    items.forEach(function(it){
+      list.push(h("div", { class:"list-row" + (it.id === selectedId ? " active" : ""),
+        onclick:function(e){
+          if (e.target.closest(".mini-btn")) return;
+          selectedId = it.id; renderAll();
+        } }, [
+        h("span", { class:"bullet" + (it.type === "milestone" ? " ms" : ""),
+                    style:"background:" + it.color + (it.hidden ? ";opacity:.3" : "") }),
+        h("span", { class:"nm", style:it.hidden ? "opacity:.45" : "" }, [it.title]),
+        h("span", { class:"mini" }, [formatFr(it.start).replace(/ \d{4}$/, "")]),
+        h("button", { class:"mini-btn", type:"button", title:it.hidden ? "Afficher" : "Masquer",
+          onclick:function(){ upd(function(){ it.hidden = !it.hidden; }); } }, [it.hidden ? "○" : "●"])
+      ]));
+    });
+  });
+  box.appendChild(fieldset("Éléments de la frise", list));
+
+  var item = state.items.filter(function(i){ return i.id === selectedId; })[0];
+  if (!item){
+    box.appendChild(h("p", { class:"hint" }, [
+      "Cliquez sur une barre de la frise ou sur une ligne ci-dessus pour la modifier."
+    ]));
+    return;
+  }
+
+  /* --- contenu --- */
+  var ta = h("textarea", { rows:2, placeholder:"Précision affichée sous le titre",
+    oninput:function(e){ live(function(){ item.desc = e.target.value; }); },
+    onchange:function(){ snapshot(); } });
+  ta.value = item.desc || "";
+
+  box.appendChild(fieldset("Contenu", [
+    field("Titre", h("input", { type:"text", value:item.title,
+      oninput:function(e){ live(function(){ item.title = e.target.value; }); },
+      onchange:function(){ snapshot(); renderTabs(); } })),
+    field("Description", ta),
+    check("Afficher la description", item.showDesc, function(v){ upd(function(){ item.showDesc = v; }); }),
+    field("Piste", selectEl(item.laneId, state.lanes.map(function(l){ return [l.id, l.name]; }),
+      function(v){ upd(function(){ item.laneId = v; }); }))
+  ]));
+
+  /* --- type et dates --- */
+  var dates = [ field("Type", seg(item.type, [["period","Période"],["milestone","Jalon"]], function(v){
+    upd(function(){
+      item.type = v;
+      if (v === "milestone" && item.labelPos.indexOf("in") === 0) item.labelPos = "right";
+      if (v === "period" && item.end < item.start) item.end = item.start;
+    });
+  })) ];
+  if (item.type === "period"){
+    dates.push(h("div", { class:"field-grid" }, [
+      field("Début", h("input", { type:"date", value:item.start, onchange:function(e){
+        upd(function(){ item.start = e.target.value; if (item.end < item.start) item.end = item.start; }); } })),
+      field("Fin", h("input", { type:"date", value:item.end, onchange:function(e){
+        upd(function(){ item.end = e.target.value; if (item.end < item.start) item.start = item.end; }); } }))
+    ]));
+    dates.push(h("p", { class:"hint" }, ["Durée : " + durationLabel(item.start, item.end) +
+      ". La barre se déplace aussi à la souris."]));
+    dates.push(slider("Avancement", item.progress || 0, 0, 100, 5, " %",
+      function(v){ live(function(){ item.progress = v; }); }, function(){ snapshot(); }));
+  } else {
+    dates.push(field("Date", h("input", { type:"date", value:item.start,
+      onchange:function(e){ upd(function(){ item.start = e.target.value; item.end = e.target.value; }); } })));
+    dates.push(field("Forme", seg(item.shape || "diamond",
+      [["diamond","Losange"],["circle","Rond"],["square","Carré"],["triangle","Triangle"]],
+      function(v){ upd(function(){ item.shape = v; }); })));
+  }
+  box.appendChild(fieldset("Type et dates", dates));
+
+  /* --- apparence --- */
+  var dots = h("div", { class:"dots" });
+  PALETTES[state.style.palette].forEach(function(c){
+    dots.appendChild(h("button", { type:"button", class:"dot", style:"background:" + c,
+      "aria-pressed":String(c.toLowerCase() === item.color.toLowerCase()),
+      onclick:function(){ upd(function(){ item.color = c; }); } }));
+  });
+  var look = [
+    field("Couleur", dots),
+    colorRow([ colorCol("Couleur libre", item.color, function(v){ live(function(){ item.color = v; }); }) ])
+  ];
+  if (item.type === "period"){
+    look.push(field("Remplissage", seg(item.pattern || "solid",
+      [["solid","Plein"],["outline","Contour"],["hatch","Hachuré"]],
+      function(v){ upd(function(){ item.pattern = v; }); })));
+  }
+  look.push(slider("Opacité", Math.round((item.opacity === undefined ? 1 : item.opacity) * 100), 20, 100, 5, " %",
+    function(v){ live(function(){ item.opacity = v / 100; }); }, function(){ snapshot(); }));
+  box.appendChild(fieldset("Apparence", look));
+
+  /* --- libellé --- */
+  var positions = item.type === "period"
+    ? [["in-left","Dans la barre — gauche"],["in-center","Dans la barre — centre"],["in-right","Dans la barre — droite"],
+       ["above","Au-dessus"],["below","En dessous"],["left","À gauche"],["right","À droite"],["none","Masqué"]]
+    : [["right","À droite"],["left","À gauche"],["above","Au-dessus"],["below","En dessous"],["none","Masqué"]];
+  var lab = [ field("Position", selectEl(item.labelPos, positions, function(v){ upd(function(){ item.labelPos = v; }); })),
+              check("Couleur de texte automatique", item.textColor === "auto", function(v){
+                upd(function(){ item.textColor = v ? "auto" : state.style.ink; }); }) ];
+  if (item.textColor !== "auto"){
+    lab.push(colorRow([ colorCol("Teinte du texte", item.textColor,
+      function(v){ live(function(){ item.textColor = v; }); }) ]));
+  }
+  box.appendChild(fieldset("Placement du libellé", lab));
+
+  box.appendChild(h("div", { class:"btn-row" }, [
+    h("button", { type:"button", onclick:function(){
+      upd(function(){
+        var copy = Object.assign({}, item, { id:uid(), title:item.title + " (copie)" });
+        state.items.push(copy); selectedId = copy.id;
+      });
+      toast("Élément dupliqué");
+    } }, ["Dupliquer"]),
+    h("button", { type:"button", class:"danger", onclick:function(){
+      upd(function(){
+        state.items = state.items.filter(function(i){ return i.id !== item.id; });
+        selectedId = null;
+      });
+      toast("Élément supprimé");
+    } }, ["Supprimer"])
+  ]));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. ONGLET « FRISE »
+   ═══════════════════════════════════════════════════════════ */
+function renderBoardTab(){
+  var box = $("tabBoard");
+  var st = state.style;
+  box.innerHTML = "";
+
+  /* --- en-tête --- */
+  box.appendChild(fieldset("En-tête", [
+    field("Titre", h("input", { type:"text", value:state.title,
+      oninput:function(e){ live(function(){ state.title = e.target.value; }); },
+      onchange:function(){ snapshot(); } })),
+    field("Sous-titre", h("input", { type:"text", value:state.subtitle, placeholder:"Facultatif",
+      oninput:function(e){ live(function(){ state.subtitle = e.target.value; }); },
+      onchange:function(){ snapshot(); } })),
+    check("Afficher l'en-tête sur la frise", st.showTitle, function(v){ upd(function(){ st.showTitle = v; }); })
+  ]));
+
+  /* --- période --- */
+  var d = domain();
+  var range = [ seg(state.range.mode, [["year","Année civile"],["custom","Dates libres"]], function(v){
+    upd(function(){
+      state.range.mode = v;
+      if (v === "custom"){ state.range.start = state.range.year + "-01-01"; state.range.end = state.range.year + "-12-31"; }
+    });
+  }) ];
+  if (state.range.mode === "year"){
+    range.push(field("Année", h("input", { type:"number", value:state.range.year, min:1900, max:2200,
+      onchange:function(e){ upd(function(){ state.range.year = parseInt(e.target.value, 10) || state.range.year; }); } })));
+  } else {
+    range.push(h("div", { class:"field-grid" }, [
+      field("Début", h("input", { type:"date", value:state.range.start,
+        onchange:function(e){ upd(function(){ state.range.start = e.target.value; }); } })),
+      field("Fin", h("input", { type:"date", value:state.range.end,
+        onchange:function(e){ upd(function(){ state.range.end = e.target.value; }); } }))
+    ]));
+  }
+  range.push(h("p", { class:"hint" }, [d.days + " jours affichés."]));
+  box.appendChild(fieldset("Période couverte", range));
+
+  /* --- graduation --- */
+  box.appendChild(fieldset("Graduation", [
+    field("Position de l'axe", seg(st.axisPos,
+      [["top","Au-dessus"],["bottom","En dessous"]], function(v){ upd(function(){ st.axisPos = v; }); })),
+    field("Nom des mois", seg(st.monthFormat,
+      [["initiale","J F M"],["court","Janv"],["long","Janvier"]], function(v){ upd(function(){ st.monthFormat = v; }); })),
+    field("Alignement des mois", seg(st.monthAlign,
+      [["left","Sur le trait"],["center","Centré"]], function(v){ upd(function(){ st.monthAlign = v; }); }),
+      "Centré place le nom au milieu du mois."),
+    check("Bandeau des trimestres", st.showQuarters, function(v){ upd(function(){ st.showQuarters = v; }); }),
+    check("Afficher les années", st.showYears, function(v){ upd(function(){ st.showYears = v; }); }),
+    check("Fond alterné par trimestre", st.showQuarterBands, function(v){ upd(function(){ st.showQuarterBands = v; }); }),
+    check("Traits verticaux (mois, semaines)", st.showMonthGrid, function(v){ upd(function(){ st.showMonthGrid = v; }); }),
+    h("p", { class:"hint" }, ["Sous 4 mois affichés, un trait fin apparaît en plus à chaque lundi."])
+  ]));
+
+  /* --- repère de date --- */
+  var today = [ check("Afficher le repère", st.showToday, function(v){ upd(function(){ st.showToday = v; }); }) ];
+  if (st.showToday){
+    today.push(h("div", { class:"field-grid" }, [
+      field("Date", h("input", { type:"date", value:st.todayDate,
+        onchange:function(e){ upd(function(){ st.todayDate = e.target.value; }); } })),
+      field("Étiquette", h("input", { type:"text", value:st.todayLabel, placeholder:"Aujourd'hui",
+        oninput:function(e){ live(function(){ st.todayLabel = e.target.value; }); },
+        onchange:function(){ snapshot(); } }))
+    ]));
+    today.push(colorRow([ colorCol("Couleur du repère", st.todayColor,
+      function(v){ live(function(){ st.todayColor = v; }); }) ]));
+  }
+  today.push(field("Aimantation au glissé", seg(st.snap,
+    [["day","Jour"],["week","Semaine"],["month","Mois"]], function(v){ upd(function(){ st.snap = v; }); })));
+  box.appendChild(fieldset("Repère de date", today));
+
+  /* --- pistes --- */
+  var lanes = [];
+  state.lanes.forEach(function(lane, i){
+    var inp = h("input", { type:"color", value:lane.color,
+      oninput:function(e){ sw.style.background = e.target.value; live(function(){ lane.color = e.target.value; }); } });
+    var sw = h("div", { class:"swatch", style:"background:" + lane.color }, [inp]);
+    lanes.push(h("div", { class:"lane-edit" }, [
+      sw,
+      h("input", { type:"text", value:lane.name,
+        oninput:function(e){ live(function(){ lane.name = e.target.value; }); },
+        onchange:function(){ snapshot(); renderTabs(); } }),
+      h("button", { class:"mini-btn", type:"button", title:"Monter", disabled:i === 0,
+        onclick:function(){ upd(function(){ var x = state.lanes.splice(i,1)[0]; state.lanes.splice(i-1,0,x); }); } }, ["↑"]),
+      h("button", { class:"mini-btn", type:"button", title:"Descendre", disabled:i === state.lanes.length - 1,
+        onclick:function(){ upd(function(){ var x = state.lanes.splice(i,1)[0]; state.lanes.splice(i+1,0,x); }); } }, ["↓"]),
+      h("button", { class:"mini-btn danger", type:"button", title:"Supprimer la piste et ses éléments",
+        disabled:state.lanes.length === 1,
+        onclick:function(){
+          var n = state.items.filter(function(it){ return it.laneId === lane.id; }).length;
+          if (n && !confirm("Supprimer « " + lane.name + " » et ses " + n + " élément(s) ?")) return;
+          upd(function(){
+            state.items = state.items.filter(function(it){ return it.laneId !== lane.id; });
+            state.lanes = state.lanes.filter(function(l){ return l.id !== lane.id; });
+          });
+        } }, ["✕"])
+    ]));
+  });
+  lanes.push(h("p", { class:"ctrl-hd" }, ["Empilement des éléments"]));
+  state.lanes.forEach(function(lane){
+    lanes.push(field(lane.name, seg(lane.stack || "auto",
+      [["auto","Automatique"],["single","1 ligne / élément"]],
+      function(v){ upd(function(){ lane.stack = v; }); })));
+  });
+  lanes.push(h("p", { class:"ctrl-hd" }, ["Libellés de piste"]));
+  lanes.push(check("Afficher les libellés", st.showLaneLabels, function(v){ upd(function(){ st.showLaneLabels = v; }); }));
+  lanes.push(check("Barre de couleur", st.showLaneTicks, function(v){ upd(function(){ st.showLaneTicks = v; }); }));
+  lanes.push(field("Alignement horizontal", seg(st.laneLabelAlign,
+    [["left","À gauche"],["right","Contre la frise"]], function(v){ upd(function(){ st.laneLabelAlign = v; }); })));
+  lanes.push(field("Alignement vertical", seg(st.laneLabelVAlign,
+    [["top","En haut"],["middle","Centré"]], function(v){ upd(function(){ st.laneLabelVAlign = v; }); })));
+  lanes.push(slider("Largeur réservée", st.laneLabelW, 0, 320, 5, " px",
+    function(v){ live(function(){ st.laneLabelW = v; }); }, function(){ snapshot(); }));
+  lanes.push(check("Alterner le fond une piste sur deux", st.altLanes, function(v){ upd(function(){ st.altLanes = v; }); }));
+  lanes.push(check("Trait de séparation entre pistes", st.laneSeparators, function(v){ upd(function(){ st.laneSeparators = v; }); }));
+  box.appendChild(fieldset("Pistes", lanes));
+
+  /* --- mise en forme --- */
+  box.appendChild(fieldset("Mise en forme", [
+    field("Police", selectEl(st.font, [
+      ["manrope","Manrope (celle du site)"],["systeme","Police système"],
+      ["georgia","Georgia (serif)"],["mono","JetBrains Mono"]
+    ], function(v){ upd(function(){ st.font = v; }); })),
+    slider("Taille du texte", st.fontSize, 9, 18, 1, " px",
+      function(v){ live(function(){ st.fontSize = v; }); }, function(){ snapshot(); }),
+    slider("Largeur de la frise", st.width, 700, 2400, 20, " px",
+      function(v){ live(function(){ st.width = v; }); }, function(){ snapshot(); }),
+    slider("Hauteur des barres", st.barHeight, 8, 48, 1, " px",
+      function(v){ live(function(){ st.barHeight = v; }); }, function(){ snapshot(); }),
+    slider("Arrondi des barres", st.barRadius, 0, 16, 1, " px",
+      function(v){ live(function(){ st.barRadius = v; }); }, function(){ snapshot(); }),
+    slider("Espacement des lignes", st.rowGap, 2, 48, 2, " px",
+      function(v){ live(function(){ st.rowGap = v; }); }, function(){ snapshot(); }),
+    slider("Marge interne des pistes", st.lanePad, 2, 40, 2, " px",
+      function(v){ live(function(){ st.lanePad = v; }); }, function(){ snapshot(); }),
+    check("Sortir le libellé si la barre est trop courte", st.autoLabel, function(v){ upd(function(){ st.autoLabel = v; }); })
+  ]));
+
+  /* --- couleurs --- */
+  var pv = h("div", { class:"pal-preview" });
+  PALETTES[st.palette].forEach(function(c){ pv.appendChild(h("i", { style:"background:" + c })); });
+  box.appendChild(fieldset("Couleurs", [
+    field("Palette", selectEl(st.palette, [
+      ["institutionnel","Institutionnel"],["bocage","Bocage"],["contraste","Contrasté"],["doux","Doux"]
+    ], function(v){ upd(function(){ st.palette = v; }); })),
+    pv,
+    h("button", { type:"button", class:"full", onclick:function(){
+      upd(function(){
+        var pal = PALETTES[st.palette];
+        state.items.forEach(function(it, i){ it.color = pal[i % pal.length]; });
+        state.lanes.forEach(function(l, i){ l.color = pal[i % pal.length]; });
+      });
+      toast("Palette appliquée");
+    } }, ["Appliquer à tous les éléments"]),
+    h("p", { class:"ctrl-hd" }, ["Couleurs de la frise"]),
+    colorRow([
+      colorCol("Fond", st.bg, function(v){ live(function(){ st.bg = v; }); }),
+      colorCol("Texte", st.ink, function(v){ live(function(){ st.ink = v; }); })
+    ]),
+    colorRow([
+      colorCol("Texte secondaire", st.muted, function(v){ live(function(){ st.muted = v; }); }),
+      colorCol("Grille", st.grid, function(v){ live(function(){ st.grid = v; }); })
+    ]),
+    h("button", { type:"button", class:"full", onclick:function(){
+      upd(function(){
+        var def = defaultState().style;
+        ["bg","ink","muted","grid","todayColor"].forEach(function(k){ st[k] = def[k]; });
+      });
+    } }, ["Rétablir les couleurs par défaut"])
+  ]));
+
+  /* --- options d'export --- */
+  box.appendChild(fieldset("Options d'export", [
+    field("Résolution PNG", seg(String(exportOpts.scale),
+      [["1","×1"],["2","×2"],["3","×3"]], function(v){ exportOpts.scale = parseInt(v,10); renderBoardTab(); }),
+      "×2 convient pour une impression A4, ×3 pour un grand format."),
+    check("Fond transparent (PNG et SVG)", exportOpts.transparent, function(v){
+      exportOpts.transparent = v; renderBoardTab(); }),
+    field("Nom du fichier", h("input", { type:"text", value:exportOpts.name, placeholder:slug(),
+      oninput:function(e){ exportOpts.name = e.target.value; } })),
+    h("p", { class:"hint" }, ["Rien n'est enregistré automatiquement : téléchargez le fichier de travail (.json) avant de fermer l'onglet."])
+  ]));
+
+  box.appendChild(h("button", { type:"button", class:"danger full", onclick:function(){
+    if (!confirm("Repartir d'une frise vierge ? Les éléments actuels seront perdus.")) return;
+    snapshot(); state = defaultState(); selectedId = null; fitWidth(); renderAll();
+    toast("Nouvelle frise");
+  } }, ["Nouvelle frise vierge"]));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. ONGLETS ET RENDU GLOBAL
+   ═══════════════════════════════════════════════════════════ */
+function showTab(which){
+  var isItem = which === "item";
+  $("tabItemBtn").setAttribute("aria-selected", String(isItem));
+  $("tabBoardBtn").setAttribute("aria-selected", String(!isItem));
+  $("tabItem").hidden = !isItem;
+  $("tabBoard").hidden = isItem;
+}
+function renderTabs(){ renderItemTab(); renderBoardTab(); }
+function renderAll(){ mountSVG(); renderTabs(); }
+
+/* ═══════════════════════════════════════════════════════════
+   11. CRÉATION D'ÉLÉMENTS
+   ═══════════════════════════════════════════════════════════ */
+function newItem(type){
+  snapshot();
+  var dom = domain();
+  var pal = PALETTES[state.style.palette];
+  var sel = state.items.filter(function(i){ return i.id === selectedId; })[0];
+  var lane = (sel && state.lanes.filter(function(l){ return l.id === sel.laneId; })[0]) || state.lanes[0];
+  var start = clampStr(addDays(dom.start, Math.round(dom.days * 0.1)), dom.start, dom.end);
+  var end = clampStr(addDays(start, Math.max(Math.round(dom.days * 0.15), 1)), dom.start, dom.end);
+  var item = {
+    id:uid(), laneId:lane.id, type:type,
+    title: type === "period" ? "Nouvelle période" : "Nouveau jalon",
+    desc:"", showDesc:false, hidden:false,
+    start:start, end: type === "period" ? end : start,
+    color: pal[state.items.length % pal.length],
+    pattern:"solid", opacity:1, progress:0,
+    labelPos: type === "period" ? "in-left" : "right",
+    textColor:"auto", shape:"diamond"
+  };
+  state.items.push(item);
+  selectedId = item.id;
+  showTab("item");
+  renderAll();
+}
+function addLane(){
+  snapshot();
+  var pal = PALETTES[state.style.palette];
+  state.lanes.push({ id:uid(), name:"Piste " + (state.lanes.length + 1),
+                     color:pal[state.lanes.length % pal.length], stack:"auto" });
+  showTab("board");
+  renderAll();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   12. EXPORT ET IMPORT
+   ═══════════════════════════════════════════════════════════ */
+function slug(){
+  var base = exportOpts.name || state.title || "frise";
+  return base.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "frise";
+}
+function svgString(){
+  var prev = selectedId, z = zoom;
+  selectedId = null; zoom = 1;                 /* ni poignées ni zoom dans le fichier exporté */
+  var svg = renderSVG(true);
+  selectedId = prev; zoom = z;
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(svg);
+}
+function download(blob, name){
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+}
+function doExport(kind){
+  if (kind === "json"){
+    download(new Blob([JSON.stringify(state, null, 2)], { type:"application/json" }), slug() + ".json");
+    toast("Fichier de travail téléchargé");
+    return;
+  }
+  if (kind === "svg"){
+    download(new Blob([svgString()], { type:"image/svg+xml;charset=utf-8" }), slug() + ".svg");
+    toast("SVG téléchargé");
+    return;
+  }
+  var str = svgString(), z = zoom;
+  zoom = 1; var L = computeLayout(); zoom = z;
+  var img = new Image();
+  img.onload = function(){
+    var s = exportOpts.scale;
+    var c = document.createElement("canvas");
+    c.width = L.totalW * s; c.height = L.height * s;
+    var ctx = c.getContext("2d");
+    if (!exportOpts.transparent){ ctx.fillStyle = state.style.bg; ctx.fillRect(0, 0, c.width, c.height); }
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(function(b){ download(b, slug() + ".png"); toast("PNG ×" + s + " téléchargé"); }, "image/png");
+  };
+  img.onerror = function(){ toast("Export PNG impossible — utilisez le SVG"); };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(str);
+}
+
+function importFile(file){
+  var rd = new FileReader();
+  rd.onload = function(ev){
+    try {
+      var data = JSON.parse(ev.target.result);
+      if (!data.lanes || !data.items) throw new Error("format");
+      snapshot();
+      var base = defaultState();
+      state = Object.assign(base, data);
+      state.style = Object.assign(base.style, data.style || {});
+      state.lanes.forEach(function(l){ if (!l.stack) l.stack = "auto"; });
+      selectedId = null;
+      renderAll();
+      toast("Fichier importé");
+    } catch (err){ toast("Ce fichier n'est pas une frise valide"); }
+  };
+  rd.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   13. EXEMPLE
+   ═══════════════════════════════════════════════════════════ */
+function loadDemo(){
+  snapshot();
+  var y = new Date().getFullYear();
+  var L1 = uid(), L2 = uid(), L3 = uid();
+  var base = defaultState();
+  state = Object.assign(base, {
+    title:"Déploiement des points d'apport volontaire",
+    subtitle:"Calendrier prévisionnel — " + y,
+    lanes:[
+      { id:L1, name:"Études & marchés", color:"#1F5F7A", stack:"auto" },
+      { id:L2, name:"Travaux", color:"#3E8C7F", stack:"auto" },
+      { id:L3, name:"Communication", color:"#A8402F", stack:"auto" }
+    ],
+    items:[
+      { id:uid(), laneId:L1, type:"period", title:"Diagnostic terrain", desc:"Relevés QField sur 39 communes",
+        showDesc:true, start:y+"-01-08", end:y+"-03-15", color:"#1F5F7A", pattern:"solid", opacity:1,
+        progress:100, labelPos:"in-left", textColor:"auto" },
+      { id:uid(), laneId:L1, type:"period", title:"Rédaction CCTP / DQE", desc:"", showDesc:false,
+        start:y+"-03-01", end:y+"-04-30", color:"#357092", pattern:"hatch", opacity:1, progress:0,
+        labelPos:"above", textColor:"auto" },
+      { id:uid(), laneId:L1, type:"milestone", title:"Publication du marché", desc:"", showDesc:false,
+        start:y+"-05-06", end:y+"-05-06", color:"#A8402F", opacity:1, labelPos:"right",
+        textColor:"auto", shape:"diamond" },
+      { id:uid(), laneId:L2, type:"period", title:"Génie civil — littoral", desc:"18 points",
+        showDesc:true, start:y+"-06-10", end:y+"-09-20", color:"#3E8C7F", pattern:"solid", opacity:1,
+        progress:60, labelPos:"in-left", textColor:"auto" },
+      { id:uid(), laneId:L2, type:"period", title:"Génie civil — bocage", desc:"14 points",
+        showDesc:true, start:y+"-09-01", end:y+"-11-15", color:"#4C7A4A", pattern:"solid", opacity:1,
+        progress:15, labelPos:"in-left", textColor:"auto" },
+      { id:uid(), laneId:L2, type:"milestone", title:"Mise en service", desc:"", showDesc:false,
+        start:y+"-11-25", end:y+"-11-25", color:"#8A7B3F", opacity:1, labelPos:"left",
+        textColor:"auto", shape:"circle" },
+      { id:uid(), laneId:L3, type:"period", title:"Concertation élus", desc:"", showDesc:false,
+        start:y+"-02-01", end:y+"-05-31", color:"#5C5A8E", pattern:"outline", opacity:1, progress:0,
+        labelPos:"in-left", textColor:"auto" },
+      { id:uid(), laneId:L3, type:"period", title:"Campagne usagers", desc:"Courriers, presse, réunions publiques",
+        showDesc:true, start:y+"-10-01", end:y+"-12-15", color:"#A8402F", pattern:"solid", opacity:1,
+        progress:0, labelPos:"below", textColor:"auto" }
+    ]
+  });
+  state.style.showQuarters = true;
+  state.style.monthAlign = "center";
+  selectedId = null;
+  fitWidth();
+  renderAll();
+  toast("Exemple chargé");
+}
+
+/* ═══════════════════════════════════════════════════════════
+   14. ÉVÉNEMENTS
+   ═══════════════════════════════════════════════════════════ */
+function fitWidth(){
+  var stage = $("stage");
+  var w = (stage.clientWidth || 900) - 48;
+  state.style.width = Math.max(Math.min(w, 1600), 700);
+}
+
+function initEvents(){
+  $("tabItemBtn").addEventListener("click", function(){ showTab("item"); });
+  $("tabBoardBtn").addEventListener("click", function(){ showTab("board"); });
+
+  $("btnAddPeriod").addEventListener("click", function(){ newItem("period"); });
+  $("btnAddMilestone").addEventListener("click", function(){ newItem("milestone"); });
+  $("btnAddLane").addEventListener("click", addLane);
+  $("btnUndo").addEventListener("click", undo);
+  $("btnRedo").addEventListener("click", redo);
+
+  $("zoom").addEventListener("input", function(e){
+    zoom = parseInt(e.target.value, 10) / 100;
+    mountSVG();
+  });
+
+  var menu = $("exportMenu");
+  $("btnExport").addEventListener("click", function(e){ e.stopPropagation(); menu.hidden = !menu.hidden; });
+  document.addEventListener("click", function(){ menu.hidden = true; });
+  menu.addEventListener("click", function(e){
+    var kind = e.target.getAttribute("data-export");
+    if (!kind) return;
+    doExport(kind);
+    menu.hidden = true;
+  });
+
+  $("btnImport").addEventListener("click", function(){ $("fileInput").click(); });
+  $("fileInput").addEventListener("change", function(e){
+    if (e.target.files[0]) importFile(e.target.files[0]);
+    e.target.value = "";
+  });
+  $("btnDemo").addEventListener("click", loadDemo);
+
+  document.addEventListener("keydown", function(e){
+    var typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    var mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === "z"){ e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (mod && e.key.toLowerCase() === "y"){ e.preventDefault(); redo(); return; }
+    if (typing) return;
+    if (e.key === "Escape" && selectedId){ selectedId = null; renderAll(); }
+    if ((e.key === "Delete" || e.key === "Backspace") && selectedId){
+      e.preventDefault();
+      upd(function(){
+        state.items = state.items.filter(function(i){ return i.id !== selectedId; });
+        selectedId = null;
+      });
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    clearTimeout(window._rz);
+    window._rz = setTimeout(function(){ fitWidth(); mountSVG(); }, 200);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. DÉMARRAGE
+   ═══════════════════════════════════════════════════════════ */
+function boot(){
+  initEvents();
+  fitWidth();
+  syncHistoryButtons();
+  renderAll();
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
+</script>
+</body>
+</html>
