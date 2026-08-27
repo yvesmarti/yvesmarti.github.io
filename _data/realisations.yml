@@ -82,7 +82,6 @@
   emoji: "📋"
   image: "/assets/images/realisations/guide-marches-publics.webp"
   url: "https://yvesmarti.fr/guide-marches-publics/"
-  featured: true
 
 - id: 9
   title: "Guide de la comptabilité publique territoriale"
@@ -117,3 +116,12 @@
   tags: ["Prospective", "Collectivités", "HTML"]
   emoji: "🔭"
   url: "https://yvesmarti.fr/prospective-territoriale/"
+
+- id: 15
+  title: "Générateur de frise chronologique"
+  desc: "Construire la frise d'un projet (pistes, périodes, jalons) et l'exporter en PNG ou en SVG, directement dans le navigateur, sans envoyer de données."
+  type: "outil"
+  tags: ["Planning", "SVG", "JS"]
+  emoji: "⏳"
+  url: "/outils/frise-chronologique.html"
+  featured: true
