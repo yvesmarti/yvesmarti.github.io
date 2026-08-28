@@ -35,6 +35,7 @@ var RL_ITEMS = {{ main_items | jsonify }};
   <div class="rl-card-grid" id="rl-grid"></div>
 </section>
 
+{% if guide_items.size > 0 %}
 <section class="rl-guides-section">
   <div class="rl-guides-header">
     <h2 class="rl-guides-title">Guides et ressources</h2>
@@ -69,3 +70,4 @@ var RL_ITEMS = {{ main_items | jsonify }};
     {% endfor %}
   </div>
 </section>
+{% endif %}
