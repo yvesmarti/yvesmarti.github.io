@@ -109,14 +109,6 @@
   url: "/outils/sankey-builder.html"
   featured: true
 
-- id: 13
-  title: "Guide de la prospective territoriale"
-  desc: "Guide pratique pour comprendre les démarches de prospective territoriale : méthodes, outils de diagnostic et démarche prospective au service des collectivités."
-  type: "guide"
-  tags: ["Prospective", "Collectivités", "HTML"]
-  emoji: "🔭"
-  url: "https://yvesmarti.fr/prospective-territoriale/"
-
 - id: 15
   title: "Générateur de frise chronologique"
   desc: "Construire la frise d'un projet (pistes, périodes, jalons) et l'exporter en PNG ou en SVG, directement dans le navigateur, sans envoyer de données."
