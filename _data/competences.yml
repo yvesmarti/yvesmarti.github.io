@@ -1,73 +1,148 @@
 # Compétences par catégorie
+#
+# Champs optionnels `resume` (paragraphe d'introduction) et `details` (liste de puces) :
+# leur présence rend la carte cliquable et alimente la lightbox #skill-modal de l'accueil.
 
 - nom: QGIS
   icone: "🗺️"
   categorie: Cartographie
   couleur: "#1D9E75"
   description: Analyse, édition et mise en page cartographique sous QGIS
+  resume: "Le SIG que j'utilise au quotidien depuis 2013 : d'abord en formation universitaire, puis en usage professionnel intensif."
+  details:
+    - "Analyses spatiales, géotraitements, jointures attributaires et spatiales"
+    - "Mise en page de cartes pour les rapports et les présentations aux élus"
+    - "Relevés terrain sous QField, synchronisés avec le projet QGIS"
+    - "Formation de collègues et de stagiaires à l'outil"
 
 - nom: Analyse spatiale
   icone: "📍"
   categorie: Cartographie
   couleur: "#1D9E75"
   description: Croisement de couches, zones tampon, statistiques géographiques
+  resume: "Faire dire aux données où sont les problèmes : zones mal desservies, tournées trop longues, points de collecte mal placés."
+  details:
+    - "Croisements de couches, zones tampon et statistiques par territoire"
+    - "Analyses isochrones : accessibilité aux déchèteries et aux installations de traitement"
+    - "Recensement des marches arrières sur les circuits de collecte (sécurité)"
+    - "Aide au choix d'implantation des points d'apport volontaire"
 
 - nom: Cartographie web
   icone: "🌐"
   categorie: Cartographie
   couleur: "#1D9E75"
   description: Cartes interactives Leaflet publiées sur GitHub Pages
+  resume: "Publier des cartes consultables par tous, sans licence logicielle ni serveur à administrer."
+  details:
+    - "Cartes interactives développées avec Leaflet.js (popups, filtres, légendes)"
+    - "Fonds de plan IGN Géoplateforme et OpenStreetMap"
+    - "Visualiseur des fréquences de collecte par commune, coloré par flux"
+    - "Hébergement sur GitHub Pages : gratuit, sans maintenance de serveur"
 
 - nom: Tableaux de bord
   icone: "📊"
   categorie: Données
   couleur: "#378ADD"
   description: Indicateurs, synthèses visuelles et reporting pour collectivités
+  resume: "Donner aux élus et aux techniciens une vision synthétique et à jour, sans passer par un éditeur privé."
+  details:
+    - "Tableau de bord de suivi du déploiement des PAV sur 38 communes"
+    - "Alimentation par simple import d'un fichier Excel, sans base de données"
+    - "Production des indicateurs annuels de l'Observatoire régional des déchets"
+    - "Supports de restitution utilisés en réunion avec les élus"
 
 - nom: Excel / PowerQuery
   icone: "📗"
   categorie: Données
   couleur: "#378ADD"
   description: Tableaux croisés, formules avancées, traitements sous PowerQuery
+  resume: "L'outil que tout le monde a déjà : je m'en sers pour industrialiser les traitements refaits chaque mois."
+  details:
+    - "Tableaux croisés dynamiques et formules avancées"
+    - "Requêtes PowerQuery rejouables sur les fichiers transmis par les exploitants"
+    - "Fiabilisation des bases de données usagers pour le suivi et la facturation"
+    - "Modèles documentés, repris ensuite en autonomie par les collègues"
 
 - nom: Traitement de données
   icone: "⚙️"
   categorie: Données
   couleur: "#378ADD"
   description: Nettoyage, structuration et analyse de jeux de données bruts
+  resume: "Passer d'extractions brutes et hétérogènes à un jeu de données exploitable et fiable."
+  details:
+    - "Nettoyage, normalisation et structuration des fichiers sources"
+    - "Rapprochement automatisé des adresses avec la Base Adresse Nationale"
+    - "Exploitation des enquêtes collectivités et exploitants (DMA, ITOM)"
+    - "Scripts Python (pandas) pour les traitements répétitifs"
 
 - nom: APIs ouvertes
   icone: "🔗"
   categorie: Données
   couleur: "#378ADD"
   description: "BAN, INSEE, IGN, flux WMS/WFS, open data"
+  resume: "Aller chercher la donnée publique à la source plutôt que de la ressaisir."
+  details:
+    - "BAN (api-adresse.data.gouv.fr) : géocodage direct et inverse"
+    - "IGN Géoplateforme : flux WMS et WFS, données officielles"
+    - "Overpass API pour extraire des données OpenStreetMap"
+    - "OpenRouteService pour les isochrones et les calculs d'itinéraires"
 
 - nom: Outils web
   icone: "🛠️"
   categorie: "Outils pratiques"
   couleur: "#7F77DD"
   description: "Outils HTML/JS autonomes : isochrones, géocodage, calendriers"
+  resume: "Une appli, un fichier HTML autonome qui fonctionne dans le navigateur, sans installation."
+  details:
+    - "Une vingtaine d'outils publiés et utilisés en production"
+    - "Traitement local dans le navigateur : aucune donnée envoyée sur un serveur"
+    - "Application de suivi terrain (PWA) utilisable hors connexion"
+    - "Outils partageables par simple lien, y compris à des partenaires extérieurs"
 
 - nom: SEO & visibilité web
   icone: "📈"
   categorie: "Outils pratiques"
   couleur: "#7F77DD"
   description: Référencement naturel, balises meta, Google Search Console, données structurées schema.org
+  resume: "Rendre un site réellement trouvable : structure, contenu et performance avant tout le reste."
+  details:
+    - "Référencement du site de l'auto-école familiale et de ce portfolio"
+    - "Balises meta, hiérarchie des titres, temps de chargement"
+    - "Données structurées schema.org (Person, WebPage, fil d'Ariane)"
+    - "Suivi des positions et des requêtes via Google Search Console"
 
 - nom: Marchés publics
   icone: "📋"
   categorie: "Gestion de projet"
   couleur: "#E8943A"
   description: Rédaction de CCTP et DQE, analyse d'offres, suivi de marchés de travaux
+  resume: "Rédiger des pièces assez précises pour que les offres reçues soient réellement comparables."
+  details:
+    - "Rédaction du CCTP : spécifications techniques lot par lot"
+    - "Préparation du BPU et du DQE : quantités estimées et chiffrage prévisionnel"
+    - "Cadres de réponse technique permettant une comparaison structurée"
+    - "Analyse des offres et préparation des autres pièces du DCE"
 
 - nom: Coordination multi-acteurs
   icone: "🤝"
   categorie: "Gestion de projet"
   couleur: "#E8943A"
   description: Pilotage de projets intercommunaux, dialogue avec élus, communes et prestataires
+  resume: "Un projet de collecte n'avance que si les élus, les services techniques et les prestataires disent la même chose."
+  details:
+    - "Concertation avec les élus et les services techniques de 38 communes"
+    - "Animation de groupes de travail réunissant les techniciens du territoire"
+    - "Présentation des coûts et des scénarios en réunion d'élus"
+    - "Coordination des prestataires et suivi de l'avancement des chantiers"
 
 - nom: IA appliquée
   icone: "🤖"
   categorie: "IA comme outil de travail"
   couleur: "#E85A7E"
   description: "Claude, LM Studio, prompting appliqué au développement et à l'analyse"
+  resume: "Utilisée comme un outil de travail parmi d'autres : du temps gagné sur le développement, la rédaction et l'analyse."
+  details:
+    - "Claude pour le développement d'outils web et la rédaction technique"
+    - "LM Studio et Ollama : modèles exécutés en local pour les données sensibles"
+    - "Prompting structuré : instructions système, chaînes de prompts, exemples"
+    - "Scripts Python assistés pour automatiser les tâches répétitives"

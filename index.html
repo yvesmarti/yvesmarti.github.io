@@ -181,13 +181,24 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
                 <button class="filter-btn" data-filter="IA comme outil de travail">IA comme outil de travail</button>
             </div>
 
+            <p class="skills-hint">💡 Cliquez sur une carte pour voir le détail de la compétence.</p>
+
             <div class="skills-grid">
                 {% for competence in site.data.competences %}
-                <div class="skill-card" style="--card-color: {{ competence.couleur }};" data-categorie="{{ competence.categorie }}">
+                <div class="skill-card{% if competence.details %} skill-card--clickable{% endif %}" style="--card-color: {{ competence.couleur }};" data-categorie="{{ competence.categorie }}"{% if competence.details %} data-detail role="button" tabindex="0" aria-haspopup="dialog"{% endif %}>
                     <span class="skill-card-icon">{{ competence.icone }}</span>
                     <span class="skill-card-tag">{{ competence.categorie }}</span>
                     <strong class="skill-card-name">{{ competence.nom }}</strong>
                     <p class="skill-card-desc">{{ competence.description }}</p>
+                    {% if competence.details %}
+                    <!-- Contenu de la lightbox : <template> inerte, ni rendu ni mesuré par la grille -->
+                    <template class="skill-details-tpl">
+                        {% if competence.resume %}<p class="skill-modal__resume">{{ competence.resume }}</p>{% endif %}
+                        <ul class="htl-modal__list">
+                            {% for detail in competence.details %}<li>{{ detail }}</li>{% endfor %}
+                        </ul>
+                    </template>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -215,6 +226,21 @@ description: "Portfolio de Yves Marti, expert en gestion des déchets en Normand
         </div>
     </div>
 </section>
+
+<!-- Lightbox de détail des compétences (même mécanique que #htl-modal, placée hors
+     de la section pour ne pas être rognée par un conteneur parent) -->
+<div class="skill-modal" id="skill-modal" hidden>
+    <div class="htl-modal__backdrop" data-skill-close></div>
+    <div class="htl-modal__box skill-modal__box" role="dialog" aria-modal="true" aria-labelledby="skill-modal-title">
+        <button type="button" class="htl-modal__close" data-skill-close aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <span class="skill-modal__icon" id="skill-modal-icon" aria-hidden="true"></span>
+        <p class="skill-modal__tag" id="skill-modal-tag"></p>
+        <h3 class="htl-modal__title skill-modal__title" id="skill-modal-title"></h3>
+        <div class="htl-modal__body" id="skill-modal-body"></div>
+    </div>
+</div>
 
 <!-- Vague : compétences (sombre) → outils (clair) -->
 <div class="wave-separator wave-dark" aria-hidden="true">
