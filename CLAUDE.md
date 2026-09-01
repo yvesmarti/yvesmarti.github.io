@@ -185,12 +185,27 @@ passé en `actif: false` disparaît automatiquement du bloc.
 ### `competences.yml`
 
 ```yaml
-- titre: "Titre compétence"
+- nom: "Titre compétence"
   icone: "🗺️"
   categorie: "Cartographie"   # sert au filtre JS
   couleur: "#3d8b6e"
   description: "Texte affiché dans la carte"
+  resume: "Paragraphe d'introduction affiché en tête de la lightbox"   # optionnel
+  details:                    # optionnel — puces affichées dans la lightbox
+    - "Première puce"
+    - "Deuxième puce"
 ```
+
+La présence de `details` rend la carte cliquable (`data-detail`, `role="button"`, `tabindex="0"`)
+et ouvre la lightbox `#skill-modal` d'`index.html` (styles `.skill-modal*` dans `style.css`,
+logique `initSkillDetails` dans `main.js`). Une compétence sans `details` reste affichée mais
+n'ouvre rien. Comme pour la timeline, le contenu détaillé est rendu par Jekyll dans un
+`<template class="skill-details-tpl">` inerte à l'intérieur de la carte : le garder inerte évite
+qu'il ne perturbe la grille et les animations d'apparition. La modale reprend la couleur de la
+compétence via la variable `--card-color` posée sur la carte.
+
+Une accroche `.skills-hint` (« Cliquez sur une carte… ») est affichée sous les filtres pour
+signaler que les cartes sont cliquables.
 
 ### `timeline.yml`
 
@@ -362,7 +377,9 @@ pour un outil bâti autour d'une carte Leaflet. Le motif à reproduire :
 | `initParallax` | `.hero-parallax-bg` | Parallaxe fond héros |
 | `initAnimatedTimeline` | `#exp-timeline .tl__item → .is-lit` | Timeline verticale scroll-driven |
 | `initHorizontalTimeline` | `#parcours` / `#htl-track` | Timeline horizontale (scroll → translateX) |
+| `createLightbox` | modale + sélecteur de fermeture | Mécanique commune des lightbox (verrou du scroll, piège de focus, Échap, clic sur le fond) |
 | `initTimelineDetails` | `[data-htl-more]` / `#htl-modal` | Lightbox de détail des étapes du parcours |
+| `initSkillDetails` | `.skill-card[data-detail]` / `#skill-modal` | Lightbox de détail des cartes de compétences |
 | `initSkillFilters` | `.filter-btn` / `.skill-card[data-categorie]` | Filtres compétences |
 | `initContactForm` | `#contact-form` / `#cf-status` | Envoi du formulaire de contact via EmailJS |
 

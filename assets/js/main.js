@@ -480,51 +480,24 @@
     }
 
     /* ------------------------------------------
-       LIGHTBOX DÉTAIL DU PARCOURS
-       Ouvre le contenu détaillé d'une étape de
-       la timeline (#parcours) dans une modale.
+       LIGHTBOX (mécanique partagée)
+       Ouverture/fermeture d'une modale : verrou du
+       scroll, piège de focus, Échap, clic sur le fond.
+       Utilisée par le parcours et les compétences.
     ------------------------------------------ */
-    function initTimelineDetails() {
-        var modal = document.getElementById('htl-modal');
-        var track = document.getElementById('htl-track');
-        if (!modal || !track) return;
-
-        var box       = modal.querySelector('.htl-modal__box');
-        var elPeriod  = document.getElementById('htl-modal-period');
-        var elTitle   = document.getElementById('htl-modal-title');
-        var elOrg     = document.getElementById('htl-modal-org');
-        var elBody    = document.getElementById('htl-modal-body');
-        if (!box || !elPeriod || !elTitle || !elOrg || !elBody) return;
-
-        var lastTrigger = null;
-        var savedPadding = '';
+    function createLightbox(modal, closeSelector) {
+        var box = modal ? modal.querySelector('[role="dialog"]') : null;
+        if (!box) return null;
 
         var FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-        function text(scope, selector) {
-            var el = scope.querySelector(selector);
-            return el ? el.textContent.trim() : '';
-        }
+        var lastTrigger  = null;
+        var savedPadding = '';
+        var onClosed     = null;
 
-        function open(btn) {
-            var item = btn.closest('.htl-item');
-            var card = btn.closest('.htl-card');
-            var tpl  = card ? card.querySelector('.htl-details-tpl') : null;
-            if (!item || !card || !tpl) return;
-
-            elPeriod.textContent = text(card, '.htl-period');
-            elTitle.textContent  = text(card, '.htl-title');
-            elOrg.textContent    = text(card, '.htl-org');
-
-            elBody.innerHTML = '';
-            elBody.appendChild(tpl.content.cloneNode(true));
-
-            modal.classList.remove('htl-modal--exp', 'htl-modal--edu');
-            modal.classList.add(item.classList.contains('htl-item--edu')
-                ? 'htl-modal--edu'
-                : 'htl-modal--exp');
-
-            lastTrigger = btn;
+        function open(trigger, afterClose) {
+            lastTrigger = trigger || null;
+            onClosed    = afterClose || null;
 
             // Verrouillage du scroll. On garde `overflow: hidden` plutôt qu'un
             // `position: fixed` sur le body : ce dernier remettrait window.scrollY
@@ -541,7 +514,7 @@
             void modal.offsetWidth;
             modal.classList.add('is-open');
 
-            var closeBtn = modal.querySelector('.htl-modal__close');
+            var closeBtn = modal.querySelector(closeSelector + '[aria-label]');
             if (closeBtn) closeBtn.focus();
         }
 
@@ -552,9 +525,15 @@
             document.documentElement.style.overflow = '';
             document.body.style.paddingRight = savedPadding;
 
+            var cleanup = onClosed;
+            onClosed = null;
+
             var finish = function () {
+                // Une autre carte peut avoir été ouverte pendant l'animation de
+                // fermeture : dans ce cas on ne vide pas le contenu tout juste posé.
+                if (modal.classList.contains('is-open')) return;
                 modal.hidden = true;
-                elBody.innerHTML = '';
+                if (cleanup) cleanup();
             };
 
             if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -584,13 +563,8 @@
             }
         }
 
-        track.addEventListener('click', function (e) {
-            var btn = e.target.closest('[data-htl-more]');
-            if (btn) open(btn);
-        });
-
         modal.addEventListener('click', function (e) {
-            if (e.target.closest('[data-htl-close]')) close();
+            if (e.target.closest(closeSelector)) close();
         });
 
         document.addEventListener('keydown', function (e) {
@@ -600,6 +574,109 @@
             } else if (e.key === 'Tab') {
                 trapFocus(e);
             }
+        });
+
+        return { open: open, close: close };
+    }
+
+    // Texte d'un sous-élément, vide si absent.
+    function textOf(scope, selector) {
+        var el = scope.querySelector(selector);
+        return el ? el.textContent.trim() : '';
+    }
+
+    /* ------------------------------------------
+       LIGHTBOX DÉTAIL DU PARCOURS
+       Ouvre le contenu détaillé d'une étape de
+       la timeline (#parcours) dans une modale.
+    ------------------------------------------ */
+    function initTimelineDetails() {
+        var modal = document.getElementById('htl-modal');
+        var track = document.getElementById('htl-track');
+        if (!modal || !track) return;
+
+        var elPeriod = document.getElementById('htl-modal-period');
+        var elTitle  = document.getElementById('htl-modal-title');
+        var elOrg    = document.getElementById('htl-modal-org');
+        var elBody   = document.getElementById('htl-modal-body');
+        if (!elPeriod || !elTitle || !elOrg || !elBody) return;
+
+        var lightbox = createLightbox(modal, '[data-htl-close]');
+        if (!lightbox) return;
+
+        track.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-htl-more]');
+            if (!btn) return;
+
+            var item = btn.closest('.htl-item');
+            var card = btn.closest('.htl-card');
+            var tpl  = card ? card.querySelector('.htl-details-tpl') : null;
+            if (!item || !card || !tpl) return;
+
+            elPeriod.textContent = textOf(card, '.htl-period');
+            elTitle.textContent  = textOf(card, '.htl-title');
+            elOrg.textContent    = textOf(card, '.htl-org');
+
+            elBody.innerHTML = '';
+            elBody.appendChild(tpl.content.cloneNode(true));
+
+            modal.classList.remove('htl-modal--exp', 'htl-modal--edu');
+            modal.classList.add(item.classList.contains('htl-item--edu')
+                ? 'htl-modal--edu'
+                : 'htl-modal--exp');
+
+            lightbox.open(btn, function () { elBody.innerHTML = ''; });
+        });
+    }
+
+    /* ------------------------------------------
+       LIGHTBOX DÉTAIL DES COMPÉTENCES
+       Ouvre le détail d'une carte de compétence
+       (#skill-modal) au clic ou au clavier.
+    ------------------------------------------ */
+    function initSkillDetails() {
+        var modal = document.getElementById('skill-modal');
+        var grid  = document.querySelector('.skills-grid');
+        if (!modal || !grid) return;
+
+        var elIcon  = document.getElementById('skill-modal-icon');
+        var elTag   = document.getElementById('skill-modal-tag');
+        var elTitle = document.getElementById('skill-modal-title');
+        var elBody  = document.getElementById('skill-modal-body');
+        if (!elIcon || !elTag || !elTitle || !elBody) return;
+
+        var lightbox = createLightbox(modal, '[data-skill-close]');
+        if (!lightbox) return;
+
+        function open(card) {
+            var tpl = card.querySelector('.skill-details-tpl');
+            if (!tpl) return;
+
+            elIcon.textContent  = textOf(card, '.skill-card-icon');
+            elTag.textContent   = card.getAttribute('data-categorie') || '';
+            elTitle.textContent = textOf(card, '.skill-card-name');
+
+            elBody.innerHTML = '';
+            elBody.appendChild(tpl.content.cloneNode(true));
+
+            // La modale reprend la couleur de la compétence (bordure, puces).
+            modal.style.setProperty('--card-color', card.style.getPropertyValue('--card-color').trim());
+
+            lightbox.open(card, function () { elBody.innerHTML = ''; });
+        }
+
+        grid.addEventListener('click', function (e) {
+            var card = e.target.closest('.skill-card[data-detail]');
+            if (card) open(card);
+        });
+
+        // role="button" impose de gérer Entrée et Espace au clavier.
+        grid.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+            var card = e.target.closest('.skill-card[data-detail]');
+            if (!card) return;
+            e.preventDefault();
+            open(card);
         });
     }
 
@@ -733,6 +810,7 @@
         initHorizontalTimeline();
         initTimelineDetails();
         initSkillFilters();
+        initSkillDetails();
         initRecommandedFilters();
         initContactForm();
     });

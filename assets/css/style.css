@@ -1606,6 +1606,16 @@ body {
     background: rgba(255, 255, 255, 0.09);
 }
 
+/* Carte disposant d'un détail : cliquable au pointeur comme au clavier */
+.skill-card--clickable {
+    cursor: pointer;
+}
+
+.skill-card--clickable:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+}
+
 .skill-card-icon {
     display: block;
     font-size: 1.75rem;
@@ -1663,6 +1673,18 @@ body {
     opacity: 1;
 }
 
+/* Écrans tactiles : pas de survol, on affiche description et badge en permanence */
+@media (hover: none) {
+    .skill-card-desc {
+        max-height: 5rem;
+        opacity: 1;
+    }
+
+    .skill-card-tag {
+        opacity: 1;
+    }
+}
+
 /* Filtres de compétences */
 .skills-filters {
     display: flex;
@@ -1700,6 +1722,14 @@ body {
     background: #1D9E75;
     border-color: #1D9E75;
     color: #fff;
+}
+
+/* Accroche indiquant que les cartes sont cliquables */
+.skills-hint {
+    margin: 0 0 0.25rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.01em;
 }
 
 /* Carte atténuée lors du filtrage */
@@ -2898,8 +2928,9 @@ body,
     outline-offset: 2px;
 }
 
-/* ---- Lightbox de détail ---- */
-.htl-modal {
+/* ---- Lightbox de détail (parcours + compétences) ---- */
+.htl-modal,
+.skill-modal {
     position: fixed;
     inset: 0;
     z-index: 1000;
@@ -2909,7 +2940,8 @@ body,
     padding: 1.5rem;
 }
 
-.htl-modal[hidden] {
+.htl-modal[hidden],
+.skill-modal[hidden] {
     display: none;
 }
 
@@ -2923,7 +2955,8 @@ body,
     transition: opacity 0.25s ease;
 }
 
-.htl-modal.is-open .htl-modal__backdrop {
+.htl-modal.is-open .htl-modal__backdrop,
+.skill-modal.is-open .htl-modal__backdrop {
     opacity: 1;
 }
 
@@ -2948,7 +2981,8 @@ body,
     border-left-color: rgba(42, 140, 114, 0.75);
 }
 
-.htl-modal.is-open .htl-modal__box {
+.htl-modal.is-open .htl-modal__box,
+.skill-modal.is-open .htl-modal__box {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
@@ -3083,6 +3117,49 @@ body,
 .htl-modal--edu .htl-modal__cv:hover,
 .htl-modal--edu .htl-modal__cv:focus-visible { color: #7fd4b8; }
 
+/* ---- Variante compétences : couleur portée par --card-color ---- */
+.skill-modal__box {
+    border-left-color: var(--card-color, var(--color-accent));
+}
+
+.skill-modal .htl-modal__list li::before {
+    background: var(--card-color, var(--color-accent));
+}
+
+.skill-modal__icon {
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.7rem;
+}
+
+.skill-modal__tag {
+    display: inline-block;
+    margin: 0 0 0.55rem;
+    padding: 0.12rem 0.55rem;
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--card-color, var(--color-accent-light));
+    border: 1px solid var(--card-color, var(--color-accent-light));
+    border-radius: 20px;
+}
+
+.skill-modal__title {
+    margin-bottom: 1rem;
+}
+
+.skill-modal__resume {
+    margin: 0 0 1.15rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: rgba(247, 249, 248, 0.9);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .htl-modal__backdrop,
     .htl-modal__box,
@@ -3213,7 +3290,8 @@ body,
     }
 
     /* Lightbox de détail : feuille quasi plein écran */
-    .htl-modal {
+    .htl-modal,
+    .skill-modal {
         padding: 1rem;
     }
 
