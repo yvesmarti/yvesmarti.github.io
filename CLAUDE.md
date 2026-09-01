@@ -308,7 +308,8 @@ Les vagues entre sections utilisent `<path fill="COULEUR_HARDCODÉE">`. Règle C
 
 Les pages de `outils/` n'ont pas de layout Jekyll : elles dupliquent les tokens au lieu de les
 importer. `outils/sankey-builder.html` est la **référence** de ce qu'est un outil aligné, et le
-premier à disposer du mode sombre. Le motif à reproduire :
+premier à avoir reçu le mode sombre ; `outils/photomapviewer.html` est l'exemple le plus proche
+pour un outil bâti autour d'une carte Leaflet. Le motif à reproduire :
 
 1. **Deux couches de variables** dans `:root` : les tokens de charte copiés de `style.css`
    (`--color-*`, `--font-*`), puis les rôles propres à l'outil (`--fond-panneau`, `--accent-douce`,
@@ -333,9 +334,15 @@ premier à disposer du mode sombre. Le motif à reproduire :
 - **Page CV** (`cv/index.html`, inline) : `--teal: #2a7a5e`, teinte différente de `--color-accent`.
   Autonome pour permettre l'impression propre ; toute unification passe par ses variables inline.
 - **Réalisations** (`realisations.css`) : `#2a7a65` hardcodé, `font-family: system-ui`.
-- **Autres outils de `outils/`** : chacun a encore sa palette locale (QR Forge `#1d5234` + Manrope,
-  encart-gps `#2d7db3` + Inter, implantation-pav `#B91E27`…) et aucun mode sombre. Le seul élément
-  déjà commun aux 13 outils est le composant `.back-link`.
+- **Outils de `outils/` déjà alignés** (tokens de la charte, deux polices du site, mode sombre
+  partagé) : `sankey-builder.html`, `geocodage_adresse_ban.html`, `geocodage_inverse_ban.html`,
+  `photomapviewer.html`, `extracteurosm.html`, `photogeomanager.html`, `isochrones_ORS.html`.
+- **Outils de `outils/` restant à aligner** : `annotateur-carte.html`, `encart-gps.html`
+  (`#2d7db3` + Inter), `qr-code.html` (`#1d5234` + Manrope), `implantation-pav.html` (`#B91E27`),
+  `schemas_dalles.html`, `schemas_dalles_v2.html`, `generateur_calendrier_collecte.html`,
+  `frise-chronologique.html`, `creation_retroplanning.html`, `optimisation_tournee.html`,
+  `suivi-temp.html`. Chacun a encore sa palette locale et aucun mode sombre ; le seul élément
+  commun à tous les outils est le composant `.back-link`.
 
 ---
 

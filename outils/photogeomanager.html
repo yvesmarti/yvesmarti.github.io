@@ -13,6 +13,8 @@
     <meta name="author" content="Yves Marti">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://yvesmarti.fr/outils/photogeomanager.html">
+    <meta name="theme-color" content="#1a3a32" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a1a10" media="(prefers-color-scheme: dark)">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Photo Geo Manager : renommer des photos par leur GPS - Yves Marti">
     <meta property="og:description" content="Renommer automatiquement un lot de photos en fonction des coordonnées GPS lues dans les EXIF. Utile pour les relevés terrain.">
@@ -33,24 +35,104 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <!-- Google Fonts -->
+    <!-- Polices : DM Serif Display (titres) + Source Sans 3 (corps), les deux
+         familles du portfolio. Les blocs à chasse fixe (coordonnées GPS, nom
+         de fichier) passent sur la pile système : une famille Google Fonts de
+         moins à charger. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Thème : lecture anticipée pour éviter le flash (FOUC).
+         La clé « theme » est partagée avec le reste du site : arriver depuis
+         /outils/ en mode nuit ouvre l'outil déjà en mode nuit. -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}}());</script>
+
     <style>
+        /* ========================================
+           VARIABLES
+
+           Deux couches :
+           1. les tokens de la charte du site (--color-*, --font-*), copiés
+              à l'identique de assets/css/style.css ;
+           2. les rôles propres à l'outil (--fond-panneau, --accent-douce…),
+              définis à partir des premiers.
+           Le mode sombre plus bas ne fait que redéfinir ces variables :
+           aucune couleur ne doit être écrite en dur ailleurs dans cette
+           feuille. Exceptions assumées et commentées : les replis
+           littéraux du .back-link, et ce qui est posé SUR la carte
+           (marqueurs, popups, contrôle de couches), qui reste clair dans
+           les deux thèmes puisque les tuiles sont de la donnée et non du
+           châssis.
+           ======================================== */
         :root {
-            --bg-dark: #1a1d23;
-            --bg-card: #252932;
-            --bg-hover: #2d323d;
-            --accent: #4dabf7;
-            --accent-hover: #74c0fc;
-            --success: #51cf66;
-            --warning: #fcc419;
-            --text-primary: #f1f3f4;
-            --text-secondary: #9ca3af;
-            --border: #3d4452;
-            --radius: 12px;
+            /* ---- Tokens de la charte (assets/css/style.css) ---- */
+            --color-primary:      #1a3a32;
+            --color-accent:       #3d8b6e;
+            --color-accent-light: #9ed4b8;
+            --color-light:        #f7f9f8;
+            --color-warm:         #e8ded4;
+            --color-text:         #2c2c2c;
+            --color-muted:        #6b7c75;
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-body:    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+            /* ---- Surfaces ---- */
+            --fond-page: #e7ece9;
+            --fond-panneau: #ffffff;
+            --fond-controle: #ffffff;
+            --fond-doux: var(--color-light);
+            --bordure: #dde3e0;
+
+            /* ---- Accent ---- */
+            --accent: var(--color-accent);
+            --accent-fort: var(--color-primary);
+            --accent-douce: #e8f4f0;
+            --accent-texte: #1a5c4a;
+            --accent-contraste: #ffffff;
+
+            /* ---- Texte ---- */
+            --texte: var(--color-text);
+            --texte-doux: var(--color-muted);
+
+            /* ---- États : couleur de texte posée sur son fond pâle ---- */
+            --succes:      #15803d;
+            --succes-fond: #eefaf2;
+            --alerte:      #b45309;
+            --alerte-fond: #fffbeb;
+
+            /* ---- Fonds pleins (bouton d'enregistrement, marqueurs) :
+                   du texte clair est posé dessus, ils restent donc
+                   saturés dans les deux thèmes. ---- */
+            --succes-plein: #1f8a4d;
+            --etat-texte:   #ffffff;
+
+            /* ---- Voile des surcouches plein écran ---- */
+            --voile:        rgba(26, 58, 50, 0.72);
+            --voile-texte:  #f0f6f3;
+
+            /* ---- Surcouches posées SUR la carte ----
+                   La carte reste claire dans les deux thèmes : popups,
+                   contrôle de couches et bordure des marqueurs suivent la
+                   carte, pas le thème de l'interface. */
+            --carte-fond:  #ffffff;
+            --carte-texte: #2c2c2c;
+            --carte-doux:  #6b7c75;
+
+            /* ---- Rayons ---- */
+            --r-xs: 4px;
+            --r-s:  6px;
+            --r-m:  10px;
+            --r-l:  14px;
+
+            /* ---- Ombres ---- */
+            --ombre-xs: 0 1px 8px   rgba(26, 58, 50, 0.10);
+            --ombre-s:  0 2px 10px  rgba(26, 58, 50, 0.12);
+            --ombre-m:  0 8px 24px  rgba(26, 58, 50, 0.15);
+            --ombre-l:  0 14px 36px rgba(26, 58, 50, 0.16);
+
+            color-scheme: light dark;
         }
         
         * {
@@ -60,11 +142,18 @@
         }
         
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            font-family: var(--font-body);
+            background: var(--fond-page);
+            color: var(--texte);
             min-height: 100vh;
             overflow: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            /* DM Serif Display n'existe qu'en 400 : on fixe la graisse pour
+               éviter que le navigateur ne synthétise un faux gras. */
+            font-family: var(--font-display);
+            font-weight: 400;
         }
         
         .app-container {
@@ -78,14 +167,24 @@
         /* Header */
         header {
             grid-column: 1 / -1;
-            background: var(--bg-card);
+            background: var(--fond-panneau);
+            box-shadow: var(--ombre-xs);
             padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--bordure);
         }
         
+        /* Colonne de gauche de l'en-tête : le lien de retour au-dessus du
+           logo. Il était auparavant posé hors de .app-container, donc
+           poussé hors de l'écran par le body en overflow: hidden. */
+        .entete-gauche {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
         .logo {
             display: flex;
             align-items: center;
@@ -95,7 +194,7 @@
         .logo-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--accent), #228be6);
+            background: linear-gradient(135deg, var(--accent), var(--accent-fort));
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -104,9 +203,9 @@
         }
         
         .logo h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            font-size: 1.35rem;
+            letter-spacing: -0.01em;
+            color: var(--color-primary);
         }
         
         .logo span {
@@ -115,8 +214,39 @@
         
         .header-actions {
             display: flex;
+            align-items: center;
             gap: 12px;
         }
+
+        /* ── BASCULE CLAIR / SOMBRE ────────────────────────────── */
+        #theme-toggle {
+            flex: 0 0 auto;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border: 1px solid var(--bordure);
+            border-radius: var(--r-s);
+            background: var(--fond-controle);
+            color: var(--texte);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .18s ease, border-color .18s ease, color .18s ease;
+        }
+        #theme-toggle:hover {
+            background: var(--accent-douce);
+            border-color: var(--accent);
+            color: var(--accent-texte);
+        }
+        #theme-toggle:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .theme-icon--sun { display: none; }
+        .theme-icon--moon { display: block; }
+        [data-theme="dark"] .theme-icon--sun { display: block; }
+        [data-theme="dark"] .theme-icon--moon { display: none; }
         
         .btn {
             padding: 10px 20px;
@@ -139,22 +269,29 @@
         
         .btn-primary {
             background: var(--accent);
-            color: #000;
+            color: var(--accent-contraste);
         }
         
         .btn-primary:hover:not(:disabled) {
-            background: var(--accent-hover);
+            background: var(--accent-fort);
             transform: translateY(-1px);
         }
         
         .btn-secondary {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
+            background: var(--fond-controle);
+            color: var(--texte);
+            border: 1px solid var(--bordure);
         }
         
         .btn-secondary:hover:not(:disabled) {
-            background: var(--border);
+            background: var(--accent-douce);
+            border-color: var(--accent);
+            color: var(--accent-texte);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
         
         .btn-small {
@@ -166,15 +303,16 @@
         #map {
             grid-column: 1;
             grid-row: 2;
-            background: var(--bg-dark);
+            background: var(--fond-doux);
+            z-index: 0;
         }
         
         /* Sidebar */
         .sidebar {
             grid-column: 2;
             grid-row: 2;
-            background: var(--bg-card);
-            border-left: 1px solid var(--border);
+            background: var(--fond-panneau);
+            border-left: 1px solid var(--bordure);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -182,18 +320,18 @@
         
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--bordure);
         }
         
         .sidebar-header h2 {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.1rem;
             margin-bottom: 4px;
+            color: var(--color-primary);
         }
         
         .sidebar-header p {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
         }
         
         /* Photo List */
@@ -204,22 +342,22 @@
         }
         
         .photo-item {
-            background: var(--bg-dark);
-            border-radius: var(--radius);
+            background: var(--fond-doux);
+            border-radius: var(--r-m);
             padding: 12px;
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: 2px solid transparent;
+            border: 2px solid var(--bordure);
         }
         
         .photo-item:hover {
-            background: var(--bg-hover);
+            background: var(--accent-douce);
         }
         
         .photo-item.active {
             border-color: var(--accent);
-            background: var(--bg-hover);
+            background: var(--accent-douce);
         }
         
         .photo-item-header {
@@ -232,8 +370,11 @@
             width: 80px;
             height: 60px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: var(--r-s);
             flex-shrink: 0;
+            /* La photo est posée sur une surface claire : une bordure fine
+               évite qu'un cliché très clair se fonde dans la carte. */
+            border: 1px solid var(--bordure);
         }
         
         .photo-info {
@@ -251,9 +392,9 @@
         }
         
         .photo-coords {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.7rem;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
             margin-bottom: 4px;
         }
         
@@ -271,18 +412,18 @@
         }
         
         .status-gps {
-            background: rgba(81, 207, 102, 0.2);
-            color: var(--success);
+            background: var(--succes-fond);
+            color: var(--succes);
         }
         
         .status-no-gps {
-            background: rgba(252, 196, 25, 0.2);
-            color: var(--warning);
+            background: var(--alerte-fond);
+            color: var(--alerte);
         }
         
         .status-described {
-            background: rgba(77, 171, 247, 0.2);
-            color: var(--accent);
+            background: var(--accent-douce);
+            color: var(--accent-texte);
         }
         
         .photo-item-actions {
@@ -314,7 +455,7 @@
         }
         
         .empty-state p {
-            color: var(--text-secondary);
+            color: var(--texte-doux);
             font-size: 0.9rem;
             margin-bottom: 20px;
         }
@@ -323,7 +464,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: var(--voile);
             display: none;
             align-items: center;
             justify-content: center;
@@ -336,8 +477,9 @@
         }
         
         .modal {
-            background: var(--bg-card);
-            border-radius: 16px;
+            background: var(--fond-panneau);
+            box-shadow: var(--ombre-l);
+            border-radius: var(--r-l);
             width: 100%;
             max-width: 700px;
             max-height: 90vh;
@@ -360,15 +502,15 @@
         
         .modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--bordure);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         
         .modal-header h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            color: var(--color-primary);
         }
         
         .modal-nav {
@@ -379,17 +521,17 @@
         
         .modal-nav-info {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
             margin: 0 8px;
         }
         
         .modal-close {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
-            border: none;
-            background: var(--bg-hover);
-            color: var(--text-primary);
+            border-radius: var(--r-s);
+            border: 1px solid var(--bordure);
+            background: var(--fond-controle);
+            color: var(--texte);
             cursor: pointer;
             font-size: 1.2rem;
             display: flex;
@@ -400,7 +542,9 @@
         }
         
         .modal-close:hover {
-            background: var(--border);
+            background: var(--accent-douce);
+            border-color: var(--accent);
+            color: var(--accent-texte);
         }
         
         .modal-body {
@@ -412,8 +556,9 @@
             width: 100%;
             max-height: 300px;
             object-fit: contain;
-            border-radius: 12px;
-            background: var(--bg-dark);
+            border-radius: var(--r-m);
+            background: var(--fond-doux);
+            border: 1px solid var(--bordure);
             margin-bottom: 20px;
         }
         
@@ -426,17 +571,17 @@
             font-size: 0.85rem;
             font-weight: 500;
             margin-bottom: 8px;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
         }
         
         .form-group input,
         .form-group textarea {
             width: 100%;
             padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            border-radius: var(--r-s);
+            border: 1px solid var(--bordure);
+            background: var(--fond-controle);
+            color: var(--texte);
             font-family: inherit;
             font-size: 0.95rem;
             transition: border-color 0.2s;
@@ -455,24 +600,24 @@
         
         .form-hint {
             font-size: 0.75rem;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
             margin-top: 6px;
         }
         
         .filename-preview {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.85rem;
             padding: 12px 16px;
-            background: var(--bg-dark);
-            border-radius: 8px;
-            border: 1px dashed var(--border);
+            background: var(--fond-doux);
+            border-radius: var(--r-s);
+            border: 1px dashed var(--bordure);
             margin-top: 8px;
             word-break: break-all;
         }
         
         .modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--bordure);
             display: flex;
             justify-content: space-between;
             gap: 12px;
@@ -490,12 +635,12 @@
         }
         
         .btn-success {
-            background: var(--success);
-            color: #000;
+            background: var(--succes-plein);
+            color: var(--etat-texte);
         }
         
         .btn-success:hover:not(:disabled) {
-            background: #69db7c;
+            filter: brightness(0.9);
         }
         
         /* Drop zone styling */
@@ -508,13 +653,13 @@
             content: 'Déposez vos photos ici';
             position: fixed;
             inset: 0;
-            background: rgba(26, 29, 35, 0.9);
+            background: var(--voile);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--accent);
+            color: var(--voile-texte);
             z-index: 999;
             pointer-events: none;
         }
@@ -524,9 +669,13 @@
             display: flex;
             gap: 20px;
             padding: 12px 20px;
-            background: var(--bg-dark);
-            border-bottom: 1px solid var(--border);
+            background: var(--fond-doux);
+            border-bottom: 1px solid var(--bordure);
             font-size: 0.85rem;
+        }
+        
+        .stats-bar .stat-value {
+            font-family: var(--font-mono);
         }
         
         .stat {
@@ -537,28 +686,35 @@
         
         .stat-value {
             font-weight: 600;
-            color: var(--accent);
+            color: var(--accent-texte);
         }
         
-        /* Custom Leaflet markers */
+        /* ========================================
+           CE QUI EST POSÉ SUR LA CARTE
+
+           Marqueurs, popups et contrôle de couches suivent la carte, qui
+           reste claire dans les deux thèmes, et non le thème de
+           l'interface. Ils utilisent donc les variables --carte-*, qui ne
+           sont pas redéfinies en mode sombre.
+           ======================================== */
         .custom-marker {
             background: var(--accent);
-            border: 3px solid #fff;
+            border: 3px solid var(--carte-fond);
             border-radius: 50%;
             width: 16px;
             height: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         
         .custom-marker.has-description {
-            background: var(--success);
+            background: var(--succes-plein);
         }
         
         /* Popup styling */
         .leaflet-popup-content-wrapper {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border-radius: 12px;
+            background: var(--carte-fond);
+            color: var(--carte-texte);
+            border-radius: var(--r-m);
             padding: 0;
         }
         
@@ -568,7 +724,7 @@
         }
         
         .leaflet-popup-tip {
-            background: var(--bg-card);
+            background: var(--carte-fond);
         }
         
         .popup-content {
@@ -590,7 +746,7 @@
         
         .popup-content p {
             font-size: 0.75rem;
-            color: var(--text-secondary);
+            color: var(--carte-doux);
         }
         
         /* File input hidden */
@@ -600,10 +756,10 @@
         
         /* Layer control styling */
         .leaflet-control-layers {
-            background: var(--bg-card);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
+            background: var(--carte-fond);
+            border-radius: var(--r-s);
+            border: 1px solid var(--bordure);
+            color: var(--carte-texte);
         }
         
         .leaflet-control-layers-expanded {
@@ -620,16 +776,16 @@
         }
         
         .leaflet-control-layers-separator {
-            border-top-color: var(--border);
+            border-top-color: var(--bordure);
         }
         
         /* Geocode section */
         .geocode-section {
-            background: var(--bg-dark);
-            border-radius: 10px;
+            background: var(--fond-doux);
+            border-radius: var(--r-m);
             padding: 16px;
             margin-bottom: 20px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--bordure);
         }
         
         .geocode-result {
@@ -639,13 +795,13 @@
         .geocode-address {
             font-size: 1rem;
             font-weight: 600;
-            color: var(--accent);
+            color: var(--accent-texte);
             margin-bottom: 4px;
         }
         
         .geocode-details {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
         }
         
         .geocode-actions {
@@ -658,14 +814,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--text-secondary);
+            color: var(--texte-doux);
         }
         
         .geocode-loading::before {
             content: '';
             width: 16px;
             height: 16px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--bordure);
             border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -676,7 +832,7 @@
         }
         
         .geocode-error {
-            color: var(--warning);
+            color: var(--alerte);
             font-size: 0.9rem;
         }
         
@@ -691,7 +847,7 @@
                 grid-column: 1;
                 grid-row: 3;
                 border-left: none;
-                border-top: 1px solid var(--border);
+                border-top: 1px solid var(--bordure);
             }
         }
 
@@ -701,28 +857,88 @@
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          margin: 1.2rem 0 0.5rem;
+          margin: 0;
           font-size: .85rem;
           font-weight: 600;
-          color: #6b7c75;
+          /* Les valeurs littérales de repli gardent un rendu clair
+             strictement identique aux autres outils. */
+          color: var(--texte-doux, #6b7c75);
           text-decoration: none;
           transition: color .15s;
         }
-        .back-link:hover { color: #3d8b6e; }
+        .back-link:hover { color: var(--accent, #3d8b6e); }
+        .back-link:focus-visible {
+          outline: 2px solid var(--accent);
+          outline-offset: 2px;
+        }
+
+        /* ============================================================
+           MODE SOMBRE
+
+           Enfermé dans @media screen : une impression reste toujours
+           claire. Les tuiles, les marqueurs, les popups et le contrôle de
+           couches ne suivent JAMAIS le thème : le mode sombre habille le
+           châssis (en-tête, panneau, modale), pas la carte.
+           ============================================================ */
+        @media screen {
+            [data-theme="dark"] {
+                --color-primary: #b8d8c8;
+                --color-accent:  #5aad8a;
+                --color-light:   #131e17;
+                --color-warm:    #1c2a20;
+                --color-text:    #d4e8dc;
+                --color-muted:   #8aaa9a;
+
+                --fond-page:     #131e17;
+                --fond-panneau:  #1a2e24;
+                --fond-controle: #22382c;
+                --fond-doux:     #16241c;
+                --bordure:       #2a3d30;
+
+                --accent-fort:      #6ecba0;
+                --accent-douce:     #1a3028;
+                --accent-texte:     #6ecba0;
+                --accent-contraste: #10231a;
+
+                --succes:      #6ecba0;
+                --succes-fond: #14301f;
+                --alerte:      #e6b25c;
+                --alerte-fond: #33280f;
+
+                /* Fond plein : du texte clair reste posé dessus. */
+                --succes-plein: #1c7a45;
+
+                --voile: rgba(6, 14, 10, 0.82);
+
+                --ombre-xs: 0 1px 10px  rgba(0, 0, 0, 0.40);
+                --ombre-s:  0 2px 12px  rgba(0, 0, 0, 0.40);
+                --ombre-m:  0 8px 24px  rgba(0, 0, 0, 0.45);
+                --ombre-l:  0 14px 36px rgba(0, 0, 0, 0.50);
+
+                color-scheme: dark;
+            }
+        }
     </style>
 </head>
 <body>
-    <a href="/outils/" class="back-link">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Retour aux outils
-    </a>
     <div class="app-container">
         <header>
-            <div class="logo">
-                <div class="logo-icon">📍</div>
-                <h1>Photo <span>Geo</span> Manager</h1>
+            <div class="entete-gauche">
+                <a href="/outils/" class="back-link" title="Retour à la liste des outils">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Retour aux outils
+                </a>
+                <div class="logo">
+                    <div class="logo-icon">📍</div>
+                    <h1>Photo <span>Geo</span> Manager</h1>
+                </div>
             </div>
             <div class="header-actions">
+                <!-- Bascule clair / sombre : partage la clé « theme » avec le reste du site -->
+                <button type="button" id="theme-toggle" aria-label="Basculer le thème clair ou sombre" title="Basculer le thème clair ou sombre">
+                  <svg class="theme-icon theme-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                  <svg class="theme-icon theme-icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
                 <button class="btn btn-secondary" onclick="exportAll()">
                     📥 Exporter tout
                 </button>
@@ -1440,7 +1656,34 @@
             }
         });
         
-        // Initialisation
+        // ========================================
+        // BASCULE CLAIR / SOMBRE
+        //
+        // Même mécanique que le reste du site (assets/js/main.js) :
+        // l'attribut data-theme est posé sur <html> et le choix est
+        // mémorisé sous la clé « theme », partagée avec le portfolio.
+        // Le script anti-FOUC placé dans le <head> se charge de la
+        // restaurer avant le premier rendu.
+        // ========================================
+        function activerBasculeTheme() {
+            const bouton = document.getElementById('theme-toggle');
+            if (!bouton) {
+                return;
+            }
+            bouton.addEventListener('click', function() {
+                const actuel = document.documentElement.getAttribute('data-theme');
+                const suivant = actuel === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', suivant);
+                try {
+                    localStorage.setItem('theme', suivant);
+                } catch (e) {}
+            });
+        }
+
+        // Initialisation. La bascule de thème vient en premier : elle ne
+        // dépend d'aucune bibliothèque externe et doit rester utilisable
+        // même si un CDN est injoignable.
+        activerBasculeTheme();
         initMap();
         setupDragDrop();
     </script>
